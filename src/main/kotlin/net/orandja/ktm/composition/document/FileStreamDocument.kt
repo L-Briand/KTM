@@ -30,8 +30,9 @@ class FileStreamDocument(val file: File) : MDocument {
     override val tokens: MToken.Section
         get() {
             if (!file.exists()) return emptySection
-            if (lastUpdated != file.lastModified() || toks == null)
+            if (lastUpdated != file.lastModified() || toks == null) {
                 file.inputStream().use { toks = MustacheParser.parse(it) }
+            }
             return toks!!
         }
 }

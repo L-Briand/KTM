@@ -19,7 +19,7 @@ package net.orandja.ktm.base
  */
 open class CtxNode(
     val current: MContext,
-    val parent: CtxNode? = null
+    val parent: CtxNode? = null,
 ) {
 
     /** Fetch the first element of a given tag and cast it as value */
@@ -97,7 +97,7 @@ open class CtxNode(
         if (tag == ".") return this
         val render = (current as? MContext.Group)?.get(this, tag)
         if (render != null) return CtxNode(render, this)
-        return if(checkOnParent) parent?.node(tag, checkOnParent) else null
+        return if (checkOnParent) parent?.node(tag, checkOnParent) else null
     }
 
     /** Simple iterator that can go backward */

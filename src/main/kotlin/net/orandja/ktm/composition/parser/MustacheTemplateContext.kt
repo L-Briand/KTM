@@ -41,7 +41,6 @@ class MustacheTemplateContext(val reader: InputStream) {
     }
 
     var inTagBuffer = StringBuilder(128)
-    var lastIdxWhitespace: Long = 0L
 
     inline fun getInTag(): CharSequence {
         val name = inTagBuffer.slice(0 until inTagBuffer.length - tokStop.length)
@@ -56,8 +55,11 @@ class MustacheTemplateContext(val reader: InputStream) {
     var teSpecial = true
     private inline fun updateTeSpecial() {
         if (!((tokStop[0] == MustacheTemplateParser.TAG_UNESCAPED_1_END) xor (tokStop[0] == MustacheTemplateParser.TAG_DELIMITER_END))) return
-        teSpecial = if (tokStop.length < 2) true
-        else tokStop.subSequence(0, tokStop.length - 1).match(tokStop.subSequence(1, tokStop.length))
+        teSpecial = if (tokStop.length < 2) {
+            true
+        } else {
+            tokStop.subSequence(0, tokStop.length - 1).match(tokStop.subSequence(1, tokStop.length))
+        }
     }
 
     private inline fun CharSequence.match(other: CharSequence): Boolean {

@@ -6,7 +6,7 @@ import net.orandja.ktm.composition.document.MDocumentBuilder
 
 class PoolDelegateCached(
     parent: MPool?,
-    delegate: MDocumentBuilder.(name: String) -> MDocument?
+    delegate: MDocumentBuilder.(name: String) -> MDocument?,
 ) : PoolDelegate(parent, delegate) {
     private val documents = mutableMapOf<String, MDocument>()
     override fun get(name: String): MDocument? =

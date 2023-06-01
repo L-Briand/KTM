@@ -18,4 +18,3 @@ data class JsonResource(
         val partials: Map<String, String>? = null,
     )
 }
-

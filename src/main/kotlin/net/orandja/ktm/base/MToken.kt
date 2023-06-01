@@ -45,7 +45,7 @@ sealed class MToken {
         val nameParts: Array<String>?,
         val toRender: LongRange, // Might be used to cache parts of a document when rendering
         val inverted: Boolean,
-        val parts: Collection<MToken>
+        val parts: Collection<MToken>,
     ) : MToken() {
         override fun toString(): String =
             "Section('${nameParts?.joinToString(".") { it } ?: ""}', $toRender, $inverted)"

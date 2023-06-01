@@ -11,7 +11,7 @@ open class MustacheRenderer : MRender {
         token: MToken,
         pool: MPool,
         node: CtxNode,
-        writer: (CharSequence) -> Unit
+        writer: (CharSequence) -> Unit,
     ) = when (token) {
         is MToken.Static -> renderStatic(provider, token, writer)
         is MToken.Tag -> renderTag(token, node, writer)
@@ -26,7 +26,7 @@ open class MustacheRenderer : MRender {
         token: MToken.Section,
         node: CtxNode,
         pool: MPool,
-        noinline writer: (CharSequence) -> Unit
+        noinline writer: (CharSequence) -> Unit,
     ) {
         var render = false
         node.nodes(token.nameParts ?: emptyArray()) { newNode ->
@@ -38,16 +38,18 @@ open class MustacheRenderer : MRender {
                     is MContext.Group, is MContext.Value, MContext.Yes -> false
                 }
                 if (shouldRenderInverted) renderSectionItems(provider, token, pool, CtxNode(newNode.current, node), writer)
-            } else when (newNode.current) {
-                is MContext.Group, is MContext.Value, MContext.Yes -> renderSectionItems(provider, token, pool, CtxNode(newNode.current, node), writer)
-                is MContext.Multi -> {
-                    val iterator = newNode.current.iterator(newNode)
-                    while (iterator.hasNext()) {
-                        renderSectionItems(provider, token, pool, CtxNode(iterator.next(), CtxNode(newNode.current, node)), writer)
+            } else {
+                when (newNode.current) {
+                    is MContext.Group, is MContext.Value, MContext.Yes -> renderSectionItems(provider, token, pool, CtxNode(newNode.current, node), writer)
+                    is MContext.Multi -> {
+                        val iterator = newNode.current.iterator(newNode)
+                        while (iterator.hasNext()) {
+                            renderSectionItems(provider, token, pool, CtxNode(iterator.next(), CtxNode(newNode.current, node)), writer)
+                        }
                     }
-                }
 
-                MContext.No -> Unit
+                    MContext.No -> Unit
+                }
             }
         }
         // Broken context in dotted tag names should be considered falsey
@@ -61,7 +63,7 @@ open class MustacheRenderer : MRender {
         token: MToken.Section,
         pool: MPool,
         node: CtxNode,
-        noinline writer: (CharSequence) -> Unit
+        noinline writer: (CharSequence) -> Unit,
     ) {
         for (part in token.parts) {
             render(provider, part, pool, node, writer)
@@ -75,16 +77,19 @@ open class MustacheRenderer : MRender {
     protected inline fun renderTag(
         token: MToken.Tag,
         node: CtxNode,
-        noinline writer: (CharSequence) -> Unit
+        noinline writer: (CharSequence) -> Unit,
     ) {
-        if (token.escapeHtml) value(token, node) { escape(it, writer) }
-        else value(token, node, writer)
+        if (token.escapeHtml) {
+            value(token, node) { escape(it, writer) }
+        } else {
+            value(token, node, writer)
+        }
     }
 
     protected inline fun value(
         token: MToken.Tag,
         node: CtxNode,
-        noinline writer: (CharSequence) -> Unit
+        noinline writer: (CharSequence) -> Unit,
     ) {
         var isFirst = true
         node.nodes(token.nameParts) { newNode ->
@@ -169,14 +174,14 @@ open class MustacheRenderer : MRender {
     protected inline fun renderStatic(
         provider: MProvider,
         token: MToken.Static,
-        writer: (CharSequence) -> Unit
+        writer: (CharSequence) -> Unit,
     ) = writer(provider.subSequence(token.toRender))
 
     protected inline fun renderPartial(
         token: MToken.Partial,
         node: CtxNode,
         pool: MPool,
-        noinline writer: (CharSequence) -> Unit
+        noinline writer: (CharSequence) -> Unit,
     ) {
         val document = pool.get(token.name) ?: return
         render(document, pool, node, writer)

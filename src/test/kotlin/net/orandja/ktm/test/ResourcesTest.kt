@@ -7,9 +7,6 @@ import net.orandja.ktm.render
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.function.Executable
-import org.junit.platform.commons.logging.LoggerFactory
-import org.opentest4j.AssertionFailedError
-
 
 class ResourcesTest {
 
@@ -41,22 +38,23 @@ class ResourcesTest {
     }
 
     private fun execute(resource: JsonResource) {
-        val tests = resource.tests.map { Executable { execute(it) } }
+        val tests = resource.tests.map { JsonTest(it) }
         Assertions.assertAll(tests)
     }
 
-    private fun execute(test: JsonResource.Test) {
-        val context = jsonToContext(test.data)
-        val template = Mustache.document.string(test.template)
-        val partials = test.partials?.let { partials ->
-            Mustache.pool.delegateCached { name ->
-                partials[name]?.let(::string)
-            }
-        } ?: Mustache.pool.empty
-        val rendered = template.render(context, partials)
-        Assertions.assertEquals(test.expected, rendered) { "\n'${test.name}' :\n" }
-        // val a = test.expected.trim().split("\\s+".toRegex()).joinToString(" ") { it }
-        // val b = rendered.trim().split("\\s+".toRegex()).joinToString(" ") { it }
-        // Assertions.assertEquals(a, b) { "\n'${test.name}' :\n" }
+    class JsonTest(private val test: JsonResource.Test) : Executable {
+        override fun execute() {
+            val context = jsonToContext(test.data)
+            val template = Mustache.document.string(test.template)
+            val partials = test.partials?.let { partials ->
+                Mustache.pool.delegateCached { name ->
+                    partials[name]?.let(::string)
+                }
+            } ?: Mustache.pool.empty
+            val rendered = template.render(context, partials)
+            val a = test.expected.trim().split("\\s+".toRegex())
+            val b = rendered.trim().split("\\s+".toRegex())
+            Assertions.assertEquals(a, b) { "\n'${test.name}' :\n" }
+        }
     }
 }

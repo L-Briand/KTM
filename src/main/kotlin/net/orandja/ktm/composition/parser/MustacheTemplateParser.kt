@@ -36,12 +36,7 @@ object MustacheTemplateParser {
         var node = root
         parseTokens { token ->
             when (token) {
-//                TOKEN_NEW_LINE -> {
-//                    if (renderIdx < idx && lastIdxWhitespace != idx) addStatic(node, renderIdx until idx)
-//                }
-
                 TOKEN_START -> {
-                    // if (renderIdx < idx - tokStart.length && lastIdxWhitespace != idx - tokStart.length)
                     addStatic(node, renderIdx until idx - tokStart.length)
                 }
 
@@ -52,7 +47,9 @@ object MustacheTemplateParser {
                             if (inTag.length >= 2 && inTag[inTag.length - 1] == TAG_UNESCAPED_1_END) {
                                 val tagName = inTag.subSequence(1, inTag.length - 1).trim()
                                 if (tagName.isNotBlank()) node.parts += MToken.Tag(tagParts(tagName.toString()), false)
-                            } else withTag(0, node, inTag) { node.parts += MToken.Tag(tagParts(it), true) }
+                            } else {
+                                withTag(0, node, inTag) { node.parts += MToken.Tag(tagParts(it), true) }
+                            }
                         }
 
                         TAG_DELIMITER -> {
@@ -65,7 +62,9 @@ object MustacheTemplateParser {
                                         tokStop = split[1]
                                     }
                                 }
-                            } else withTag(0, node, inTag) { node.parts += MToken.Tag(tagParts(it), true) }
+                            } else {
+                                withTag(0, node, inTag) { node.parts += MToken.Tag(tagParts(it), true) }
+                            }
                         }
 
                         TAG_UNESCAPED_2 -> withTag(1, node, inTag) { node.parts += MToken.Tag(tagParts(it), false) }
@@ -74,12 +73,10 @@ object MustacheTemplateParser {
                         TAG_COMMENT -> Unit
                         TAG_START_SECTION -> withTag(1, node, inTag) {
                             node = Node(false, node, renderIdx - tokStart.length until idx, it)
-                            // lastIdxWhitespace = idx
                         }
 
                         TAG_INVERTED_SECTION -> withTag(1, node, inTag) {
                             node = Node(true, node, renderIdx - tokStart.length until idx, it)
-                            // lastIdxWhitespace = idx
                         }
 
                         TAG_END_SECTION -> withTag(1, node, inTag) {
@@ -90,12 +87,11 @@ object MustacheTemplateParser {
                                     tagParts(current.tagName!!),
                                     current.tagPart!!.last until renderIdx - tokStart.length,
                                     current.invert,
-                                    current.parts
+                                    current.parts,
                                 )
                             } else {
                                 addStatic(node, renderIdx - tokStart.length until idx)
                             }
-                            // lastIdxWhitespace = idx
                         }
 
                         else -> withTag(0, node, inTag) { node.parts += MToken.Tag(tagParts(it), true) }
@@ -106,32 +102,44 @@ object MustacheTemplateParser {
             }
             renderIdx = idx
         }
-        if (root != node) root.parts += MToken.Section(
-            tagParts(node.tagName!!), node.tagPart!!.last until renderIdx - tokStart.length, node.invert, node.parts
-        )
+        if (root != node) {
+            root.parts += MToken.Section(
+                tagParts(node.tagName!!),
+                node.tagPart!!.last until renderIdx - tokStart.length,
+                node.invert,
+                node.parts,
+            )
+        }
         val fullRange = if (idx <= 0L) 0L..0L else 0 until idx
         return MToken.Section(null, fullRange, false, root.parts)
     }
 
     private inline fun MustacheTemplateContext.withTag(
-        startAt: Int, node: Node, inTag: CharSequence, block: (String) -> Unit
+        startAt: Int,
+        node: Node,
+        inTag: CharSequence,
+        block: (String) -> Unit,
     ) {
         val tagName = inTag.subSequence(startAt, inTag.length).trim()
-        if (tagName.isNotEmpty()) block(tagName.toString())
-        else addStatic(node, renderIdx - tokStart.length until idx)
+        if (tagName.isNotEmpty()) {
+            block(tagName.toString())
+        } else {
+            addStatic(node, renderIdx - tokStart.length until idx)
+        }
     }
 
     private inline fun tagParts(name: String): Array<String> {
         return name.split('.').filter { it.isNotEmpty() }.toTypedArray()
     }
 
-
     private inline fun addStatic(node: Node, range: LongRange) {
         if (!range.isEmpty()) {
             val last = node.parts.lastOrNull()
             if (last is MToken.Static && last.toRender.last + 1 == range.first) {
                 node.parts[node.parts.lastIndex] = MToken.Static(last.toRender.first..range.last)
-            } else node.parts += MToken.Static(range)
+            } else {
+                node.parts += MToken.Static(range)
+            }
         }
     }
 
@@ -140,13 +148,8 @@ object MustacheTemplateParser {
     ) {
         while (true) {
             val current = next() ?: break
-            //lastIdxWhitespace = if (current.isWhitespace() && (lastIdxWhitespace + 1 == idx)) idx else lastIdxWhitespace
             when (searching) {
                 TOKEN_START -> {
-                    //if (current == '\n') {
-                    //    onNew(TOKEN_NEW_LINE)
-                    //    lastIdxWhitespace = idx
-                    //} else {
                     if (current == tokStart[tokIdx]) tokIdx++ else tokIdx = 0
                     if (tokIdx == tokStart.length) {
                         tagType = peek()
@@ -154,7 +157,6 @@ object MustacheTemplateParser {
                         onNew(searching)
                         searching = TOKEN_STOP
                     }
-                    //}
                 }
 
                 TOKEN_STOP -> {
@@ -182,5 +184,4 @@ object MustacheTemplateParser {
         }
         onNew(TOKEN_END)
     }
-
 }

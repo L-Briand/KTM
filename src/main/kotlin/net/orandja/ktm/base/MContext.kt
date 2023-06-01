@@ -29,5 +29,4 @@ sealed interface MContext {
     fun interface Multi : MContext {
         fun iterator(node: CtxNode): Iterator<MContext>
     }
-
 }

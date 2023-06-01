@@ -6,7 +6,7 @@ import net.orandja.ktm.composition.MustacheDocument
 import net.orandja.ktm.composition.document.MDocumentBuilder
 
 class PoolBuilder internal constructor(
-    private val parent: MPool?
+    private val parent: MPool?,
 ) : MPool, MDocumentBuilder by MustacheDocument {
 
     private val documents = mutableMapOf<String, MDocument>()
@@ -26,5 +26,4 @@ class PoolBuilder internal constructor(
     fun parent(name: String): MDocument? = parent?.get(name)
 
     override fun toString(): String = "MustachePool(${documents.keys})"
-
 }

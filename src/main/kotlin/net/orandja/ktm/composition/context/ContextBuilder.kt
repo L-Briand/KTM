@@ -7,7 +7,7 @@ import net.orandja.ktm.base.context.DefaultMulti
 import net.orandja.ktm.base.context.DefaultValue
 
 class ContextBuilder private constructor(
-    parent: CtxNode?
+    parent: CtxNode?,
 ) : CtxNode(
     current = VarMGroup(),
     parent = parent,
@@ -21,7 +21,7 @@ class ContextBuilder private constructor(
     companion object Default {
         private fun make(
             current: ContextBuilder? = null,
-            configuration: ContextBuilder.() -> Unit
+            configuration: ContextBuilder.() -> Unit,
         ): MContext = ContextBuilder(current)
             .apply(configuration)
             .build()

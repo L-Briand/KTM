@@ -8,7 +8,7 @@ import net.orandja.ktm.composition.pool.PoolDelegate
 import net.orandja.ktm.composition.pool.PoolDelegateCached
 
 object MustachePool {
-    val empty = MPool.Empty
+    val empty: MPool = MPool.Empty
     fun build(parent: MPool? = null, configuration: PoolBuilder.() -> Unit) = PoolBuilder(parent).apply(configuration)
     fun delegate(parent: MPool? = null, configuration: MDocumentBuilder.(name: String) -> MDocument?) =
         PoolDelegate(parent, configuration)

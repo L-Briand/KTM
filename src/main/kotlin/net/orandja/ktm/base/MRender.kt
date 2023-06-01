@@ -43,7 +43,7 @@ fun interface MRender {
 
     /** Shortcut method to render the document as string. */
     fun renderToString(document: MDocument, partial: MPool, context: MContext): String {
-        val length = document.tokens.toRender.last
+        val length = document.tokens.toRender.last - document.tokens.toRender.first
         if (length > Int.MAX_VALUE.toLong()) error("Unable to render document to string. Document is too long.")
         val result = StringBuilder(length.toInt())
         render(document, partial, context) { result.append(it) }

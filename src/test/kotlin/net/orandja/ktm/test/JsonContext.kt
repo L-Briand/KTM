@@ -3,6 +3,7 @@ package net.orandja.ktm.test
 import kotlinx.serialization.json.*
 import net.orandja.ktm.Mustache
 import net.orandja.ktm.base.MContext
+
 fun jsonToContext(json: JsonElement?): MContext = when (json) {
     null -> MContext.No
     JsonNull -> MContext.No
@@ -22,7 +23,7 @@ fun toArray(json: JsonArray): MContext =
     }
 
 fun toPrimitive(json: JsonPrimitive): MContext {
-    when(json.booleanOrNull) {
+    when (json.booleanOrNull) {
         true -> return MContext.Yes
         false -> return MContext.No
         null -> Unit

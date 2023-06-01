@@ -11,9 +11,7 @@ object Mustache {
     val pool = MustachePool
 }
 
-val emptyPool: MPool = MPool.Empty
-
-fun MDocument.execute(context: MContext, pool: MPool = MPool.Empty, writer: (CharSequence) -> Unit) =
+fun MDocument.execute(context: MContext, pool: MPool = Mustache.pool.empty, writer: (CharSequence) -> Unit) =
     Mustache.renderer.render(this, pool, context, writer)
 
 fun MDocument.render(context: MContext, pool: MPool = MPool.Empty) =

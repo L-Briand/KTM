@@ -3,9 +3,7 @@ package net.orandja.ktm.composition
 import net.orandja.ktm.base.MToken
 import net.orandja.ktm.composition.parser.MustacheTemplateContext
 import net.orandja.ktm.composition.parser.MustacheTemplateParser
-import java.io.BufferedReader
 import java.io.InputStream
-import java.io.InputStreamReader
 
 /** Hold all methods to parse a mustache document. */
 object MustacheParser {
