@@ -6,20 +6,20 @@ import net.orandja.ktm.base.context.DefaultGroup
 import net.orandja.ktm.base.context.DefaultMulti
 import net.orandja.ktm.base.context.DefaultValue
 
-class ContextBuilder private constructor(
+class ContextBuilder constructor(
     parent: CtxNode?,
 ) : CtxNode(
-    current = VarMGroup(),
+    current = MutableMContextGroup(),
     parent = parent,
 ) {
 
-    private class VarMGroup : MContext.Group {
+    private class MutableMContextGroup : MContext.Group {
         val backing = mutableMapOf<String, MContext>()
         override fun get(node: CtxNode, tag: String): MContext? = backing[tag]
     }
 
     companion object Default {
-        private fun make(
+        inline fun make(
             current: ContextBuilder? = null,
             configuration: ContextBuilder.() -> Unit,
         ): MContext = ContextBuilder(current)
@@ -32,25 +32,23 @@ class ContextBuilder private constructor(
         fun valueDelegate(delegate: CtxNode.() -> CharSequence) = MContext.Value { it.delegate() }
         fun list(vararg ctx: MContext) = DefaultMulti(ctx.toList())
         fun listDelegate(delegate: CtxNode.() -> Iterator<MContext>) = MContext.Multi { it.delegate() }
-        fun group(conf: ContextBuilder.() -> Unit) = make(null, conf)
+        inline fun group(conf: ContextBuilder.() -> Unit) = make(null, conf)
         fun groupDelegate(delegate: CtxNode.(tag: String) -> MContext?) =
             MContext.Group { node, tag -> node.delegate(tag) }
-
-        operator fun invoke(conf: Default.() -> MContext) = run { conf() }
     }
 
-    private val backing = (current as VarMGroup).backing
+    private val backing = (current as MutableMContextGroup).backing
 
-    infix fun String.by(value: CharSequence) {
-        backing[this] = value(value)
+    infix fun String.by(value: CharSequence?) {
+        backing[this] = value?.let(::value) ?: no
     }
 
     infix fun String.by(value: Boolean) {
         backing[this] = if (value) yes else no
     }
 
-    infix fun String.by(value: MContext) {
-        backing[this] = value
+    infix fun String.by(value: MContext?) {
+        backing[this] = value ?: no
     }
 
     val no = MContext.No
@@ -65,5 +63,5 @@ class ContextBuilder private constructor(
     fun list(vararg ctx: MContext) = Default.list(*ctx)
     fun listDelegate(delegate: CtxNode.() -> Iterator<MContext>) = Default.listDelegate(delegate)
 
-    private fun build(): MContext = if (backing.isEmpty()) MContext.Yes else DefaultGroup(backing)
+    fun build(): MContext = if (backing.isEmpty()) MContext.Yes else DefaultGroup(backing)
 }

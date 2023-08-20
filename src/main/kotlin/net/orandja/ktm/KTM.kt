@@ -3,19 +3,18 @@ package net.orandja.ktm
 import net.orandja.ktm.base.*
 import net.orandja.ktm.composition.*
 
-object Mustache {
-    val parser = MustacheParser
+object KTM {
     var renderer: MRender = MustacheRenderer
     val context = MustacheContext
     val document = MustacheDocument
     val pool = MustachePool
 }
 
-fun MDocument.execute(context: MContext, pool: MPool = Mustache.pool.empty, writer: (CharSequence) -> Unit) =
-    Mustache.renderer.render(this, pool, context, writer)
+fun MDocument.execute(context: MContext, pool: MPool = KTM.pool.empty, writer: (CharSequence) -> Unit) =
+    KTM.renderer.render(this, pool, context, writer)
 
 fun MDocument.render(context: MContext, pool: MPool = MPool.Empty) =
-    Mustache.renderer.renderToString(this, pool, context)
+    KTM.renderer.renderToString(this, pool, context)
 
 fun MPool.render(tag: String, context: MContext) =
     get(tag)?.render(context, this)

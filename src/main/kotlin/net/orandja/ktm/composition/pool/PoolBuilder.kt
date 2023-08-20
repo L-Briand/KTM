@@ -5,7 +5,7 @@ import net.orandja.ktm.base.MPool
 import net.orandja.ktm.composition.MustacheDocument
 import net.orandja.ktm.composition.document.MDocumentBuilder
 
-class PoolBuilder internal constructor(
+class PoolBuilder constructor(
     private val parent: MPool?,
 ) : MPool, MDocumentBuilder by MustacheDocument {
 

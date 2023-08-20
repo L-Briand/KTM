@@ -22,6 +22,11 @@ open class CtxNode(
     val parent: CtxNode? = null,
 ) {
 
+    companion object {
+        const val CONTINUE = false
+        const val STOP = true
+    }
+
     /** Fetch the first element of a given tag and cast it as value */
     fun getValue(tag: String): CharSequence? = (get(tag) as? MContext.Value)?.get(this)
 
@@ -29,7 +34,8 @@ open class CtxNode(
     fun get(tag: String): MContext? {
         var result: MContext? = null
         nodes(tagName(tag)) {
-            if (result != null) result = it.current
+            result = it.current
+            STOP
         }
         return result
     }
@@ -37,12 +43,17 @@ open class CtxNode(
     /** Same as [collectNodes] taking a fully qualified tag with dots*/
     fun getAll(tag: String) = collectNodes(*tagName(tag)).map { it.current }
 
+
     /** util function to collect or [nodes] */
     fun collectNodes(vararg parts: String): List<CtxNode> {
         val result = mutableListOf<CtxNode>()
-        nodes(parts) { result += it }
+        nodes(parts) {
+            result += it
+            CONTINUE
+        }
         return result
     }
+
 
     /**
      * Iterates over [parts] which should be a list of all the tag components.
@@ -53,41 +64,45 @@ open class CtxNode(
      * - `{{ special.tag }}`
      * - `{ "special" : [ { "tag" : "hello" }, { "tag": "world" } ]
      */
-    fun nodes(parts: Array<out String>, onNew: (CtxNode) -> Unit) {
+    fun nodes(
+        parts: Array<out String>,
+        onNew: (CtxNode) -> Boolean
+    ): Boolean {
         if (parts.isEmpty()) {
-            onNew(this)
-            return
+            return onNew(this)
         }
         if (parts.size == 1) {
-            onNew(node(parts[0], true) ?: return)
-            return
+            return onNew(node(parts[0], true) ?: return CONTINUE)
         }
-        nodes(TagIterator(parts), onNew)
+        return nodes(TagIterator(parts), onNew)
     }
 
     private fun nodes(
         parts: TagIterator,
-        onNew: (CtxNode) -> Unit,
-    ) {
-        if (!parts.hasNext()) return
+        onNew: (CtxNode) -> Boolean,
+    ): Boolean {
+        if (!parts.hasNext()) return CONTINUE
         val tag = parts.next()
-        val node = node(tag, parts.isFirst()) ?: return
+        // try to find the "tag.name" instead of "tag" then "name" inside
+        if (node(parts.concatenated(), parts.isFirst())?.let(onNew) == STOP) return STOP
+        val node = node(tag, parts.isFirst()) ?: return CONTINUE
         if (!parts.hasNext()) {
-            onNew(node)
-            return
+            return onNew(node)
         }
+
         when (node.current) {
-            is MContext.Group -> node.nodes(parts, onNew)
+            is MContext.Group -> return node.nodes(parts, onNew)
             is MContext.Multi -> {
                 val iterator = node.current.iterator(this)
                 for (context in iterator) {
-                    CtxNode(context, node).nodes(parts, onNew)
+                    if (CtxNode(context, node).nodes(parts, onNew)) return STOP
                     parts.previous()
                 }
             }
 
-            else -> Unit
+            else -> return CONTINUE
         }
+        return CONTINUE
     }
 
     /**
@@ -107,6 +122,7 @@ open class CtxNode(
         override fun next(): String = source[++idx]
         fun previous() = idx--
         fun isFirst() = idx == 0
+        fun concatenated() = source.slice(idx until source.size).joinToString(".") { it }
     }
 
     /** Split the tag into an array. It keeps the tag '.' in case of value list render */

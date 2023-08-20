@@ -32,25 +32,35 @@ open class MustacheRenderer : MRender {
         node.nodes(token.nameParts ?: emptyArray()) { newNode ->
             render = true
             if (token.inverted) {
+                // inverted context
                 val shouldRenderInverted = when (newNode.current) {
                     MContext.No -> true
                     is MContext.Multi -> !newNode.current.iterator(newNode).hasNext()
                     is MContext.Group, is MContext.Value, MContext.Yes -> false
                 }
-                if (shouldRenderInverted) renderSectionItems(provider, token, pool, CtxNode(newNode.current, node), writer)
+                if (shouldRenderInverted)
+                    renderSectionItems(provider, token, pool, CtxNode(newNode.current, node), writer)
             } else {
+                // Not inverted context
                 when (newNode.current) {
-                    is MContext.Group, is MContext.Value, MContext.Yes -> renderSectionItems(provider, token, pool, CtxNode(newNode.current, node), writer)
+                    is MContext.Group -> {
+                        val nextNode = if (node == newNode) newNode else CtxNode(newNode.current, node)
+                        renderSectionItems(provider, token, pool, nextNode, writer)
+                    }
+
+                    is MContext.Value, MContext.Yes -> renderSectionItems(provider, token, pool, newNode, writer)
                     is MContext.Multi -> {
                         val iterator = newNode.current.iterator(newNode)
                         while (iterator.hasNext()) {
-                            renderSectionItems(provider, token, pool, CtxNode(iterator.next(), CtxNode(newNode.current, node)), writer)
+                            val nextNode = CtxNode(iterator.next(), CtxNode(newNode.current, node))
+                            renderSectionItems(provider, token, pool, nextNode, writer)
                         }
                     }
 
                     MContext.No -> Unit
                 }
             }
+            CtxNode.STOP
         }
         // Broken context in dotted tag names should be considered falsey
         if (!render && token.inverted) {
@@ -91,26 +101,25 @@ open class MustacheRenderer : MRender {
         node: CtxNode,
         noinline writer: (CharSequence) -> Unit,
     ) {
-        var isFirst = true
         node.nodes(token.nameParts) { newNode ->
             when (newNode.current) {
                 is MContext.Multi -> {
                     for (context in newNode.current.iterator(newNode)) {
                         if (context is MContext.Value) {
-                            if (!isFirst) writer(",")
                             writer(context.get(newNode))
-                            isFirst = false
                         }
                     }
+                    CtxNode.STOP
                 }
 
                 is MContext.Value -> {
-                    if (!isFirst) writer(",")
                     writer(newNode.current.get(newNode))
-                    isFirst = false
+                    CtxNode.STOP
                 }
 
-                is MContext.Group, MContext.No, MContext.Yes -> Unit
+                is MContext.Group, MContext.No, MContext.Yes -> {
+                    CtxNode.CONTINUE
+                }
             }
         }
     }

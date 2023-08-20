@@ -2,13 +2,23 @@ package net.orandja.ktm.test
 
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
-import net.orandja.ktm.Mustache
+import net.orandja.ktm.KTM
+import net.orandja.ktm.composition.MustacheDocument
 import net.orandja.ktm.render
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.function.Executable
 
 class ResourcesTest {
+
+    @Test
+    fun test() {
+        val document = KTM.document.string("{{ hello.world }}")
+        val context = KTM.context.builder.group {
+            "hello.world" by "multitag"
+        }
+        Assertions.assertEquals("multitag", document.render(context))
+    }
 
     @Test
     fun comments() = execute(loadResource("comments.json"))
@@ -45,12 +55,12 @@ class ResourcesTest {
     class JsonTest(private val test: JsonResource.Test) : Executable {
         override fun execute() {
             val context = jsonToContext(test.data)
-            val template = Mustache.document.string(test.template)
+            val template = KTM.document.string(test.template)
             val partials = test.partials?.let { partials ->
-                Mustache.pool.delegateCached { name ->
+                KTM.pool.delegateCached { name ->
                     partials[name]?.let(::string)
                 }
-            } ?: Mustache.pool.empty
+            } ?: KTM.pool.empty
             val rendered = template.render(context, partials)
             val a = test.expected.trim().split("\\s+".toRegex())
             val b = rendered.trim().split("\\s+".toRegex())
