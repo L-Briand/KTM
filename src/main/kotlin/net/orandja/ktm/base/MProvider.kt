@@ -10,7 +10,14 @@ package net.orandja.ktm.base
 // MToken.Section already contains this information (Section.toRender).
 interface MProvider {
 
-    /** Should return the given part of the resource. */
+    /**
+     * Should return the given part of the resource.
+     *
+     * @param from start of the resource
+     * @param to end of the resource.
+     *
+     * @return Part of the raw mustache resource.
+     */
     fun subSequence(from: Long, to: Long): CharSequence
     fun subSequence(range: LongRange) = subSequence(range.first, range.last + 1)
 
@@ -19,4 +26,9 @@ interface MProvider {
      * The renderer call this to close it.
      */
     fun close()
+
+    object Empty : MProvider {
+        override fun subSequence(from: Long, to: Long): CharSequence = ""
+        override fun close() = Unit
+    }
 }

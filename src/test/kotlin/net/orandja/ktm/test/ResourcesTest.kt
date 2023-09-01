@@ -3,7 +3,6 @@ package net.orandja.ktm.test
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 import net.orandja.ktm.KTM
-import net.orandja.ktm.composition.MustacheDocument
 import net.orandja.ktm.render
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -13,8 +12,8 @@ class ResourcesTest {
 
     @Test
     fun test() {
-        val document = KTM.document.string("{{ hello.world }}")
-        val context = KTM.context.builder.group {
+        val document = KTM.doc.string("{{ hello.world }}")
+        val context = KTM.ctx.make {
             "hello.world" by "multitag"
         }
         Assertions.assertEquals("multitag", document.render(context))
@@ -55,9 +54,9 @@ class ResourcesTest {
     class JsonTest(private val test: JsonResource.Test) : Executable {
         override fun execute() {
             val context = jsonToContext(test.data)
-            val template = KTM.document.string(test.template)
+            val template = KTM.doc.string(test.template)
             val partials = test.partials?.let { partials ->
-                KTM.pool.delegateCached { name ->
+                KTM.pool.delegate { name ->
                     partials[name]?.let(::string)
                 }
             } ?: KTM.pool.empty

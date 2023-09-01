@@ -5,18 +5,20 @@ import java.io.InputStream
 @Suppress("NOTHING_TO_INLINE")
 class MustacheTemplateContext(val reader: InputStream) {
 
-    var searching: Int = MustacheTemplateParser.TOKEN_START
-    var idx: Long = 0
-    var renderIdx: Long = 0
-    var tagType: Char? = null
+    var searching: Int = MustacheTemplateParser.TOKEN_START // Token to find
+    var idx: Long = 0 // Where the parser is in the mustache document
+    var renderIdx: Long = 0 // Up to where we have rendered
+    var tagType: Char? = null // What kind of marker we're in '>', '#', etc...
 
-    var tokIdx: Int = 0
-    var tokStart: CharSequence = "{{"
-    var tokStop: CharSequence = "}}"
+    var tkIdxCount: Int = 0 // increment every time we found next char of tkBegin or tkEnd
+    var tkBegin: CharSequence = "{{"
+    var tkEnd: CharSequence = "}}"
         set(value) {
             field = value
-            updateTeSpecial()
+            updateTkEndSpecial()
         }
+
+    // Search
 
     var peeked: Char = Char.MIN_VALUE
 
@@ -40,26 +42,28 @@ class MustacheTemplateContext(val reader: InputStream) {
         idx++
     }
 
-    var inTagBuffer = StringBuilder(128)
+    var inTagBuffer = StringBuilder(64)
 
     inline fun getInTag(): CharSequence {
-        val name = inTagBuffer.slice(0 until inTagBuffer.length - tokStop.length)
+        val name = inTagBuffer.slice(0 ..< (inTagBuffer.length - tkEnd.length))
         inTagBuffer.clear()
         return name
     }
 
+    // To handle special cases
+
     // Dictate if tag end is special and should be detected early
     // examples:
-    //     endTag='}}', Sequence : '}}}'
-    //     endTag='==', Sequence : '==='
-    var teSpecial = true
-    private inline fun updateTeSpecial() {
-        if (!((tokStop[0] == MustacheTemplateParser.TAG_UNESCAPED_1_END) xor (tokStop[0] == MustacheTemplateParser.TAG_DELIMITER_END))) return
-        teSpecial = if (tokStop.length < 2) {
-            true
-        } else {
-            tokStop.subSequence(0, tokStop.length - 1).match(tokStop.subSequence(1, tokStop.length))
-        }
+    //     if tkEnd is '}}', Sequence '}}}' is valid for un-escaped html closing tag.
+    //     if tkEnd is '==', Sequence '===' is valid for delimiter change closing tag.
+    var tkEndSpecial = true
+    private inline fun updateTkEndSpecial() {
+        val specialUnescape = tkEnd[0] == MustacheTemplateParser.TAG_UNESCAPED_1_END
+        val specialDelimiter = tkEnd[0] == MustacheTemplateParser.TAG_DELIMITER_END
+        if (!(specialUnescape xor specialDelimiter)) return
+
+        tkEndSpecial = if (tkEnd.length < 2) true
+        else tkEnd.subSequence(0, tkEnd.length - 1).match(tkEnd.subSequence(1, tkEnd.length))
     }
 
     private inline fun CharSequence.match(other: CharSequence): Boolean {

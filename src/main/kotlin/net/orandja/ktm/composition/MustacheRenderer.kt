@@ -1,6 +1,7 @@
 package net.orandja.ktm.composition
 
 import net.orandja.ktm.base.*
+import net.orandja.ktm.base.context.NodeContext
 
 @Suppress("NOTHING_TO_INLINE")
 open class MustacheRenderer : MRender {
@@ -10,7 +11,7 @@ open class MustacheRenderer : MRender {
         provider: MProvider,
         token: MToken,
         pool: MPool,
-        node: CtxNode,
+        node: NodeContext,
         writer: (CharSequence) -> Unit,
     ) = when (token) {
         is MToken.Static -> renderStatic(provider, token, writer)
@@ -24,12 +25,12 @@ open class MustacheRenderer : MRender {
     protected inline fun renderSection(
         provider: MProvider,
         token: MToken.Section,
-        node: CtxNode,
+        node: NodeContext,
         pool: MPool,
         noinline writer: (CharSequence) -> Unit,
     ) {
         var render = false
-        node.nodes(token.nameParts ?: emptyArray()) { newNode ->
+        node.collect(token.nameParts ?: emptyArray()) { newNode ->
             render = true
             if (token.inverted) {
                 // inverted context
@@ -38,13 +39,14 @@ open class MustacheRenderer : MRender {
                     is MContext.Multi -> !newNode.current.iterator(newNode).hasNext()
                     is MContext.Group, is MContext.Value, MContext.Yes -> false
                 }
-                if (shouldRenderInverted)
-                    renderSectionItems(provider, token, pool, CtxNode(newNode.current, node), writer)
+                if (shouldRenderInverted) {
+                    renderSectionItems(provider, token, pool, NodeContext(newNode.current, node), writer)
+                }
             } else {
                 // Not inverted context
                 when (newNode.current) {
                     is MContext.Group -> {
-                        val nextNode = if (node == newNode) newNode else CtxNode(newNode.current, node)
+                        val nextNode = if (node == newNode) newNode else NodeContext(newNode.current, node)
                         renderSectionItems(provider, token, pool, nextNode, writer)
                     }
 
@@ -52,7 +54,7 @@ open class MustacheRenderer : MRender {
                     is MContext.Multi -> {
                         val iterator = newNode.current.iterator(newNode)
                         while (iterator.hasNext()) {
-                            val nextNode = CtxNode(iterator.next(), CtxNode(newNode.current, node))
+                            val nextNode = NodeContext(iterator.next(), NodeContext(newNode.current, node))
                             renderSectionItems(provider, token, pool, nextNode, writer)
                         }
                     }
@@ -60,9 +62,9 @@ open class MustacheRenderer : MRender {
                     MContext.No -> Unit
                 }
             }
-            CtxNode.STOP
+            NodeContext.STOP
         }
-        // Broken context in dotted tag names should be considered falsey
+        // Broken context in {{.}} should be considered falsey
         if (!render && token.inverted) {
             renderSectionItems(provider, token, pool, node, writer)
         }
@@ -72,12 +74,10 @@ open class MustacheRenderer : MRender {
         provider: MProvider,
         token: MToken.Section,
         pool: MPool,
-        node: CtxNode,
+        node: NodeContext,
         noinline writer: (CharSequence) -> Unit,
     ) {
-        for (part in token.parts) {
-            render(provider, part, pool, node, writer)
-        }
+        for (part in token.parts) render(provider, part, pool, node, writer)
     }
 
     // endregion
@@ -86,7 +86,7 @@ open class MustacheRenderer : MRender {
 
     protected inline fun renderTag(
         token: MToken.Tag,
-        node: CtxNode,
+        node: NodeContext,
         noinline writer: (CharSequence) -> Unit,
     ) {
         if (token.escapeHtml) {
@@ -98,10 +98,10 @@ open class MustacheRenderer : MRender {
 
     protected inline fun value(
         token: MToken.Tag,
-        node: CtxNode,
+        node: NodeContext,
         noinline writer: (CharSequence) -> Unit,
     ) {
-        node.nodes(token.nameParts) { newNode ->
+        node.collect(token.nameParts) { newNode ->
             when (newNode.current) {
                 is MContext.Multi -> {
                     for (context in newNode.current.iterator(newNode)) {
@@ -109,22 +109,22 @@ open class MustacheRenderer : MRender {
                             writer(context.get(newNode))
                         }
                     }
-                    CtxNode.STOP
+                    NodeContext.STOP
                 }
 
                 is MContext.Value -> {
                     writer(newNode.current.get(newNode))
-                    CtxNode.STOP
+                    NodeContext.STOP
                 }
 
                 is MContext.Group, MContext.No, MContext.Yes -> {
-                    CtxNode.CONTINUE
+                    NodeContext.CONTINUE
                 }
             }
         }
     }
 
-    inline fun escape(cs: CharSequence, writer: (CharSequence) -> Unit) {
+    protected inline fun escape(cs: CharSequence, writer: (CharSequence) -> Unit) {
         var start = 0
         var idx = 0
         while (idx < cs.length) {
@@ -184,15 +184,15 @@ open class MustacheRenderer : MRender {
         provider: MProvider,
         token: MToken.Static,
         writer: (CharSequence) -> Unit,
-    ) = writer(provider.subSequence(token.toRender))
+    ) = writer(provider.subSequence(token.start, token.stop))
 
     protected inline fun renderPartial(
         token: MToken.Partial,
-        node: CtxNode,
+        node: NodeContext,
         pool: MPool,
         noinline writer: (CharSequence) -> Unit,
     ) {
-        val document = pool.get(token.name) ?: return
+        val document = pool[token.name] ?: return
         render(document, pool, node, writer)
     }
 

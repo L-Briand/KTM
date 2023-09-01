@@ -1,4 +1,4 @@
-package net.orandja.ktm.composition.document
+package net.orandja.ktm.composition.builder
 
 import net.orandja.ktm.base.MDocument
 import net.orandja.ktm.base.MProvider

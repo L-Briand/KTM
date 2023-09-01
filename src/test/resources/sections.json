@@ -139,7 +139,6 @@
       "desc": "Empty lists should behave like falsey values.",
       "data": {
         "list": [
-
         ]
       },
       "template": "\"{{#list}}Yay lists!{{/list}}\"",

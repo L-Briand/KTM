@@ -1,23 +1,27 @@
 package net.orandja.ktm
 
-import net.orandja.ktm.base.*
-import net.orandja.ktm.composition.*
+import net.orandja.ktm.base.MContext
+import net.orandja.ktm.base.MDocument
+import net.orandja.ktm.base.MPool
+import net.orandja.ktm.composition.MustacheRenderer
+import net.orandja.ktm.composition.builder.ContextBuilder
+import net.orandja.ktm.composition.builder.DocumentBuilder
+import net.orandja.ktm.composition.builder.PoolBuilder
 
 object KTM {
-    var renderer: MRender = MustacheRenderer
-    val context = MustacheContext
-    val document = MustacheDocument
-    val pool = MustachePool
+    val ctx = ContextBuilder(null)
+    val doc = DocumentBuilder()
+    val pool = PoolBuilder()
 }
 
-fun MDocument.execute(context: MContext, pool: MPool = KTM.pool.empty, writer: (CharSequence) -> Unit) =
-    KTM.renderer.render(this, pool, context, writer)
+fun MDocument.render(context: MContext, pool: MPool = KTM.pool.empty, writer: (CharSequence) -> Unit) =
+    MustacheRenderer.render(this, pool, context, writer)
 
 fun MDocument.render(context: MContext, pool: MPool = MPool.Empty) =
-    KTM.renderer.renderToString(this, pool, context)
+    MustacheRenderer.renderToString(this, pool, context)
 
 fun MPool.render(tag: String, context: MContext) =
     get(tag)?.render(context, this)
 
 fun MPool.render(tag: String, context: MContext, writer: (CharSequence) -> Unit) =
-    get(tag)?.execute(context, this, writer)
+    get(tag)?.render(context, this, writer)
