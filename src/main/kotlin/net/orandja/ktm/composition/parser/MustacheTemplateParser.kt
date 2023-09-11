@@ -44,7 +44,6 @@ object MustacheTemplateParser {
                     val inTag = getInTag()
                     when (inTag.first()) {
                         TAG_UNESCAPED_1 -> {
-
                             if (inTag.length >= 2 && inTag[inTag.length - 1] == TAG_UNESCAPED_1_END) {
                                 // Matching {{{ }}}
                                 val tagName = inTag.subSequence(1, inTag.length - 1).trim()

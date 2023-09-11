@@ -5,11 +5,10 @@ import net.orandja.ktm.base.MProvider
 import net.orandja.ktm.base.MToken
 import net.orandja.ktm.composition.MustacheParser
 
-class CharSequenceDocument(val source: CharSequence) : MDocument {
+class StringDocument(val source: String) : MDocument {
     override val provider: MProvider = object : MProvider {
         override fun subSequence(from: Long, to: Long): CharSequence = source.subSequence(from.toInt(), to.toInt())
         override fun close() = Unit
     }
     override val tokens: MToken.Section = MustacheParser.parse(source)
 }
-

@@ -4,42 +4,28 @@ import net.orandja.ktm.base.MContext
 import net.orandja.ktm.base.MContext.*
 import net.orandja.ktm.base.context.*
 
-open class ContextBuilder(
-    parent: NodeContext?,
-) : NodeContext(
-    current = MutableGroup(),
-    parent = parent,
+class ContextBuilder constructor(
+    private val backing: MutableMap<String, MContext>? = null,
 ) {
 
-    private data class MutableGroup(
-        val backing: MutableMap<String, MContext> = mutableMapOf(),
-    ) : Group {
-        override fun get(node: NodeContext, tag: String): MContext? = backing[tag]
-    }
-
-    private val backing = (current as MutableGroup).backing
-
     infix fun String.by(value: CharSequence?) {
-        backing[this] = value?.let(::value) ?: no
+        backing!![this] = value?.let(::value) ?: no
     }
 
     infix fun String.by(value: Boolean) {
-        backing[this] = if (value) yes else no
+        backing!![this] = if (value) yes else no
     }
 
     infix fun String.by(value: MContext?) {
-        backing[this] = value ?: no
+        backing!![this] = value ?: no
     }
 
-    fun build(): MContext = if (backing.isEmpty()) yes else group(backing)
+    fun build(): MContext = if (backing!!.isEmpty()) yes else group(backing)
 
     // Creation functions
 
-    inline fun make(configuration: ContextBuilder.() -> Unit) = make(null, configuration)
-    inline fun make(
-        current: ContextBuilder? = null,
-        configuration: ContextBuilder.() -> Unit,
-    ): MContext = ContextBuilder(current).apply(configuration).build()
+    inline fun make(configuration: ContextBuilder.() -> Unit): MContext =
+        ContextBuilder(mutableMapOf()).apply(configuration).build()
 
     val no = No
     val yes = Yes

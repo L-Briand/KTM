@@ -56,11 +56,12 @@ class ResourcesTest {
             val context = jsonToContext(test.data)
             val template = KTM.doc.string(test.template)
             val partials = test.partials?.let { partials ->
-                KTM.pool.delegate { name ->
+                KTM.doc.delegate { name ->
                     partials[name]?.let(::string)
                 }
-            } ?: KTM.pool.empty
+            } ?: KTM.doc.empty
             val rendered = template.render(context, partials)
+            // Assertions.assertEquals(test.expected, rendered) { "\n${test.name}:\n" }
             val a = test.expected.trim().split("\\s+".toRegex())
             val b = rendered.trim().split("\\s+".toRegex())
             Assertions.assertEquals(a, b) { "\n'${test.name}' :\n" }

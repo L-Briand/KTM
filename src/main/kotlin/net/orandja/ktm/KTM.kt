@@ -5,16 +5,14 @@ import net.orandja.ktm.base.MDocument
 import net.orandja.ktm.base.MPool
 import net.orandja.ktm.composition.MustacheRenderer
 import net.orandja.ktm.composition.builder.ContextBuilder
-import net.orandja.ktm.composition.builder.DocumentBuilder
 import net.orandja.ktm.composition.builder.PoolBuilder
 
 object KTM {
     val ctx = ContextBuilder(null)
-    val doc = DocumentBuilder()
-    val pool = PoolBuilder()
+    val doc = PoolBuilder()
 }
 
-fun MDocument.render(context: MContext, pool: MPool = KTM.pool.empty, writer: (CharSequence) -> Unit) =
+fun MDocument.render(context: MContext, pool: MPool = KTM.doc.empty, writer: (CharSequence) -> Unit) =
     MustacheRenderer.render(this, pool, context, writer)
 
 fun MDocument.render(context: MContext, pool: MPool = MPool.Empty) =
