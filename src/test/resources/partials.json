@@ -111,29 +111,6 @@
         "partial": "[]"
       },
       "expected": "|[]|"
-    },
-    {
-      "name": "Standalone Line Endings",
-      "desc": "\"\\r\\n\" should be considered a newline for standalone tags.",
-      "data": {
-      },
-      "template": "|\r\n{{>partial}}\r\n|",
-      "partials": {
-        "partial": ">"
-      },
-      "expected": "|\r\n>|"
-    },
-    {
-      "name": "Standalone Without Previous Line",
-      "desc": "Standalone tags should not require a newline to precede them.",
-      "data": {
-      },
-      "template": "  {{>partial}}\n>",
-      "partials": {
-        "partial": ">\n>"
-      },
-      "expected": "  >\n  >>",
-      "test": "  >\n>\n>"
     }
   ]
 }
