@@ -2,6 +2,7 @@ package net.orandja.ktm.composition.builder
 
 import net.orandja.ktm.base.MContext
 import net.orandja.ktm.base.MContext.*
+import net.orandja.ktm.base.NodeContext
 import net.orandja.ktm.base.context.*
 
 class ContextBuilder constructor(

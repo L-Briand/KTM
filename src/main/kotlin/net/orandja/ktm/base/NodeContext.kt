@@ -1,6 +1,4 @@
-package net.orandja.ktm.base.context
-
-import net.orandja.ktm.base.MContext
+package net.orandja.ktm.base
 
 /**
  * By design [MContext.Group] or [MContext.Multi] might contain other contexts inside.
@@ -19,7 +17,7 @@ import net.orandja.ktm.base.MContext
  */
 open class NodeContext(
     val current: MContext,
-    val parent: NodeContext? = null,
+    private val parent: NodeContext? = null,
 ) {
 
     companion object {
@@ -56,7 +54,6 @@ open class NodeContext(
         // try to find the "tag.name" instead of "tag" then "name" inside
         if (node(parts.concatenated(), parts.isFirst())?.let(onNew) == STOP) return STOP
 
-        // We create a new node based on the
         val node = node(tag, parts.isFirst()) ?: return CONTINUE
         if (!parts.hasNext()) return onNew(node)
 
@@ -92,7 +89,15 @@ open class NodeContext(
         override fun next(): String = source[++idx]
         fun previous() = idx--
         fun isFirst() = idx == 0
-        fun concatenated() = source.slice(idx ..< source.size).joinToString(".") { it }
+
+        fun concatenated() = StringBuilder().apply {
+            var first = true
+            for (i in idx ..< source.size) {
+                if (first) first = false
+                else append('.')
+                append(source[i])
+            }
+        }.toString()
     }
 
     override fun toString(): String =

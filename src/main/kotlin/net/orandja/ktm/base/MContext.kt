@@ -1,7 +1,5 @@
 package net.orandja.ktm.base
 
-import net.orandja.ktm.base.context.NodeContext
-
 /**
  * Something used to render a mustache document.
  */

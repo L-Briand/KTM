@@ -13,7 +13,7 @@ class PoolBuilder(
 
     infix fun String.by(value: CharSequence?) {
         value ?: return
-        backing!![this] = charSequence(value)
+        backing!![this] = string(value.toString())
     }
 
     infix fun String.by(value: MDocument?) {
