@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.function.Executable
 
-class ResourcesTest {
+class ResourceTest {
 
     @Test
     fun test() {
@@ -42,7 +42,7 @@ class ResourcesTest {
     }
 
     fun loadResource(file: String): JsonResource {
-        val raw = ResourcesTest::class.java.getResource("/$file")!!.openStream().reader().use { it.readText() }
+        val raw = ResourceTest::class.java.getResource("/$file")!!.openStream().reader().use { it.readText() }
         return codec.decodeFromString(serializer(), raw)
     }
 
@@ -51,7 +51,7 @@ class ResourcesTest {
         Assertions.assertAll(tests)
     }
 
-    class JsonTest(private val test: JsonResource.Test) : Executable {
+    class JsonTest(val test: JsonResource.Test) : Executable {
         override fun execute() {
             val context = jsonToContext(test.data)
             val template = KTM.doc.string(test.template)
@@ -61,10 +61,7 @@ class ResourcesTest {
                 }
             } ?: KTM.doc.empty
             val rendered = template.render(context, partials)
-            // Assertions.assertEquals(test.expected, rendered) { "\n${test.name}:\n" }
-            val a = test.expected.trim().split("\\s+".toRegex())
-            val b = rendered.trim().split("\\s+".toRegex())
-            Assertions.assertEquals(a, b) { "\n'${test.name}' :\n" }
+            Assertions.assertEquals(test.expected, rendered) { "\n## ${test.name}:\n" }
         }
     }
 }

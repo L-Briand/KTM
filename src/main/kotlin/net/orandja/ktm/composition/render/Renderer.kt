@@ -1,26 +1,23 @@
 package net.orandja.ktm.composition.render
 
-import net.orandja.ktm.base.MContext
-import net.orandja.ktm.base.MDocument
-import net.orandja.ktm.base.MPool
-import net.orandja.ktm.base.MRenderer
-import net.orandja.ktm.base.NodeContext
+import net.orandja.ktm.base.*
+import net.orandja.ktm.base.MDocument.NewLine
 
 @Suppress("NOTHING_TO_INLINE")
-class FastRenderer : MRenderer {
+open class Renderer : MRenderer {
 
     override fun render(
         document: MDocument,
-        node: NodeContext,
+        context: NodeContext,
         pool: MPool,
         writer: (CharSequence) -> Unit,
     ) = when (document) {
-        MDocument.Comment -> renderComment(writer)
-        MDocument.NewLine -> renderNewLine(writer)
+        MDocument.Empty -> renderComment(writer)
+        is NewLine -> renderNewLine(document, writer)
         is MDocument.Static -> renderStatic(document, writer)
-        is MDocument.Partial -> renderPartial(document, node, pool, writer)
-        is MDocument.Tag -> renderTag(document, node, writer)
-        is MDocument.Section -> renderSection(document, node, pool, writer)
+        is MDocument.Partial -> renderPartial(document, context, pool, writer)
+        is MDocument.Tag -> renderTag(document, context, writer)
+        is MDocument.Section -> renderSection(document, context, pool, writer)
     }
 
     // region section
@@ -181,20 +178,35 @@ class FastRenderer : MRenderer {
 
     private inline fun renderPartial(
         document: MDocument.Partial,
-        node: NodeContext,
+        context: NodeContext,
         pool: MPool,
         noinline writer: (CharSequence) -> Unit,
     ) {
         val partDocument = pool[document.name] ?: return
-        this.render(partDocument, node, pool, writer)
+        val spaces = document.spaces
+        if (spaces == null) {
+            render(partDocument, context, pool, writer)
+            return
+        }
+
+        writer(spaces)
+        PartialRenderer(spaces).render(partDocument, context, pool, writer)
     }
 
     private inline fun renderStatic(
         document: MDocument.Static,
         writer: (CharSequence) -> Unit,
-    ) = writer(document.content)
+    ) {
+        if (document.render) writer(document.content)
+    }
 
-    private inline fun renderNewLine(writer: (CharSequence) -> Unit) = writer("\n")
+    protected inline fun renderNewLine(
+        document: NewLine,
+        writer: (CharSequence) -> Unit,
+    ) {
+        if (document.render) writer(document.kind.representation)
+    }
+
     private inline fun renderComment(writer: (CharSequence) -> Unit) = Unit
 
     // endregion

@@ -10,9 +10,12 @@ enum class Delimiter {
     /** Sequence closing a tag, mostly '}}' */
     STOP,
 
-    /** New line in the document, many exceptions resolve around it. */
-    NEW_LINE,
-
     /** END on the document*/
-    END
+    END,
+
+    /** New line found in the document during parsing */
+    NEW_LINE_R,
+    NEW_LINE_RN,
+    NEW_LINE_N,
+    ;
 }

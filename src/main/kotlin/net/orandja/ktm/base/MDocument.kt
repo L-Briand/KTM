@@ -6,12 +6,12 @@ package net.orandja.ktm.base
  */
 sealed interface MDocument {
     /**
-     * Comment in the document.
+     * Comment or delimiter in the document. This should not render but affect rendering.
      *
      * Rendering can change depending on where a comment occurs.
      * Standalone comment block tags will remove the entire line.
      */
-    data object Comment : MDocument {
+    data object Empty : MDocument {
         override fun toString(): String = "'_!'"
     }
 
@@ -21,17 +21,31 @@ sealed interface MDocument {
      * Rendering can change depending on where a new line occurs.
      * Standalone tags which do not render can remove new lines.
      */
-    data object NewLine : MDocument {
-        override fun toString(): String = "'\\n'"
+    data class NewLine(
+        val kind: Kind,
+        var render: Boolean = true,
+        var last: Boolean = false,
+    ) : MDocument {
+        enum class Kind(val representation: String) {
+            R("\r"),
+            N("\n"),
+            RN("\r\n"),
+        }
+
+        override fun toString(): String = when (kind) {
+            Kind.R -> "${if (!render) "x" else ""}'\\r'"
+            Kind.N -> "${if (!render) "x" else ""}'\\n'"
+            Kind.RN -> "${if (!render) "x" else ""}'\\r\\n'"
+        }
     }
 
     /**
      * Static part of the document to render as is.
      * @param content part of the mustache document to render as is.
      */
-    @JvmInline
-    value class Static(val content: String) : MDocument {
-        override fun toString(): String = "'$content'"
+    data class Static(val content: String, var render: Boolean = true) : MDocument {
+        override fun toString(): String = "${if (!render) "x" else ""}'$content'"
+        val isBlank = content.isBlank()
     }
 
     /**
@@ -41,8 +55,9 @@ sealed interface MDocument {
      */
     data class Partial(
         val name: String,
+        var spaces: String? = null,
     ) : MDocument {
-        override fun toString(): String = "'_>$name'"
+        override fun toString(): String = ">$name"
     }
 
 
@@ -64,7 +79,7 @@ sealed interface MDocument {
 
         val realName get() = name.joinToString(".") { it }.ifEmpty { "." }
 
-        override fun toString(): String = "'${if (escapeHtml) "" else "_&"}$realName'"
+        override fun toString(): String = "<${if (escapeHtml) "" else "&"}$realName>"
 
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -106,7 +121,7 @@ sealed interface MDocument {
         override fun toString(): String {
             val invertedStr = if (inverted) "^" else ""
             val parts = parts.joinToString(", ", ", [", "]") { it.toString() }
-            return "_[$invertedStr$realName$parts]"
+            return "{$invertedStr$realName$parts}"
         }
 
         override fun equals(other: Any?): Boolean {

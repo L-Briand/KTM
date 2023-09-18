@@ -35,6 +35,7 @@ class ContextBuilder constructor(
     fun valueDelegate(delegate: NodeContext.() -> CharSequence) = Value { it.delegate() }
 
     fun group(context: Map<String, MContext>) = GroupContext(context)
+    fun group(vararg context: Pair<String, MContext>) = GroupContext(mapOf(*context))
     fun groupDelegate(delegate: NodeContext.(tag: String) -> MContext?) = Group { node, tag -> node.delegate(tag) }
 
     fun list(vararg context: MContext) = MultiContext(context.toList())

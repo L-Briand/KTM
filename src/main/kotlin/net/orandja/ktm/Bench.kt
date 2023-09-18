@@ -32,12 +32,7 @@ class Bench {
     }
 
     @Benchmark
-    fun fastRenderer() {
-        doc1.render(context, MPool.Empty, KTM.fastRenderer)
-    }
-
-    @Benchmark
-    fun slowRenderer() {
-        doc1.render(context)
+    fun ktm() {
+        doc1.render(context, MPool.Empty, KTM.renderer)
     }
 }

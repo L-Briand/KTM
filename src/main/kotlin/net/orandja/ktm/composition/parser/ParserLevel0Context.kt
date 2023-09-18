@@ -6,7 +6,7 @@ import java.io.Reader
  * Contains information to keep track of what we see in the document as we reeds it.
  */
 @Suppress("NOTHING_TO_INLINE")
-class ParserContext(
+internal class ParserLevel0Context(
     val reader: Reader,
     defaultStartDelimiter: CharSequence = "{{",
     defaultStopDelimiter: CharSequence = "}}",
