@@ -20,6 +20,11 @@ sealed interface MDocument {
      *
      * Rendering can change depending on where a new line occurs.
      * Standalone tags which do not render can remove new lines.
+     * @param kind New line can be represented differently depending on which system you are.
+     * @param render Mustache documents can have new lines which are not rendered due to
+     *               their placement and applied rules.
+     * @param last Special case when a new line at the end in a partial render occurs.
+     *             The new line should not have any indentation after
      */
     data class NewLine(
         val kind: Kind,
@@ -27,9 +32,7 @@ sealed interface MDocument {
         var last: Boolean = false,
     ) : MDocument {
         enum class Kind(val representation: String) {
-            R("\r"),
-            N("\n"),
-            RN("\r\n"),
+            R("\r"), N("\n"), RN("\r\n"),
         }
 
         override fun toString(): String = when (kind) {
@@ -41,9 +44,15 @@ sealed interface MDocument {
 
     /**
      * Static part of the document to render as is.
+     *
      * @param content part of the mustache document to render as is.
+     * @param render Mustache documents can have blank static content which is not rendered due to
+     *               their placement and applied rules.
      */
-    data class Static(val content: String, var render: Boolean = true) : MDocument {
+    data class Static(
+        val content: String,
+        var render: Boolean = true,
+    ) : MDocument {
         override fun toString(): String = "${if (!render) "x" else ""}'$content'"
         val isBlank = content.isBlank()
     }
@@ -116,7 +125,7 @@ sealed interface MDocument {
         val parts: Array<MDocument>,
     ) : MDocument {
 
-        val realName get() = name.joinToString(".") { it }.ifEmpty { "root" }
+        private val realName get() = name.joinToString(".") { it }.ifEmpty { "root" }
 
         override fun toString(): String {
             val invertedStr = if (inverted) "^" else ""

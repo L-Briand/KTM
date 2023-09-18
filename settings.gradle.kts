@@ -7,3 +7,5 @@ pluginManagement {
         google()
     }
 }
+
+include(":core")

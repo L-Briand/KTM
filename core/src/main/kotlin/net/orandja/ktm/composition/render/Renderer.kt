@@ -12,7 +12,7 @@ open class Renderer : MRenderer {
         pool: MPool,
         writer: (CharSequence) -> Unit,
     ) = when (document) {
-        MDocument.Empty -> renderComment(writer)
+        MDocument.Empty -> Unit
         is NewLine -> renderNewLine(document, writer)
         is MDocument.Static -> renderStatic(document, writer)
         is MDocument.Partial -> renderPartial(document, context, pool, writer)
@@ -206,8 +206,6 @@ open class Renderer : MRenderer {
     ) {
         if (document.render) writer(document.kind.representation)
     }
-
-    private inline fun renderComment(writer: (CharSequence) -> Unit) = Unit
 
     // endregion
 }
