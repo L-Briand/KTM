@@ -1,6 +1,5 @@
 Unordered Tasks:
 
-* Add Licence
 * Create a 'ksp' module to support automatic context creation with kotlin code.
 * Create a 'reflect' module to support automatic context creation with kotlin-jvm
   code using reflection.
