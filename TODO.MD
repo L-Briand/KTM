@@ -1,11 +1,11 @@
-Remaining tasks (unordered):
+Unordered Tasks:
 
-* Add proper benchmark configuration
-* Optimize parser and generated MDocument tokens
-* Add more documentation to Builder and Parser classes
-* Add usage documentation to a project Readme
-* Add package and publication to maven Central
-* Add secondary module 'ksp' for ksp support and automatic context creation with kotlin code.
 * Add Licence
-* Add support for inheritance and dynamic name.
-* Move the project to multiplatform
+* Create a 'ksp' module to support automatic context creation with kotlin code.
+* Create a 'reflect' module to support automatic context creation with kotlin-jvm
+  code using reflection.
+* Add benchmark and compare to other mustache libs
+* Optimize parser and generated MDocument tokens
+* Explain the project and usage in the README
+* Publish to maven Central
+* Add support for extended mustache features (inheritance, dynamic name).

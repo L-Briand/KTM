@@ -1,48 +1,53 @@
 plugins {
-    `java-library`
-    `maven-publish`
-    kotlin("jvm")
+    kotlin("multiplatform")
     kotlin("plugin.serialization")
+    `java-library`
+    id("maven-publish")
 }
 
-group = "net.orandja.ktm"
-version = "1.0.0"
+group = property("group") as String
+version = property("core.version") as String
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
-dependencies {
-    testImplementation(kotlin("test"))
-    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
-}
-
-tasks.test {
-    useJUnitPlatform()
-}
-
 kotlin {
-    jvmToolchain(17)
-}
-
-java {
-    withJavadocJar()
-    withSourcesJar()
-}
-
-tasks.compileJava {
-    // use the project's version for java version
-    options.javaModuleVersion.set(provider { version as String })
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("ktm") {
-            from(components["java"])
+    jvm("jvm") {
+        jvmToolchain(8)
+        withJava()
+        testRuns.named("test") {
+            executionTask.configure { useJUnitPlatform() }
         }
     }
 
-    repositories {
-        mavenLocal()
+    js("js") {
+        // browser()
+        nodejs()
+    }
+
+    macosArm64("macosArm64")
+    macosX64("macosX64")
+    linuxArm64("linuxArm64")
+    linuxX64("linuxX64")
+    mingwX64("mingwX64")
+
+    sourceSets {
+        getByName("commonMain")
+        getByName("commonTest") {
+            dependencies {
+                implementation(kotlin("test"))
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
+            }
+        }
+        getByName("jvmMain")
+        getByName("jvmTest")
+    }
+
+    publishing {
+        repositories {
+            mavenLocal()
+        }
     }
 }
