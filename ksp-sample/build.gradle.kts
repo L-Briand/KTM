@@ -9,5 +9,8 @@ val kotlin = property("version.kotlin") as String
 
 repositories {
     mavenCentral()
-    mavenLocal()
+}
+
+dependencies {
+    implementation("net.orandja.ktm:core:0.1.0")
 }

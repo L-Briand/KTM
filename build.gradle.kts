@@ -15,4 +15,5 @@ plugins {
     kotlin("plugin.serialization") version kotlin apply false
     kotlin("multiplatform") version kotlin apply false
     id("com.google.devtools.ksp") version "$kotlin-$ksp" apply false
+    
 }

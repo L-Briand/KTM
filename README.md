@@ -18,6 +18,32 @@ contribute 🙂
 
 - **[List of TODO's](TODO.MD)**
 
+# Import from maven
+
+## Multiplatform
+
+```kotlin
+repositories {
+    mavenCentral()
+}
+val commonMain by getting {
+    dependencies {
+        implementation("net.orandja.ktm:core:0.1.0")
+    }
+}
+```
+
+## Jvm
+
+```kotlin
+repositories {
+    mavenCentral()
+}
+dependencies {
+    implementation("net.orandja.ktm:core:0.1.0")
+}
+```
+
 # QuickStart
 
 > [!NOTE]
@@ -192,22 +218,3 @@ with `pool.render("document_key", context)`.
 - **TODO** [Create contexts](docs/create_contexts.md)
 - **TODO** [Create partials](docs/create_partials.md)
 - **TODO** [Render to a stream](docs/render_to_stream.md)
-
-# Import into your project
-
-> TODO: Write a better section when publication is done.
-
-For now, you can clone this repo build and publish locally.
-
-`./gradlew build` && `./gradlew publishToMavenLocal`
-
-Then import it:
-
-```kotlin
-repositories {
-    mavenLocal()
-}
-dependencies {
-    implementation("net.orandja.ktm:core:0.1.0")
-}
-```

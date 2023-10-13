@@ -26,8 +26,9 @@ repositories {
     mavenCentral()
 }
 
+
 kotlin {
-    // region MULTIPLATFORM
+
     jvm("jvm") {
         jvmToolchain(8)
         withJava()
@@ -36,10 +37,10 @@ kotlin {
         }
     }
 
-    js("js") {
-        // browser() find a way to read resource file
-        nodejs()
-    }
+//    js("js") {
+//        browser() find a way to read resource file
+//        nodejs()
+//    }
 
     macosArm64("macosArm64")
     macosX64("macosX64")
@@ -56,57 +57,57 @@ kotlin {
         }
     }
 
-    // endregionf
-
-    // region PUBLISHING
-    publishing {
-        publications.withType<MavenPublication> {
-            pom {
-                name = findProperty("POM_NAME")!!
-                description = findProperty("POM_DESCRIPTION")!!
-                url = findProperty("POM_URL")!!
-                licenses {
-                    license {
-                        name = findProperty("POM_LICENSE_NAME")!!
-                        url = findProperty("POM_LICENSE_URL")!!
-                    }
-                }
-                developers {
-                    developer {
-                        id = findProperty("POM_DEVELOPER_LBRIAND_ID")!!
-                        name = findProperty("POM_DEVELOPER_LBRIAND_NAME")!!
-                        email = findProperty("POM_DEVELOPER_LBRIAND_EMAIL")!!
-                    }
-                }
-                scm {
-                    connection = findProperty("POM_SCM_URL")!!
-                    developerConnection = findProperty("POM_SCM_CONNECTION")!!
-                    url = findProperty("POM_SCM_DEV_CONNECTION")!!
+}
+publishing {
+    publications.withType<MavenPublication> {
+        val publicationName = this@withType.name
+        val javadocJar = tasks.register("${publicationName}JavadocJar", Jar::class) {
+            archiveClassifier.set("javadoc")
+            archiveBaseName.set("${archiveBaseName.get()}-${publicationName}")
+        }
+        artifact(javadocJar)
+        pom {
+            name = findProperty("POM_NAME")!!
+            description = findProperty("POM_DESCRIPTION")!!
+            url = findProperty("POM_URL")!!
+            licenses {
+                license {
+                    name = findProperty("POM_LICENSE_NAME")!!
+                    url = findProperty("POM_LICENSE_URL")!!
                 }
             }
-        }
-
-        repositories {
-            mavenLocal()
-            if (ossrhMavenEnabled) {
-                maven {
-                    name = "sonatype"
-                    setUrl("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
-                    credentials {
-                        username = ossrhUsername
-                        password = ossrhPassword
-                    }
+            developers {
+                developer {
+                    id = findProperty("POM_DEVELOPER_LBRIAND_ID")!!
+                    name = findProperty("POM_DEVELOPER_LBRIAND_NAME")!!
+                    email = findProperty("POM_DEVELOPER_LBRIAND_EMAIL")!!
                 }
+            }
+            scm {
+                connection = findProperty("POM_SCM_URL")!!
+                developerConnection = findProperty("POM_SCM_CONNECTION")!!
+                url = findProperty("POM_SCM_DEV_CONNECTION")!!
             }
         }
     }
 
-    if (isSigningEnabled) {
-        signing {
-            sign(publishing.publications)
+    repositories {
+        mavenLocal()
+        if (ossrhMavenEnabled) {
+            maven {
+                name = "sonatype"
+                setUrl("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+                credentials {
+                    username = ossrhUsername
+                    password = ossrhPassword
+                }
+            }
         }
     }
+}
 
-    // endregion
-
+if (isSigningEnabled) {
+    signing {
+        sign(publishing.publications)
+    }
 }
