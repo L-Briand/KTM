@@ -2,6 +2,7 @@ package net.orandja.ktm.composition.parser
 
 import net.orandja.ktm.base.MDocument
 import net.orandja.ktm.base.MDocument.*
+import net.orandja.ktm.base.MDocument.Delimiter
 
 class ParserLevel1 {
 
@@ -10,7 +11,7 @@ class ParserLevel1 {
     ) {
         @Suppress("NOTHING_TO_INLINE")
         inline fun onNewLine(index: Int, documents: List<MDocument>) {
-            if (startingIndex == -1) {
+            if (startingIndex == - 1) {
                 startingIndex = index + 1
                 return
             }
@@ -26,7 +27,7 @@ class ParserLevel1 {
 
         @Suppress("NOTHING_TO_INLINE")
         inline fun reset() {
-            startingIndex = -1
+            startingIndex = - 1
         }
     }
 
@@ -38,7 +39,7 @@ class ParserLevel1 {
             when (element) {
                 Comment, Delimiter, Empty -> Unit
                 is NewLine -> standalone.onNewLine(idx, documents)
-                is Static -> if (!element.isBlank) standalone.reset()
+                is Static -> if (! element.isBlank) standalone.reset()
                 is Section -> Unit
                 is MDocument.Tag -> standalone.reset()
                 is Partial -> {
@@ -64,7 +65,7 @@ class ParserLevel1 {
             } else {
                 output += element
                 // For partial rendering, the last new line should not have any indentation after
-                if(element is NewLine && section.parts.size - 1 == idx) {
+                if (element is NewLine && section.parts.size - 1 == idx) {
                     element.last = true
                 }
             }

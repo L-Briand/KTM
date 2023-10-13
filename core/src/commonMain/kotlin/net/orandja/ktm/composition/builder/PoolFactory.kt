@@ -9,8 +9,8 @@ class PoolFactory(val parser: Parser) {
 
     val empty: MPool = MPool.Empty
 
-    inline fun make(configuration: PoolBuilder.() -> Unit): MPool =
-        PoolBuilder(parser, mutableMapOf()).apply(configuration).build()
+    fun make(configuration: PoolBuilder.() -> Unit): MPool =
+        PoolBuilder(parser).apply(configuration).build()
 
     fun delegate(configuration: DocumentBuilder.(String) -> MDocument?) = object : MPool {
         override fun get(name: String): MDocument? = configuration(DocumentBuilder(parser), name)

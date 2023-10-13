@@ -16,11 +16,11 @@ class ContextMapBuilder : ContextFactory() {
     }
 
     infix fun String.by(value: Iterable<String>?) {
-        backing[this] = value?.let { list(it) } ?: no
+        backing[this] = value?.let(::list) ?: no
     }
 
     infix fun String.by(value: Map<String, String>?) {
-        backing[this] = value?.let { map(it) } ?: no
+        backing[this] = value?.let(::map) ?: no
     }
 
     infix fun String.by(value: MContext?) {

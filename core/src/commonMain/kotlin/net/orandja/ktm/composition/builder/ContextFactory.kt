@@ -6,10 +6,10 @@ import net.orandja.ktm.composition.builder.context.*
 
 open class ContextFactory {
 
-    open fun make(configuration: ContextMapBuilder.() -> Unit): MContext =
+    fun make(configuration: ContextMapBuilder.() -> Unit): MContext =
         ContextMapBuilder().apply(configuration).build()
 
-    open fun makeList(configuration: ContextListBuilder.() -> Unit): MContext =
+    fun makeList(configuration: ContextListBuilder.() -> Unit): MContext =
         ContextListBuilder().apply(configuration).build()
 
     val no = MContext.No
@@ -25,7 +25,7 @@ open class ContextFactory {
 
     fun map(vararg pairs: Pair<String, String>) = map(pairs.toMap())
     fun map(map: Map<String, String>) =
-        MContext.Map { _, tag -> if (map.containsKey(tag)) string(map[tag]!!) else null }
+        MContext.Map { _, tag -> if (map.containsKey(tag)) string(map[tag] !!) else null }
 
     fun mapDelegate(delegate: (tag: String) -> String) = MContext.Map { _, tag -> string(delegate(tag)) }
 

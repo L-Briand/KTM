@@ -27,7 +27,11 @@ fun DocumentBuilder.path(path: Path, charset: Charset = Charset.defaultCharset()
     return path.bufferedReader(charset).use { reader(it) }
 }
 
-fun DocumentBuilder.resource(name: String, charset: Charset = Charset.defaultCharset()): MDocument? {
-    val stream = this::class.java.classLoader.getResourceAsStream(name) ?: return null
+fun DocumentBuilder.resource(
+    name: String,
+    classLoader: ClassLoader = this::class.java.classLoader,
+    charset: Charset = Charset.defaultCharset(),
+): MDocument? {
+    val stream = classLoader.getResourceAsStream(name) ?: return null
     return stream.bufferedReader(charset).use { reader(it) }
 }

@@ -36,7 +36,7 @@ internal class ParserLevel0 {
                 }
 
                 // Stop delimiter should always be found with a tag type.
-                Delimiter.STOP -> when (tagType!!) {
+                Delimiter.STOP -> when (tagType !!) {
 
                     Tag.NORMAL -> {
                         if (content.isBlank()) addRaw(node, content)
@@ -109,12 +109,12 @@ internal class ParserLevel0 {
                         if (tagName.isBlank()) addRaw(node, content)
                         else if (tagName != node.name) addRaw(node, content)
                         else {
-                            node.parent!!.parts += MDocument.Section(
+                            node.parent !!.parts += MDocument.Section(
                                 toTokenName(node.name),
                                 node.invert,
                                 node.parts.toTypedArray()
                             )
-                            node = node.parent!!
+                            node = node.parent !!
                         }
                     }
                 }
@@ -180,7 +180,7 @@ internal class ParserLevel0 {
             when (searchingDelim) {
                 Delimiter.START -> {
                     // Searching for startDelim in the document (i.e. '{{')
-                    if (current == startDelim[delimIdxCount]) delimIdxCount++ else delimIdxCount = 0
+                    if (current == startDelim[delimIdxCount]) delimIdxCount ++ else delimIdxCount = 0
                     if (delimIdxCount == startDelim.length) {
                         delimIdxCount = 0
                         onNew(searchingDelim, getBuffer(trimEndBy = startDelim.length))
@@ -191,7 +191,7 @@ internal class ParserLevel0 {
 
                 Delimiter.STOP -> {
                     // Searching for stopDelim in the document (i.e. '}}')
-                    if (current == stopDelim[delimIdxCount]) delimIdxCount++ else delimIdxCount = 0
+                    if (current == stopDelim[delimIdxCount]) delimIdxCount ++ else delimIdxCount = 0
                     if (delimIdxCount == stopDelim.length) {
                         delimIdxCount = 0
 
@@ -219,7 +219,7 @@ internal class ParserLevel0 {
         while (true) {
             val current = next() ?: return null
             return when {
-                !current.isWhitespace() -> current
+                ! current.isWhitespace() -> current
                 current == '\n' -> current
                 current == '\r' -> current
                 else -> {
@@ -235,7 +235,7 @@ internal class ParserLevel0 {
     private inline fun ParserLevel0Context.nextNonWhiteSpace(): Char? {
         while (true) {
             val current = next() ?: return null
-            if (!current.isWhitespace()) return current
+            if (! current.isWhitespace()) return current
             // If a space is between two delimiter characters, it invalidates the reading
             delimIdxCount = 0
         }
@@ -243,13 +243,13 @@ internal class ParserLevel0 {
 
     /** Find the first non-space character in the string */
     private inline fun CharSequence.firstNonWhiteSpace(): Int {
-        for (i in indices) if (!get(i).isWhitespace()) return i
-        return -1
+        for (i in indices) if (! get(i).isWhitespace()) return i
+        return - 1
     }
 
     /** Find the last non-space character in the string */
     private inline fun CharSequence.lastNonWhiteSpace(): Int {
-        for (i in indices.reversed()) if (!get(i).isWhitespace()) return i
-        return -1
+        for (i in indices.reversed()) if (! get(i).isWhitespace()) return i
+        return - 1
     }
 }

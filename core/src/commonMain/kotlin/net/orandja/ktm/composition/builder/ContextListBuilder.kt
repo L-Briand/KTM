@@ -15,11 +15,11 @@ class ContextListBuilder : ContextFactory() {
     }
 
     operator fun Iterable<String>?.unaryPlus() {
-        backing += this?.let { list(it) } ?: no
+        backing += this?.let(::list) ?: no
     }
 
     operator fun Map<String, String>?.unaryPlus() {
-        backing += this?.let { map(it) } ?: no
+        backing += this?.let(::map) ?: no
     }
 
     operator fun MContext?.unaryPlus() {

@@ -28,7 +28,7 @@ open class NodeContext(
     fun getValue(name: String): CharSequence? {
         var result: CharSequence? = null
         collect(toTokenName(name)) { // Matching name
-            if(it.current !is MContext.Value) return@collect false
+            if (it.current !is MContext.Value) return@collect false
             result = it.current.get(it)
             true
         }
@@ -72,13 +72,13 @@ open class NodeContext(
         parts: TagIterator,
         onNew: (NodeContext) -> Boolean,
     ): Boolean {
-        if (!parts.hasNext()) return CONTINUE
+        if (! parts.hasNext()) return CONTINUE
         val tag = parts.next()
         // try to find the "tag.name" instead of "tag" then "name" inside
         if (node(parts.concatenated(), parts.isFirst())?.let(onNew) == STOP) return STOP
 
         val node = node(tag, parts.isFirst()) ?: return CONTINUE
-        if (!parts.hasNext()) return onNew(node)
+        if (! parts.hasNext()) return onNew(node)
 
         when (node.current) {
             is MContext.Map -> return node.collect(parts, onNew)
@@ -107,10 +107,10 @@ open class NodeContext(
 
     /** Simple iterator that can go backward */
     private class TagIterator(val source: Array<out String>) : Iterator<String> {
-        private var idx = -1
+        private var idx = - 1
         override fun hasNext(): Boolean = idx + 1 < source.size
-        override fun next(): String = source[++idx]
-        fun previous() = idx--
+        override fun next(): String = source[++ idx]
+        fun previous() = idx --
         fun isFirst() = idx == 0
 
         fun concatenated() = StringBuilder().apply {

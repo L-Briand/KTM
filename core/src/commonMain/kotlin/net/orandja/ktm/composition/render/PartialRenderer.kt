@@ -12,6 +12,6 @@ class PartialRenderer(private val spaces: String) : Renderer() {
         writer: (CharSequence) -> Unit,
     ) {
         super.render(document, context, pool, writer)
-        if (document is MDocument.NewLine && !document.last) writer(spaces)
+        if (document is MDocument.NewLine && ! document.last) writer(spaces)
     }
 }

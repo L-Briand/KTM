@@ -13,12 +13,12 @@ fun jsonToContext(json: JsonElement?): MContext = when (json) {
 }
 
 fun toObject(json: JsonObject): MContext =
-    Ktm.ctx.ctxMapDelegate { tag ->
+    MContext.Map { _, tag ->
         json[tag]?.let { jsonToContext(it) }
     }
 
 fun toArray(json: JsonArray): MContext =
-    Ktm.ctx.ctxListDelegate {
+    MContext.List {
         json.map { jsonToContext(it) }.iterator()
     }
 
