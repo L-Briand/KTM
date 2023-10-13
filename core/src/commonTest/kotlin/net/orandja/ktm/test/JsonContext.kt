@@ -19,7 +19,11 @@ fun toObject(json: JsonObject): MContext =
 
 fun toArray(json: JsonArray): MContext =
     MContext.List {
-        json.map { jsonToContext(it) }.iterator()
+        object : Iterator<MContext> {
+            val base = json.iterator()
+            override fun hasNext(): Boolean = base.hasNext()
+            override fun next(): MContext = jsonToContext(base.next())
+        }
     }
 
 fun toPrimitive(json: JsonPrimitive): MContext {

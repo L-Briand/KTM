@@ -11,8 +11,8 @@ fun findProperty(name: String): String? =
 
 fun findFilledProperty(name: String): String? = findProperty(name)?.ifBlank { null }
 
-group = findProperty("group")!!
-version = findProperty("module.core")!!
+group = findProperty("group") !!
+version = findProperty("module.core") !!
 
 val ossrhUsername = findFilledProperty("osshr.username")
 val ossrhPassword = findFilledProperty("osshr.password")
@@ -26,7 +26,6 @@ repositories {
     mavenCentral()
 }
 
-
 kotlin {
 
     jvm("jvm") {
@@ -37,10 +36,10 @@ kotlin {
         }
     }
 
-//    js("js") {
-//        browser() find a way to read resource file
-//        nodejs()
-//    }
+    js("js") {
+        browser()
+        nodejs()
+    }
 
     macosArm64("macosArm64")
     macosX64("macosX64")
@@ -67,26 +66,26 @@ publishing {
         }
         artifact(javadocJar)
         pom {
-            name = findProperty("POM_NAME")!!
-            description = findProperty("POM_DESCRIPTION")!!
-            url = findProperty("POM_URL")!!
+            name = findProperty("POM_NAME") !!
+            description = findProperty("POM_DESCRIPTION") !!
+            url = findProperty("POM_URL") !!
             licenses {
                 license {
-                    name = findProperty("POM_LICENSE_NAME")!!
-                    url = findProperty("POM_LICENSE_URL")!!
+                    name = findProperty("POM_LICENSE_NAME") !!
+                    url = findProperty("POM_LICENSE_URL") !!
                 }
             }
             developers {
                 developer {
-                    id = findProperty("POM_DEVELOPER_LBRIAND_ID")!!
-                    name = findProperty("POM_DEVELOPER_LBRIAND_NAME")!!
-                    email = findProperty("POM_DEVELOPER_LBRIAND_EMAIL")!!
+                    id = findProperty("POM_DEVELOPER_LBRIAND_ID") !!
+                    name = findProperty("POM_DEVELOPER_LBRIAND_NAME") !!
+                    email = findProperty("POM_DEVELOPER_LBRIAND_EMAIL") !!
                 }
             }
             scm {
-                connection = findProperty("POM_SCM_URL")!!
-                developerConnection = findProperty("POM_SCM_CONNECTION")!!
-                url = findProperty("POM_SCM_DEV_CONNECTION")!!
+                connection = findProperty("POM_SCM_URL") !!
+                developerConnection = findProperty("POM_SCM_CONNECTION") !!
+                url = findProperty("POM_SCM_DEV_CONNECTION") !!
             }
         }
     }
