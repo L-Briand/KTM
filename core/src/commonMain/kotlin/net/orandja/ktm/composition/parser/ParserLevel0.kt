@@ -43,7 +43,7 @@ internal class ParserLevel0 {
                         else node.parts += MDocument.Tag(toTokenName(content.trim()), true)
                     }
 
-                    Tag.COMMENT -> node.parts += MDocument.Empty
+                    Tag.COMMENT -> node.parts += MDocument.Comment
 
                     // For tags with opening char, we are sure to have at least one non-space char inside.
                     // This is so because we already have found the Tag type.
@@ -82,7 +82,7 @@ internal class ParserLevel0 {
                                     startDelim = newDelimiters.first()
                                     stopDelim = newDelimiters.last()
                                 }
-                                node.parts += MDocument.Empty
+                                node.parts += MDocument.Delimiter
                             }
                         }
                     }

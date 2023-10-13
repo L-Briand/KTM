@@ -1,7 +1,7 @@
 package net.orandja.ktm.base
 
 /**
- * By design [MContext.Group] or [MContext.Multi] might contain other contexts inside.
+ * By design [MContext.Map] or [MContext.List] might contain other contexts inside.
  * It allows sections to properly render. Example:
  *
  * - template : `{{#section}}{{tag}}{{/section}}`
@@ -24,6 +24,29 @@ open class NodeContext(
         const val CONTINUE = false
         const val STOP = true
     }
+
+    fun getValue(name: String): CharSequence? {
+        var result: CharSequence? = null
+        collect(toTokenName(name)) { // Matching name
+            if(it.current !is MContext.Value) return@collect false
+            result = it.current.get(it)
+            true
+        }
+        return result
+    }
+
+    /** Get the corresponding context from its name */
+    fun get(name: String): MContext? {
+        var result: MContext? = null
+        collect(toTokenName(name)) { // Matching name
+            result = it.current
+            true
+        }
+        return result
+    }
+
+    private inline fun toTokenName(name: CharSequence): Array<String> =
+        name.split('.').filter { it.isNotEmpty() }.toTypedArray()
 
     /**
      * Iterates over [parts] which should be a list of all the tag components.
@@ -58,8 +81,8 @@ open class NodeContext(
         if (!parts.hasNext()) return onNew(node)
 
         when (node.current) {
-            is MContext.Group -> return node.collect(parts, onNew)
-            is MContext.Multi -> {
+            is MContext.Map -> return node.collect(parts, onNew)
+            is MContext.List -> {
                 val iterator = node.current.iterator(this)
                 for (context in iterator) {
                     if (NodeContext(context, node).collect(parts, onNew)) return STOP
@@ -77,7 +100,7 @@ open class NodeContext(
      */
     fun node(tag: String, checkOnParent: Boolean): NodeContext? {
         if (tag == ".") return this
-        val render = (current as? MContext.Group)?.get(this, tag)
+        val render = (current as? MContext.Map)?.get(this, tag)
         if (render != null) return NodeContext(render, this)
         return if (checkOnParent) parent?.node(tag, true) else null
     }

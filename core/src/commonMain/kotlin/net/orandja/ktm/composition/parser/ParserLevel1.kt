@@ -36,7 +36,7 @@ class ParserLevel1 {
         val standalone = StandaloneLine()
         documents.forEachIndexed { idx, element ->
             when (element) {
-                Empty -> Unit
+                Comment, Delimiter, Empty -> Unit
                 is NewLine -> standalone.onNewLine(idx, documents)
                 is Static -> if (!element.isBlank) standalone.reset()
                 is Section -> Unit
@@ -55,16 +55,17 @@ class ParserLevel1 {
 
     // TODO: Remove the flattening process and iterate recursively instead.
     private fun flatten(section: Section, output: MutableList<MDocument>) {
-        section.parts.forEachIndexed { idx, it ->
-            if (it is Section) {
+
+        for ((idx, element) in section.parts.withIndex()) {
+            if (element is Section) {
                 output += Empty
-                flatten(it, output)
+                flatten(element, output)
                 output += Empty
             } else {
-                output += it
+                output += element
                 // For partial rendering, the last new line should not have any indentation after
-                if(it is NewLine && section.parts.size - 1 == idx) {
-                    it.last = true
+                if(element is NewLine && section.parts.size - 1 == idx) {
+                    element.last = true
                 }
             }
         }

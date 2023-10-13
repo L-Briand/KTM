@@ -3,17 +3,32 @@ package net.orandja.ktm
 import net.orandja.ktm.base.MContext
 import net.orandja.ktm.base.MDocument
 import net.orandja.ktm.base.MPool
-import net.orandja.ktm.composition.builder.*
+import net.orandja.ktm.composition.builder.ContextFactory
+import net.orandja.ktm.composition.builder.DocumentBuilder
+import net.orandja.ktm.composition.builder.PoolFactory
 import net.orandja.ktm.composition.parser.Parser
 import net.orandja.ktm.composition.render.Renderer
+import kotlin.jvm.JvmStatic
 
 object Ktm {
+    @JvmStatic
     val parser = Parser()
+
+    @JvmStatic
     val renderer = Renderer()
+
+    @JvmStatic
     val ctx = ContextFactory()
+
+    @JvmStatic
     val doc = DocumentBuilder(parser)
+
+    @JvmStatic
     val pool = PoolFactory(parser)
 }
+
+fun CharSequence.toMustacheDocument() = Ktm.doc.string(this)
+
 fun MDocument.render(
     context: MContext,
     pool: MPool = MPool.Empty,

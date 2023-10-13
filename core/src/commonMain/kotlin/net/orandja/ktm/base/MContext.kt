@@ -20,12 +20,12 @@ sealed interface MContext {
     }
 
     /** To render a section with a specific group. */
-    fun interface Group : MContext {
+    fun interface Map : MContext {
         fun get(node: NodeContext, tag: String): MContext?
     }
 
     /** To render a section multiple times. Like a section list */
-    fun interface Multi : MContext {
+    fun interface List : MContext {
         fun iterator(node: NodeContext): Iterator<MContext>
     }
 }

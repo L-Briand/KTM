@@ -1,23 +1,38 @@
 package net.orandja.ktm.composition.builder
 
 import net.orandja.ktm.Ktm
-import net.orandja.ktm.base.MDocument
+import net.orandja.ktm.base.MContext
 import net.orandja.ktm.render
+import net.orandja.ktm.toMustacheDocument
 
 fun main() {
-    val base: MDocument = Ktm.doc.string("{{> header}}\n{{> body }}")
+    val document = """
+        {{# greeting }}
+        Hello {{ name }},
+        {{/ greeting }}
+        
+        tasks:
+        {{# tasks }}
+        - {{ . }}
+        {{/ tasks }}
+    """.trimIndent().toMustacheDocument()
 
-    val pool = Ktm.pool.make {
-        "base" by base
-        "header" by string("Hello {{ name }},\n")
-        "body" by "You need to tell {{ other }} of your accomplishment !"
+    val user = mapOf("name" to "Jon")
+    val tasks = listOf("Sleep", "Eat")
+
+    fun tasks() = Ktm.ctx.makeList {
+        + "Call for lunch."
+        + stringDelegate {
+            "Welcome ${getValue("mister")} to the office."
+        }
     }
 
-    val context = Ktm.ctx.make {
+    val context: MContext = Ktm.ctx.make {
         "name" by "Jon"
-        "other" by "Lola"
+        "mister" by "M. Smith"
+        "greeting" by true
+        "tasks" by tasks()
     }
 
-    println(base.render(context, pool))
-    println(pool.render("base", context))
+    println(document.render(context))
 }

@@ -3,7 +3,7 @@ plugins {
 }
 
 group = property("group") as String
-version = property("ksp.version") as String
+version = property("module.ksp") as String
 
 val kotlin = property("version.kotlin") as String
 val ksp = property("version.ksp") as String

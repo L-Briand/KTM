@@ -13,12 +13,12 @@ fun jsonToContext(json: JsonElement?): MContext = when (json) {
 }
 
 fun toObject(json: JsonObject): MContext =
-    Ktm.ctx.groupDelegate { tag ->
+    Ktm.ctx.ctxMapDelegate { tag ->
         json[tag]?.let { jsonToContext(it) }
     }
 
 fun toArray(json: JsonArray): MContext =
-    Ktm.ctx.listDelegate {
+    Ktm.ctx.ctxListDelegate {
         json.map { jsonToContext(it) }.iterator()
     }
 
@@ -28,5 +28,5 @@ fun toPrimitive(json: JsonPrimitive): MContext {
         false -> return MContext.No
         null -> Unit
     }
-    return Ktm.ctx.value(json.content)
+    return Ktm.ctx.string(json.content)
 }

@@ -1,4 +1,4 @@
-package net.orandja.ktm.base.pool
+package net.orandja.ktm.composition.builder.pool
 
 import net.orandja.ktm.base.MDocument
 import net.orandja.ktm.base.MPool

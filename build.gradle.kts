@@ -1,15 +1,15 @@
 import java.util.Properties
 
 repositories {
-    mavenCentral()
     gradlePluginPortal()
+    mavenCentral()
     google()
 }
 
 
 plugins {
-    val kotlin = "1.9.0" // TODO: Find a way to read from gradle.properties here
-    val ksp = "1.0.13" // TODO: Find a way to read from gradle.properties here
+    val kotlin = "1.9.0" // also in gradle.properties
+    val ksp = "1.0.13" // also in gradle.properties
 
     kotlin("jvm") version kotlin apply false
     kotlin("plugin.serialization") version kotlin apply false

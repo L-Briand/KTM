@@ -5,14 +5,25 @@ package net.orandja.ktm.base
  * To render a document you need both the tokens and source.
  */
 sealed interface MDocument {
+    // Used for parsing purpose
+    // TODO : Do not use and Remove
+    data object Empty : MDocument
+
     /**
-     * Comment or delimiter in the document. This should not render but affect rendering.
+     * Comment in the document. This should not render but affect rendering.
      *
      * Rendering can change depending on where a comment occurs.
-     * Standalone comment block tags will remove the entire line.
+     * For example, a standalone comment tag in a line will remove the entire line.
      */
-    data object Empty : MDocument {
-        override fun toString(): String = "'_!'"
+    data object Comment : MDocument {
+        override fun toString(): String = "'!'"
+    }
+
+    /**
+     * Same as [Comment]
+     */
+    data object Delimiter : MDocument {
+        override fun toString(): String = "'='"
     }
 
     /**

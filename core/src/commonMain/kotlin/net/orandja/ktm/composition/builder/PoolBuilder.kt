@@ -2,8 +2,8 @@ package net.orandja.ktm.composition.builder
 
 import net.orandja.ktm.base.MDocument
 import net.orandja.ktm.base.MPool
-import net.orandja.ktm.base.pool.MapPool
-import net.orandja.ktm.base.pool.MultiPool
+import net.orandja.ktm.composition.builder.pool.MapPool
+import net.orandja.ktm.composition.builder.pool.MultiPool
 import net.orandja.ktm.composition.parser.Parser
 
 class PoolBuilder(

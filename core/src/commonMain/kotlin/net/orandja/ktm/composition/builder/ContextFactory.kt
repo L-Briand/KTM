@@ -1,34 +1,43 @@
 package net.orandja.ktm.composition.builder
 
 import net.orandja.ktm.base.MContext
-import net.orandja.ktm.base.MContext.Value
-import net.orandja.ktm.base.MContext.Group
-import net.orandja.ktm.base.MContext.Multi
 import net.orandja.ktm.base.NodeContext
-import net.orandja.ktm.base.context.GroupContext
-import net.orandja.ktm.base.context.MultiContext
-import net.orandja.ktm.base.context.MultiGroupContext
-import net.orandja.ktm.base.context.ValueContext
+import net.orandja.ktm.composition.builder.context.*
 
 open class ContextFactory {
 
-    inline fun make(configuration: ContextBuilder.() -> Unit): MContext =
-        ContextBuilder(mutableMapOf()).apply(configuration).build()
+    open fun make(configuration: ContextMapBuilder.() -> Unit): MContext =
+        ContextMapBuilder().apply(configuration).build()
+
+    open fun makeList(configuration: ContextListBuilder.() -> Unit): MContext =
+        ContextListBuilder().apply(configuration).build()
 
     val no = MContext.No
     val yes = MContext.Yes
 
-    fun value(value: CharSequence) = ValueContext(value)
-    fun valueDelegate(delegate: NodeContext.() -> CharSequence) = Value { it.delegate() }
+    fun string(value: CharSequence) = ContextValue(value)
+    fun stringDelegate(delegate: NodeContext.() -> CharSequence) = MContext.Value { it.delegate() }
 
-    fun group(context: Map<String, MContext>) = GroupContext(context)
-    fun group(vararg context: Pair<String, MContext>) = GroupContext(mapOf(*context))
-    fun groupDelegate(delegate: NodeContext.(tag: String) -> MContext?) = Group { node, tag -> node.delegate(tag) }
+    fun list(vararg items: String) = MContext.List { StringToValueContextIterator(items.iterator()) }
+    fun list(items: Iterable<String>) = MContext.List { StringToValueContextIterator(items) }
+    fun listDelegate(delegate: () -> Iterable<String>) =
+        MContext.List { StringToValueContextIterator(delegate()) }
 
-    fun list(vararg context: MContext) = MultiContext(context.toList())
-    fun list(contexts: List<MContext>) = MultiContext(contexts)
-    fun listDelegate(delegate: NodeContext.() -> Iterator<MContext>) = Multi { it.delegate() }
+    fun map(vararg pairs: Pair<String, String>) = map(pairs.toMap())
+    fun map(map: Map<String, String>) =
+        MContext.Map { _, tag -> if (map.containsKey(tag)) string(map[tag]!!) else null }
 
-    fun merge(vararg contexts: MContext.Group) = MultiGroupContext(contexts.toList())
-    fun merge(contexts: List<MContext.Group>) = MultiGroupContext(contexts.toList())
+    fun mapDelegate(delegate: (tag: String) -> String) = MContext.Map { _, tag -> string(delegate(tag)) }
+
+    fun merge(vararg contexts: MContext.Map) = MultiMapContext(contexts.toList())
+    fun merge(contexts: List<MContext.Map>) = MultiMapContext(contexts.toList())
+
+    // Create contexts with MContexts directly
+
+
+    fun ctxMap(context: Map<String, MContext>) = ContextMap(context)
+    fun ctxMap(vararg context: Pair<String, MContext>) = ContextMap(mapOf(*context))
+
+    fun ctxList(vararg context: MContext) = ContextList(context.toList())
+    fun ctxList(contexts: Iterable<MContext>) = ContextList(contexts)
 }

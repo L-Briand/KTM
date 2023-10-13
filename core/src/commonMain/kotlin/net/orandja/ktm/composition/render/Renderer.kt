@@ -1,7 +1,10 @@
 package net.orandja.ktm.composition.render
 
-import net.orandja.ktm.base.*
+import net.orandja.ktm.base.MContext
+import net.orandja.ktm.base.MDocument
 import net.orandja.ktm.base.MDocument.NewLine
+import net.orandja.ktm.base.MPool
+import net.orandja.ktm.base.NodeContext
 
 @Suppress("NOTHING_TO_INLINE")
 open class Renderer {
@@ -34,7 +37,7 @@ open class Renderer {
         pool: MPool,
         writer: (CharSequence) -> Unit,
     ) = when (document) {
-        MDocument.Empty -> Unit
+        MDocument.Empty, MDocument.Comment, MDocument.Delimiter -> Unit
         is NewLine -> renderNewLine(document, writer)
         is MDocument.Static -> renderStatic(document, writer)
         is MDocument.Partial -> renderPartial(document, context, pool, writer)
@@ -55,8 +58,8 @@ open class Renderer {
                 // inverted context
                 val shouldRenderInverted = when (newNode.current) {
                     MContext.No -> true
-                    is MContext.Multi -> !newNode.current.iterator(newNode).hasNext()
-                    is MContext.Group, is MContext.Value, MContext.Yes -> false
+                    is MContext.List -> !newNode.current.iterator(newNode).hasNext()
+                    is MContext.Map, is MContext.Value, MContext.Yes -> false
                 }
                 if (shouldRenderInverted) {
                     renderSectionItems(document, pool, NodeContext(newNode.current, node), writer)
@@ -64,13 +67,13 @@ open class Renderer {
             } else {
                 // Not inverted context
                 when (newNode.current) {
-                    is MContext.Group -> {
+                    is MContext.Map -> {
                         val nextNode = if (node == newNode) newNode else NodeContext(newNode.current, node)
                         renderSectionItems(document, pool, nextNode, writer)
                     }
 
                     is MContext.Value, MContext.Yes -> renderSectionItems(document, pool, newNode, writer)
-                    is MContext.Multi -> {
+                    is MContext.List -> {
                         val iterator = newNode.current.iterator(newNode)
                         while (iterator.hasNext()) {
                             val nextNode = NodeContext(iterator.next(), NodeContext(newNode.current, node))
@@ -121,7 +124,7 @@ open class Renderer {
     ) {
         node.collect(document.name) { newNode ->
             when (newNode.current) {
-                is MContext.Multi -> {
+                is MContext.List -> {
                     for (context in newNode.current.iterator(newNode)) {
                         if (context is MContext.Value) {
                             writer(context.get(newNode))
@@ -135,7 +138,7 @@ open class Renderer {
                     NodeContext.STOP
                 }
 
-                is MContext.Group, MContext.No, MContext.Yes -> {
+                is MContext.Map, MContext.No, MContext.Yes -> {
                     NodeContext.CONTINUE
                 }
             }

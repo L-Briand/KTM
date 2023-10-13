@@ -18,80 +18,117 @@ contribute 🙂
 
 - **[List of TODO's](TODO.MD)**
 
-# Usage
+# QuickStart
+
+> [!NOTE]
+> You cannot use classes as context to render a document yet. This is still in the
+> backing. This means you would not be able to use it as a drop-in replacement of
+> another mustache lib. You need to create all your contexts manually.
+>
+> This is **not yet possible**:
+>
+> ```kotlin
+> data class User(val name: String, val age: Int)
+> 
+> val document = Ktm.doc.string("Hello {{ name }} ! Happy {{ age }} birthday !")
+> val context = User("Jon", 33)
+> document.render(context)
+> ```
 
 With Mustache, to render a document you need three things:
 
 ### 1. A template
 
-> [learn more about creating documents](create_documents.md).
-
 Something like `Hello {{ name }}`. This needs to be parsed to be used. Use
 the `Ktm.doc` object to read and parse the documents into a usable object. If you are
-running kotlin JVM, you can use extension functions to parse files and IO.
+running kotlin JVM, you can use extension functions to parse files and IO
+with `.file(File)`, `.path(Path)`, `.resource(String)`, `.inputStream(InputStream)`
+or `.reader(Reader)`.
 
 ```kotlin
 val mustacheTemplate: String = "Hello {{ name }}"
 var document: MDocument
+// default way
 document = Ktm.doc.string(mustacheTemplate)
+// quick way, only work on strings
+document = mustacheTemplate.toMustacheDocument()
 ```
 
 ### 2. A context
 
-> [learn more about creating contexts](create_contexts.md)
+You generally need some kind of map `key: value` to match your mustache tags.
+To create such map, use the `Ktm.ctx` object. The returned context will be used to
+replace your document tags. With it, you can create contexts anywhere in your code
+and call your mapper to create more complex context.
 
-To create a context, use `Ktm.ctx`. It will be used when rendering a document in
-place of mustache tags. You generally need some kind of map `key: value` to match
-your mustache tags. This is done with the keyword `by` in a `ContextBuilder` scope.
+Since classes can't be used to create contexts manually, yet, you have to be
+declarative. Even if it's a bit verbose, it gives you full control.
 
-Since you cannot use classes as context, everything is declarative. Here is an
-example to create a tasks list:
+Let's assume this document:
+
+```handlebars
+{{# greeting }}
+    Hello {{ name }},
+{{/ greeting }}
+
+Today tasks:
+{{# tasks }}
+    - {{ . }}
+{{/ tasks }}
+```
+
+You can create a fully declarative context.
+
+Every method in `Ktm.ctx` can be used in the `make scope`.
 
 ```kotlin
-val document = Ktm.doc.string(
-    """
-{{ date }} tasks:
-{{# tasks }}
-- {{ name }}: {{ description }}  
-{{/ tasks }}
-"""
-)
+val context = Ktm.ctx.make { // make scope
+    "greeting" by make { // make scope
+        "name" by "Jon"
+    }
+    "tasks" by makeList { // make scope
+        + "Sleep"
+        + "Eat"
+    }
+}
+```
 
-fun taskItem(name: String, description: String): MContext = Ktm.ctx.make {
-    "name" by name
-    "description" by description
+If you already have some map or list (**Only String**) to fill the context, you can
+use them:
+
+```kotlin
+val user = mapOf("name" to "Jon")
+val tasks = listOf("Sleep", "Eat")
+
+val context = Ktm.ctx.make {
+    "greeting" by user
+    "tasks" by tasks
+}
+```
+
+Maybe you don't have the full scope of your context, and it needs to be dynamic.
+
+Here we have a function that defines the tasks without knowing `mister`. We then add
+it to the root context. When rendering, it will search for `mister` tag to create the
+entry.
+
+```kotlin
+fun tasks() = Ktm.ctx.makeList {
+    + "Call for lunch."
+    + stringDelegate {
+        "Welcome ${getValue("mister")} to the office."
+    }
 }
 
 val context: MContext = Ktm.ctx.make {
-    "date" by "Today"
-    "tasks" by list(
-        make {
-            "name" by "Sleep"
-            "description" by "Get at least 8h of sleep at work"
-        },
-        taskItem("Work", "Produce some code"),
-    )
+    "name" by "Jon"
+    "greeting" by true
+    "mister" by "M. Smith"
+    "tasks" by tasks()
 }
-
-println(document.render(context))
 ```
-
-This produce:
-
-```
-Today tasks:
-- Work: Produce some code  
-- Sleep: Get at least 8h of sleep at work  
-```
-
-Inside the `Ktm.ctx.make` scope, you can use all the function of the `Ktm.ctx`. It
-allows making contexts more easily. As shown in the example, you can create contexts
-anywhere in your code and call it to
-create more complex context.
 
 ### 3. Partials
-
-> [learn more about using partials](create_partials.md)
 
 You can create a pool of document that will be used as partials of a mustache
 template with `Ktm.pool`.
@@ -116,7 +153,7 @@ val render = base.render(context, pool)
 val render = pool.render("base", context)
 ```
 
-Both `render` the same:
+Both `render` are equivalent:
 
 ```
 Hello Jon,
@@ -127,27 +164,34 @@ As you can see, the `Ktm.pool.make` is like the `Ktm.ctx.make` scope. You can co
 your partials with the `by` keyword. Additionally, you can use all the methods from
 the `Ktm.doc` to parse your documents in the `Ktm.pool.make` scope.
 
-To render a document can choose to render from an external document
-with `document.render(<context>, <partials>)` or from the pool directly
-with `pool.render("<document_key>", <context>)`. 
+To render a document you can choose to render from an external document
+with `document.render(context, partials)` or from the pool directly
+with `pool.render("document_key", context)`.
 
-## Limitations
 
-### No classes as context
+> [!NOTE]
+> Documents aren't cached. If you create two pools that read the same document.
+> Like :
+>
+> ```kotlin
+> val p1 = Ktm.pool.make { "a" by resource("/path") }
+> val p2 = Ktm.pool.make { "a" by resource("/path") }
+> ```
+>
+> The file will be in memory twice. To avoid it, create the document before:
+>
+> ```kotlin
+> val a = Ktm.doc.resource("/path")
+> val p1 = Ktm.pool.make { "a" by a }
+> val p2 = Ktm.pool.make { "a" by a }
+> ```
 
-You cannot use classes as context to render a document yet. This means you would
-not be able to use it as a drop-in replacement of another mustache lib. You need to
-create all your contexts manually.
+# Deep dive
 
-This is **not yet possible**:
-
-```kotlin
-data class User(val name: String, val age: Int)
-
-val document = Ktm.doc.string("Hello {{ name }} ! Happy {{ age }} birthday !")
-val context = User("Jon", 33)
-document.renderToString(context)
-```
+- [Create documents](docs/create_documents.md)
+- **TODO** [Create contexts](docs/create_contexts.md)
+- **TODO** [Create partials](docs/create_partials.md)
+- **TODO** [Render to a stream](docs/render_to_stream.md)
 
 # Import into your project
 
