@@ -2,6 +2,15 @@ package net.orandja.ktm.composition.parser
 
 import net.orandja.ktm.base.MDocument.Section
 
+/**
+ * This class represents a Parser,
+ * which is responsible for parsing a document using different levels of parsing algorithms.
+ *
+ * @property level0 An instance of ParserLevel0, which represents the first level of parsing.
+ * @property level1 An instance of ParserLevel1, which represents the second level of parsing.
+ *
+ * @constructor Creates a Parser object.
+ */
 class Parser {
 
     private val level0 = ParserLevel0()

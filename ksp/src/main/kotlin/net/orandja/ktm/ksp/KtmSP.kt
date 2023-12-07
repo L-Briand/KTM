@@ -9,10 +9,10 @@ import com.google.devtools.ksp.validate
 
 class KtmSP(val codeGenerator: CodeGenerator, val logger: KSPLogger) : SymbolProcessor {
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        val annotated = resolver.getSymbolsWithAnnotation("").filter { it.validate() }
-        annotated.forEach {
-            logger.warn("$it")
+        val annotated = resolver.getSymbolsWithAnnotation("").filter {
+            it.validate()
         }
+        annotated.forEach { logger.warn("$it") }
         return annotated.toList()
     }
 }

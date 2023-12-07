@@ -45,6 +45,8 @@ open class NodeContext(
         return result
     }
 
+
+    @Suppress("NOTHING_TO_INLINE")
     private inline fun toTokenName(name: CharSequence): Array<String> =
         name.split('.').filter { it.isNotEmpty() }.toTypedArray()
 
