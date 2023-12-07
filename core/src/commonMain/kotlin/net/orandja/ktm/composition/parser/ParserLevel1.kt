@@ -4,6 +4,10 @@ import net.orandja.ktm.base.MDocument
 import net.orandja.ktm.base.MDocument.*
 import net.orandja.ktm.base.MDocument.Delimiter
 
+/**
+ * This class represents a level 1 parser. It applies rules to a given section and modifies the list of
+ * documents accordingly.
+ */
 class ParserLevel1 {
 
     private inner class StandaloneLine(

@@ -5,7 +5,6 @@ import net.orandja.ktm.base.MDocument
 @Suppress("NOTHING_TO_INLINE")
 internal class ParserLevel0 {
 
-
     private data class Node(
         val invert: Boolean,
         val name: CharSequence = ".",
@@ -13,7 +12,13 @@ internal class ParserLevel0 {
         val parts: MutableList<MDocument> = mutableListOf(),
     )
 
-    /** Parse a mustache document without transformation */
+    /**
+     * Parses the given `ParserLevel0Context` to extract structured content and constructs
+     * an `MDocument.Section` representing the parsed document.
+     *
+     * @param context Utility class for the parser to keep track of the parsing process.
+     * @return The parsed document represented as an `MDocument.Section`.
+     */
     fun parse(context: ParserLevel0Context): MDocument.Section = with(context) {
         val root = Node(false)
         var node = root
@@ -180,9 +185,9 @@ internal class ParserLevel0 {
             when (searchingDelim) {
                 Delimiter.START -> {
                     // Searching for startDelim in the document (i.e. '{{')
-                    if (current == startDelim[delimIdxCount]) delimIdxCount ++ else delimIdxCount = 0
-                    if (delimIdxCount == startDelim.length) {
-                        delimIdxCount = 0
+                    if (current == startDelim[delimMatchIdx]) delimMatchIdx ++ else delimMatchIdx = 0
+                    if (delimMatchIdx == startDelim.length) {
+                        delimMatchIdx = 0
                         onNew(searchingDelim, getBuffer(trimEndBy = startDelim.length))
                         searchingDelim = Delimiter.STOP
                         tagType = null
@@ -191,9 +196,9 @@ internal class ParserLevel0 {
 
                 Delimiter.STOP -> {
                     // Searching for stopDelim in the document (i.e. '}}')
-                    if (current == stopDelim[delimIdxCount]) delimIdxCount ++ else delimIdxCount = 0
-                    if (delimIdxCount == stopDelim.length) {
-                        delimIdxCount = 0
+                    if (current == stopDelim[delimMatchIdx]) delimMatchIdx ++ else delimMatchIdx = 0
+                    if (delimMatchIdx == stopDelim.length) {
+                        delimMatchIdx = 0
 
                         // Check if we need to read the next char based on [isStopDelimSpecial]
                         // If '{{{ }}' is found, it will read '{ '
@@ -224,7 +229,7 @@ internal class ParserLevel0 {
                 current == '\r' -> current
                 else -> {
                     // If a space is between two delimiter characters, it invalidates the reading
-                    delimIdxCount = 0
+                    delimMatchIdx = 0
                     continue
                 }
             }
@@ -237,7 +242,7 @@ internal class ParserLevel0 {
             val current = next() ?: return null
             if (! current.isWhitespace()) return current
             // If a space is between two delimiter characters, it invalidates the reading
-            delimIdxCount = 0
+            delimMatchIdx = 0
         }
     }
 

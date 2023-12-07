@@ -2,17 +2,17 @@ package net.orandja.ktm.base
 
 /**
  * By design [MContext.Map] or [MContext.List] might contain other contexts inside.
- * It allows sections to properly render. Example:
+ * It allows sections to be properly rendered. Example:
  *
  * - template : `{{#section}}{{tag}}{{/section}}`
  * - data : `{ "section" : { "tag" : "hello" } }`
  *
- * However, when rendering we might want to use an upper bounded context. Example :
+ * However, when rendering, we might want to use an upper bounded context. Example :
  *
  * - template : `{{#section}}{{tag}}{{/section}}`
  * - data : `{ "section" : true, "tag" : "hello" }`
  *
- * [NodeContext] is used in this case, the caller can try to get it with the [current] context.
+ * [NodeContext] is used for this case, the caller can try to get it with the [current] context.
  * if not found it tries on [parent]
  */
 open class NodeContext(

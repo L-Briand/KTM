@@ -6,5 +6,5 @@ import com.google.devtools.ksp.processing.SymbolProcessorProvider
 
 class KtmSPP : SymbolProcessorProvider {
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor =
-        KtmSP(environment.codeGenerator, environment.logger)
+        KtmSP(environment.codeGenerator, environment.logger, environment.)
 }

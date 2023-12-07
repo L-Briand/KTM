@@ -1,8 +1,8 @@
 package net.orandja.ktm.base
 
 /**
- * Precompiled parts of a document to render it.
- * To render a document you need both the tokens and source.
+ * Precompiled parts of a mustache document.
+ * Combined with [MContext], you can render a document.
  */
 sealed interface MDocument {
     // Used for parsing purpose
@@ -126,8 +126,8 @@ sealed interface MDocument {
      *
      * Can also be an inverted section: `'{{^ section }} content {{/ section }}'`
      *
-     * @param name parts of the section name tag. Empty array is illegal, section cannot be unnamed.
-     * @param inverted true if the section is an inverted one
+     * @param name parts of the section name tag. Empty array is illegal, a section cannot be unnamed.
+     * @param inverted true if the section is inverted
      * @param parts tokens to renders in order inside this section.
      */
     data class Section(

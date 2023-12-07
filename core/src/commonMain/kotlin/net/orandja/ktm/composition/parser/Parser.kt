@@ -3,8 +3,7 @@ package net.orandja.ktm.composition.parser
 import net.orandja.ktm.base.MDocument.Section
 
 /**
- * This class represents a Parser,
- * which is responsible for parsing a document using different levels of parsing algorithms.
+ * This class is the main Mustache document parser.
  *
  * @property level0 An instance of ParserLevel0, which represents the first level of parsing.
  * @property level1 An instance of ParserLevel1, which represents the second level of parsing.

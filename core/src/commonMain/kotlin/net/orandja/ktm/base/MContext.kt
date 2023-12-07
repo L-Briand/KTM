@@ -1,7 +1,8 @@
 package net.orandja.ktm.base
 
 /**
- * Something used to render a mustache document.
+ * Contextual part a mustache document.
+ * Combine with [MDocument], you can render a document.
  */
 sealed interface MContext {
 

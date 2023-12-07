@@ -1,7 +1,26 @@
 package net.orandja.ktm.composition.parser
 
 /**
- * Contains information to keep track of what we see in the document as we reeds it.
+ * This class represents the context for parsing a mustache document at level 0.
+ * It contains information about the current state of parsing, such as the delimiters, tags, and search progress.
+ *
+ * @param charReader The character stream used to read the mustache document.
+ * @param defaultStartDelimiter The default start tag delimiter. Default value is "{{".
+ * @param defaultStopDelimiter The default stop tag delimiter. Default value is "}}".
+ *
+ * @property searchingDelim The current delimiter being searched. Can be [Delimiter.START] or [Delimiter.STOP].
+ * @property tagType The type of tag marker we're currently in (e.g., '>', '#', etc.).
+ * @property delimMatchIdx The number of characters matching between the delimiter and current reading.
+ * @property startDelim The start tag delimiter currently used while parsing the document.
+ * @property stopDelim The stop tag delimiter currently used while parsing the document.
+ *
+ * @property peeked The next character that has been peeked but not consumed yet.
+ *
+ * @property buffer The StringBuilder for storing the parsed content. It is used to build names, tag content, etc.
+ *
+ * @property isStopDelimSpecial Specifies whether the end delimiter is special and should be detected early.
+ *
+ * @constructor Creates a new ParserLevel0Context with the given parameters.
  */
 @Suppress("NOTHING_TO_INLINE")
 internal class ParserLevel0Context(
@@ -16,8 +35,8 @@ internal class ParserLevel0Context(
     /**  What kind of in tag marker we're in '>', '#', etc... */
     var tagType: Tag? = null
 
-    /** increment every time we found the next char of a delimiter */
-    var delimIdxCount: Int = 0
+    /** The number of characters matching between the delimiter and current reading. */
+    var delimMatchIdx: Int = 0
 
     /** Start tag delimiter currently used while parsing the document */
     var startDelim: CharSequence = defaultStartDelimiter

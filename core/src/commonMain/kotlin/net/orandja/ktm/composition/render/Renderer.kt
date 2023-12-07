@@ -6,6 +6,12 @@ import net.orandja.ktm.base.MDocument.NewLine
 import net.orandja.ktm.base.MPool
 import net.orandja.ktm.base.NodeContext
 
+/**
+ * Renderer is a class that provides methods for rendering Mustache templates.
+ *
+ * @property renderToString Shortcut method to render the document as a string.
+ * @property render Shortcut method to render the document without a node context.
+ */
 @Suppress("NOTHING_TO_INLINE")
 open class Renderer {
 

@@ -1,8 +1,10 @@
 package net.orandja.ktm.composition.parser
 
 /**
- * Tag types inside the mustache document.
- * @param open Character used to match the tag type during parsing
+ * An enumeration representing the different tags of a Mustache document can have.
+ *
+ * @property open The special opening character of the tag.
+ * @property close The special closing character of the tag.
  */
 enum class Tag(val open: Char, val close: Char) {
 
