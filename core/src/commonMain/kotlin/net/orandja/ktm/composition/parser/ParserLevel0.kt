@@ -1,6 +1,7 @@
 package net.orandja.ktm.composition.parser
 
 import net.orandja.ktm.base.MDocument
+import net.orandja.ktm.composition.tokenizeTagName
 
 @Suppress("NOTHING_TO_INLINE")
 internal class ParserLevel0 {
@@ -45,7 +46,7 @@ internal class ParserLevel0 {
 
                     Tag.NORMAL -> {
                         if (content.isBlank()) addRaw(node, content)
-                        else node.parts += MDocument.Tag(toTokenName(content.trim()), true)
+                        else node.parts += MDocument.Tag(tokenizeTagName(content.trim()), true)
                     }
 
                     Tag.COMMENT -> node.parts += MDocument.Comment
@@ -64,7 +65,7 @@ internal class ParserLevel0 {
                         val idx = content.firstNonWhiteSpace()
                         val tagName = content.subSequence(idx + 1, content.length).trim()
                         if (tagName.isBlank()) addRaw(node, content)
-                        else node.parts += MDocument.Tag(toTokenName(tagName), false)
+                        else node.parts += MDocument.Tag(tokenizeTagName(tagName), false)
                     }
 
                     Tag.UNESCAPED_1 -> {
@@ -72,7 +73,7 @@ internal class ParserLevel0 {
                         if (content[end] != Tag.UNESCAPED_1.close) addRaw(node, content) else {
                             val tagName = content.trim().subSequence(1, content.length - 1).trim()
                             if (tagName.isBlank()) addRaw(node, content)
-                            else node.parts += MDocument.Tag(toTokenName(tagName), false)
+                            else node.parts += MDocument.Tag(tokenizeTagName(tagName), false)
                         }
                     }
 
@@ -115,7 +116,7 @@ internal class ParserLevel0 {
                         else if (tagName != node.name) addRaw(node, content)
                         else {
                             node.parent !!.parts += MDocument.Section(
-                                toTokenName(node.name),
+                                tokenizeTagName(node.name),
                                 node.invert,
                                 node.parts.toTypedArray()
                             )
@@ -129,7 +130,7 @@ internal class ParserLevel0 {
         // Ambiguous state where a section did not end in the document and is still open.
         // The end of the document acts like a close section tag. `'{{/ <anyName> }}'`
         if (root != node) root.parts += MDocument.Section(
-            toTokenName(node.name),
+            tokenizeTagName(node.name),
             node.invert,
             node.parts.toTypedArray()
         )
@@ -141,9 +142,6 @@ internal class ParserLevel0 {
     private inline fun ParserLevel0Context.addRaw(node: Node, content: CharSequence) {
         node.parts += MDocument.Static("$startDelim$content$stopDelim")
     }
-
-    private inline fun toTokenName(name: CharSequence): Array<String> =
-        name.split('.').filter { it.isNotEmpty() }.toTypedArray()
 
     /**
      * Call [onNew] every time a [Delimiter] is found in the document.

@@ -1,7 +1,7 @@
 package net.orandja.ktm.composition.builder
 
 import net.orandja.ktm.base.MContext
-import net.orandja.ktm.base.NodeContext
+import net.orandja.ktm.composition.NodeContext
 import net.orandja.ktm.composition.builder.context.*
 
 open class ContextFactory {
@@ -15,29 +15,35 @@ open class ContextFactory {
     val no = MContext.No
     val yes = MContext.Yes
 
-    fun string(value: CharSequence) = ContextValue(value)
-    fun stringDelegate(delegate: NodeContext.() -> CharSequence) = MContext.Value { it.delegate() }
+    fun string(value: CharSequence?) = if (value == null) no else ctxValue(value)
 
-    fun list(vararg items: String) = MContext.List { StringToValueContextIterator(items.iterator()) }
-    fun list(items: Iterable<String>) = MContext.List { StringToValueContextIterator(items) }
-    fun listDelegate(delegate: () -> Iterable<String>) =
-        MContext.List { StringToValueContextIterator(delegate()) }
+    fun list(vararg items: String) = list(items.toList())
+    fun list(items: Iterable<String?>?) = if (items == null) no else {
+        val contexts = items.map(::string)
+        if (contexts.isEmpty()) yes else ctxList(contexts)
+    }
 
-    fun map(vararg pairs: Pair<String, String>) = map(pairs.toMap())
-    fun map(map: Map<String, String>) =
-        MContext.Map { _, tag -> if (map.containsKey(tag)) string(map[tag] !!) else null }
-
-    fun mapDelegate(delegate: (tag: String) -> String) = MContext.Map { _, tag -> string(delegate(tag)) }
+    fun map(vararg group: Pair<String, String>) = map(group.toMap())
+    fun map(group: Map<String, String?>?) = if (group == null) no else {
+        val contexts = group.mapValues { string(it.value) }
+        if (contexts.isEmpty()) yes else ctxMap(contexts)
+    }
 
     fun merge(vararg contexts: MContext.Map) = MultiMapContext(contexts.toList())
     fun merge(contexts: List<MContext.Map>) = MultiMapContext(contexts.toList())
 
     // Create contexts with MContexts directly
 
-
+    fun ctxValue(value: CharSequence) = ContextValue(value)
     fun ctxMap(context: Map<String, MContext>) = ContextMap(context)
     fun ctxMap(vararg context: Pair<String, MContext>) = ContextMap(mapOf(*context))
-
     fun ctxList(vararg context: MContext) = ContextList(context.toList())
     fun ctxList(contexts: Iterable<MContext>) = ContextList(contexts)
+
+    // Create delegated contexts
+
+    fun delegate(delegate: NodeContext.() -> MContext) = Delegated(delegate)
+    fun delegateString(delegate: NodeContext.() -> CharSequence) = DelegatedString(delegate)
+    fun delegateMap(delegate: NodeContext.(tag: String) -> MContext) = DelegatedMap(delegate)
+    fun delegateList(delegate: NodeContext.() -> Iterator<MContext>) = DelegatedList(delegate)
 }

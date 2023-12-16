@@ -1,7 +1,7 @@
 package net.orandja.ktm.composition.builder.context
 
 import net.orandja.ktm.base.MContext
-import net.orandja.ktm.base.NodeContext
+import net.orandja.ktm.composition.NodeContext
 import kotlin.jvm.JvmInline
 
 /**
@@ -19,3 +19,5 @@ value class MultiMapContext(private val contexts: List<MContext.Map>) : MContext
         return null
     }
 }
+
+// TODO : Multi list

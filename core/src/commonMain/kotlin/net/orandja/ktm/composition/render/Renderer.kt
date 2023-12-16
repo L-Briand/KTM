@@ -4,7 +4,7 @@ import net.orandja.ktm.base.MContext
 import net.orandja.ktm.base.MDocument
 import net.orandja.ktm.base.MDocument.NewLine
 import net.orandja.ktm.base.MPool
-import net.orandja.ktm.base.NodeContext
+import net.orandja.ktm.composition.NodeContext
 
 /**
  * Renderer is a class that provides methods for rendering Mustache templates.
@@ -66,6 +66,7 @@ open class Renderer {
                     MContext.No -> true
                     is MContext.List -> ! newNode.current.iterator(newNode).hasNext()
                     is MContext.Map, is MContext.Value, MContext.Yes -> false
+                    is MContext.Delegate -> error("unreachable")
                 }
                 if (shouldRenderInverted) {
                     renderSectionItems(document, pool, NodeContext(newNode.current, node), writer)
@@ -80,14 +81,13 @@ open class Renderer {
 
                     is MContext.Value, MContext.Yes -> renderSectionItems(document, pool, newNode, writer)
                     is MContext.List -> {
-                        val iterator = newNode.current.iterator(newNode)
-                        while (iterator.hasNext()) {
-                            val nextNode = NodeContext(iterator.next(), NodeContext(newNode.current, node))
-                            renderSectionItems(document, pool, nextNode, writer)
+                        for (ctx in newNode.current.iterator(newNode)) {
+                            renderSectionItems(document, pool, NodeContext(ctx, newNode), writer)
                         }
                     }
 
                     MContext.No -> Unit
+                    is MContext.Delegate -> error("unreachable")
                 }
             }
             NodeContext.STOP
@@ -131,10 +131,8 @@ open class Renderer {
         node.collect(document.name) { newNode ->
             when (newNode.current) {
                 is MContext.List -> {
-                    for (context in newNode.current.iterator(newNode)) {
-                        if (context is MContext.Value) {
-                            writer(context.get(newNode))
-                        }
+                    iterate(newNode.current, newNode) {
+                        if (it is MContext.Value) writer(it.get(newNode))
                     }
                     NodeContext.STOP
                 }
@@ -147,7 +145,16 @@ open class Renderer {
                 is MContext.Map, MContext.No, MContext.Yes -> {
                     NodeContext.CONTINUE
                 }
+
+                is MContext.Delegate -> error("unreachable")
             }
+        }
+    }
+
+    private fun iterate(context: MContext.List, node: NodeContext, item: (MContext) -> Unit) {
+        for (ctx in context.iterator(node)) {
+            if (ctx is MContext.List) iterate(ctx, NodeContext(ctx, node), item)
+            else item(ctx)
         }
     }
 

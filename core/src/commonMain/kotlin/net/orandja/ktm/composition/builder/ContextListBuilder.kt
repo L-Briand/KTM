@@ -7,19 +7,19 @@ class ContextListBuilder : ContextFactory() {
     fun build(): MContext = if (backing.isEmpty()) yes else ctxList(backing)
 
     operator fun CharSequence?.unaryPlus() {
-        backing += this?.let(::string) ?: no
+        backing += string(this)
     }
 
     operator fun Boolean.unaryPlus() {
         backing += if (this) yes else no
     }
 
-    operator fun Iterable<String>?.unaryPlus() {
-        backing += this?.let(::list) ?: no
+    operator fun Iterable<String?>?.unaryPlus() {
+        backing += list(this)
     }
 
-    operator fun Map<String, String>?.unaryPlus() {
-        backing += this?.let(::map) ?: no
+    operator fun Map<String, String?>?.unaryPlus() {
+        backing += map(this)
     }
 
     operator fun MContext?.unaryPlus() {

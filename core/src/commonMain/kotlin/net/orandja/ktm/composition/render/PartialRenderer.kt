@@ -2,11 +2,11 @@ package net.orandja.ktm.composition.render
 
 import net.orandja.ktm.base.MDocument
 import net.orandja.ktm.base.MPool
-import net.orandja.ktm.base.NodeContext
+import net.orandja.ktm.composition.NodeContext
 
 /**
  * PartialRenderer is a class that extends the Renderer class
- * and provides additional functionality for rendering Mustache templates.
+ * and provides additional functionality for rendering Mustache templates with partials.
  *
  * @property spaces The spaces to be added before rendering the template.
  */

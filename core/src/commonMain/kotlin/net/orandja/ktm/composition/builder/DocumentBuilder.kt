@@ -9,5 +9,5 @@ open class DocumentBuilder(val parser: Parser) {
     fun charStream(streamReader: CharStream) = parser.parse(streamReader)
 
     /** Create a document from any [CharSequence] */
-    fun string(source: CharSequence): MDocument = parser.parse(StringCharStream(source))
+    inline fun string(source: CharSequence): MDocument = charStream(StringCharStream(source))
 }
