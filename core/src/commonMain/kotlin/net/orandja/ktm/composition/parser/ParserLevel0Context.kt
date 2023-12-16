@@ -91,7 +91,7 @@ internal class ParserLevel0Context(
         // TODO: Generalize with all Tag.close
         val specialUnescape = stopDelim[0] == Tag.UNESCAPED_1.close
         val specialDelimiter = stopDelim[0] == Tag.DELIMITER.close
-        if (! (specialUnescape xor specialDelimiter)) return
+        if (!(specialUnescape xor specialDelimiter)) return
 
         isStopDelimSpecial = if (stopDelim.length < 2) true
         else stopDelim.subSequence(0, stopDelim.length - 1).match(stopDelim.subSequence(1, stopDelim.length))
@@ -104,7 +104,7 @@ internal class ParserLevel0Context(
         var idx = 0
         while (idx < length) {
             if (get(idx) != other[idx]) return false
-            idx ++
+            idx++
         }
         return true
     }

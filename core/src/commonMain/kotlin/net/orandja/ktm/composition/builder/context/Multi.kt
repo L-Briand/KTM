@@ -11,7 +11,7 @@ import kotlin.jvm.JvmInline
  * @property contexts The list of [MContext.Map] contexts to be wrapped.
  */
 @JvmInline
-value class MultiMapContext(private val contexts: List<MContext.Map>) : MContext.Map {
+value class MultiMapContext(val contexts: List<MContext.Map>) : MContext.Map {
     override fun get(node: NodeContext, tag: String): MContext? {
         for (ctx in contexts) {
             return ctx.get(node, tag) ?: continue

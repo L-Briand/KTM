@@ -5,7 +5,7 @@ import net.orandja.ktm.base.MPool
 import net.orandja.ktm.composition.builder.pool.MapPool
 import net.orandja.ktm.composition.parser.Parser
 
-class PoolBuilder(parser: Parser) : DocumentBuilder(parser) {
+class PoolBuilder(parser: Parser) : DocumentFactory(parser) {
     private val backing: MutableMap<String, MDocument> = mutableMapOf()
 
     fun get(name: String): MDocument? = backing[name]

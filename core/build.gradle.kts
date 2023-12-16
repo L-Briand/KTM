@@ -5,6 +5,7 @@ plugins {
     kotlin("plugin.serialization")
     id("maven-publish")
     id("signing")
+    id("org.jetbrains.dokka")
     id("org.jetbrains.kotlinx.benchmark")
     id("org.jetbrains.kotlin.plugin.allopen")
 }
@@ -12,8 +13,8 @@ plugins {
 fun findProperty(name: String): String? = if (hasProperty(name)) property(name) as String else System.getenv(name)
 fun findFilledProperty(name: String): String? = findProperty(name)?.ifBlank { null }
 
-group = findProperty("group") !!
-version = findProperty("module.core") !!
+group = findProperty("group")!!
+version = findProperty("module.core")!!
 
 repositories {
     mavenLocal()
@@ -142,26 +143,26 @@ publishing {
         }
         artifact(javadocJar)
         pom {
-            name = findProperty("POM_NAME") !!
-            description = findProperty("POM_DESCRIPTION") !!
-            url = findProperty("POM_URL") !!
+            name = findProperty("POM_NAME")!!
+            description = findProperty("POM_DESCRIPTION")!!
+            url = findProperty("POM_URL")!!
             licenses {
                 license {
-                    name = findProperty("POM_LICENSE_NAME") !!
-                    url = findProperty("POM_LICENSE_URL") !!
+                    name = findProperty("POM_LICENSE_NAME")!!
+                    url = findProperty("POM_LICENSE_URL")!!
                 }
             }
             developers {
                 developer {
-                    id = findProperty("POM_DEVELOPER_LBRIAND_ID") !!
-                    name = findProperty("POM_DEVELOPER_LBRIAND_NAME") !!
-                    email = findProperty("POM_DEVELOPER_LBRIAND_EMAIL") !!
+                    id = findProperty("POM_DEVELOPER_LBRIAND_ID")!!
+                    name = findProperty("POM_DEVELOPER_LBRIAND_NAME")!!
+                    email = findProperty("POM_DEVELOPER_LBRIAND_EMAIL")!!
                 }
             }
             scm {
-                connection = findProperty("POM_SCM_URL") !!
-                developerConnection = findProperty("POM_SCM_CONNECTION") !!
-                url = findProperty("POM_SCM_DEV_CONNECTION") !!
+                connection = findProperty("POM_SCM_URL")!!
+                developerConnection = findProperty("POM_SCM_CONNECTION")!!
+                url = findProperty("POM_SCM_DEV_CONNECTION")!!
             }
         }
     }
@@ -188,3 +189,13 @@ if (isSigningEnabled) {
 }
 
 // endregion
+
+tasks.create<Delete>("cleanupGithubDocumentation") {
+    delete(file("docs"))
+}
+tasks.create<Copy>("generateGithubDocumentation") {
+    dependsOn("cleanupGithubDocumentation")
+    dependsOn("dokkaHtml")
+    val buildDir = layout.buildDirectory
+    from(buildDir.dir("dokka/html")).into("docs")
+}

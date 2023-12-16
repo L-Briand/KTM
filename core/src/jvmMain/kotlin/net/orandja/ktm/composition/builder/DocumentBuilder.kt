@@ -9,25 +9,25 @@ import java.nio.file.Path
 import kotlin.io.path.bufferedReader
 import kotlin.io.path.isRegularFile
 
-fun DocumentBuilder.reader(reader: Reader): MDocument {
+fun DocumentFactory.reader(reader: Reader): MDocument {
     return parser.parse(ReaderCharStream(reader))
 }
 
-fun DocumentBuilder.inputStream(stream: InputStream): MDocument {
+fun DocumentFactory.inputStream(stream: InputStream): MDocument {
     return parser.parse(InputStreamCharStream(stream))
 }
 
-fun DocumentBuilder.file(file: File, charset: Charset = Charset.defaultCharset()): MDocument? {
-    if (! file.exists()) return null
+fun DocumentFactory.file(file: File, charset: Charset = Charset.defaultCharset()): MDocument? {
+    if (!file.exists()) return null
     return file.bufferedReader(charset).use { reader(it) }
 }
 
-fun DocumentBuilder.path(path: Path, charset: Charset = Charset.defaultCharset()): MDocument? {
-    if (! path.isRegularFile()) return null
+fun DocumentFactory.path(path: Path, charset: Charset = Charset.defaultCharset()): MDocument? {
+    if (!path.isRegularFile()) return null
     return path.bufferedReader(charset).use { reader(it) }
 }
 
-fun DocumentBuilder.resource(
+fun DocumentFactory.resource(
     name: String,
     classLoader: ClassLoader = this::class.java.classLoader,
     charset: Charset = Charset.defaultCharset(),

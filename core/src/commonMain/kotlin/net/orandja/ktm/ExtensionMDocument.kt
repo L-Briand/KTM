@@ -1,10 +1,10 @@
 package net.orandja.ktm
 
+import net.orandja.ktm.adapters.KtmAdapter
 import net.orandja.ktm.base.MContext
 import net.orandja.ktm.base.MDocument
 import net.orandja.ktm.base.MPool
 import net.orandja.ktm.composition.builder.ContextMapBuilder
-
 
 
 /**
@@ -29,8 +29,9 @@ fun MDocument.render(
  */
 inline fun MDocument.render(
     pool: MPool = MPool.Empty,
+    adapters: KtmAdapter.Provider = Ktm.adapters,
     builder: ContextMapBuilder.() -> Unit,
-) = Ktm.renderer.renderToString(this, Ktm.ctx.make { builder() }, pool)
+) = Ktm.renderer.renderToString(this, Ktm.ctx.make(adapters) { builder() }, pool)
 
 /**
  * Renders the given `MDocument` with the provided `MContext`, `MPool`, and `writer` function.

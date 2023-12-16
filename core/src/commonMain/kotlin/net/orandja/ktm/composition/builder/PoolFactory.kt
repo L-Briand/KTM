@@ -12,8 +12,8 @@ class PoolFactory(val parser: Parser) {
     fun make(configuration: PoolBuilder.() -> Unit): MPool =
         PoolBuilder(parser).apply(configuration).build()
 
-    fun delegate(configuration: DocumentBuilder.(String) -> MDocument?) = object : MPool {
-        override fun get(name: String): MDocument? = configuration(DocumentBuilder(parser), name)
+    fun delegate(configuration: DocumentFactory.(String) -> MDocument?) = object : MPool {
+        override fun get(name: String): MDocument? = configuration(DocumentFactory(parser), name)
     }
 
     fun merge(vararg pools: MPool) = merge(pools.toList())

@@ -43,7 +43,7 @@ sealed interface MContext {
      *
      * Example:
      * ```handlebars
-     * {{#greeting}} Hello {{Jon}} {{/greeting}}
+     * {{#greeting}} Hello {{ name }} {{/greeting}}
      * ```
      */
     fun interface Map : MContext {

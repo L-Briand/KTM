@@ -1,29 +1,65 @@
 package net.orandja.ktm.composition.builder
 
+import net.orandja.ktm.adapters.KtmAdapter
+import net.orandja.ktm.adapters.KtmMapAdapter
 import net.orandja.ktm.base.MContext
+import net.orandja.ktm.composition.builder.context.ContextMap
+import net.orandja.ktm.contextOf
+import net.orandja.ktm.get
+import net.orandja.ktm.getOrThrow
 
-class ContextMapBuilder : ContextFactory() {
+class ContextMapBuilder(
+    private val adapters: KtmAdapter.Provider
+) : ContextFactory(), KtmAdapter.Provider by adapters {
 
-    private val backing: MutableMap<String, MContext> = mutableMapOf()
-    fun build(): MContext = if (backing.isEmpty()) yes else ctxMap(backing)
+    private val backingContexts: MutableList<MContext.Map> = mutableListOf()
+
+    private fun getUpdatableContext(): ContextMap {
+        var lastCtx = backingContexts.lastOrNull()
+        if (lastCtx is ContextMap) return lastCtx
+        lastCtx = ContextMap(mutableMapOf())
+        backingContexts.add(lastCtx)
+        return lastCtx
+    }
+
+    fun build(): MContext = if (backingContexts.size == 1) backingContexts[0] else merge(backingContexts)
 
     infix fun String.by(value: CharSequence?) {
-        backing[this] = string(value)
+        getUpdatableContext().value[this] = string(value)
     }
 
     infix fun String.by(value: Boolean) {
-        backing[this] = if (value) yes else no
-    }
-
-    infix fun String.by(value: Iterable<String?>?) {
-        backing[this] = list(value)
-    }
-
-    infix fun String.by(value: Map<String, String?>?) {
-        backing[this] = map(value)
+        getUpdatableContext().value[this] = if (value) yes else no
     }
 
     infix fun String.by(value: MContext?) {
-        backing[this] = value ?: no
+        getUpdatableContext().value[this] = value ?: no
     }
+
+    fun associate(key: String, value: CharSequence?) {
+        getUpdatableContext().value[key] = string(value)
+    }
+
+    fun associate(key: String, value: Boolean?) {
+        getUpdatableContext().value[key] = bool(value)
+    }
+
+    fun associate(key: String, value: MContext) {
+        getUpdatableContext().value[key] = value
+    }
+
+    fun addBackingContext(context: MContext.Map) {
+        backingContexts.add(context)
+    }
+
+    inline fun <reified T> configureLike(value: T, adapter: KtmAdapter<T> = getOrThrow()) {
+        if (adapter is KtmMapAdapter<T>) with(adapter) { configure(value) }
+        else {
+            val backingMap = adapter.toMustacheContext(value)
+            if (backingMap is MContext.Map) addBackingContext(backingMap)
+        }
+    }
+
+    // default
+
 }

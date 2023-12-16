@@ -64,7 +64,7 @@ open class Renderer {
                 // inverted context
                 val shouldRenderInverted = when (newNode.current) {
                     MContext.No -> true
-                    is MContext.List -> ! newNode.current.iterator(newNode).hasNext()
+                    is MContext.List -> !newNode.current.iterator(newNode).hasNext()
                     is MContext.Map, is MContext.Value, MContext.Yes -> false
                     is MContext.Delegate -> error("unreachable")
                 }
@@ -93,7 +93,7 @@ open class Renderer {
             NodeContext.STOP
         }
         // Broken context in {{.}} should be considered falsey
-        if (! render && document.inverted) {
+        if (!render && document.inverted) {
             renderSectionItems(document, pool, node, writer)
         }
     }
@@ -205,7 +205,7 @@ open class Renderer {
                     start = idx + 1
                 }
             }
-            idx ++
+            idx++
         }
         if (start < idx) writer(cs.subSequence(start, idx))
     }

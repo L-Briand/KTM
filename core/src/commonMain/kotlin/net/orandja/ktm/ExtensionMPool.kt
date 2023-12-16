@@ -1,5 +1,6 @@
 package net.orandja.ktm
 
+import net.orandja.ktm.adapters.KtmAdapter
 import net.orandja.ktm.base.MContext
 import net.orandja.ktm.base.MPool
 import net.orandja.ktm.composition.builder.ContextMapBuilder
@@ -25,8 +26,9 @@ fun MPool.render(
  */
 inline fun MPool.render(
     name: String,
+    adapters: KtmAdapter.Provider = Ktm.adapters,
     builder: ContextMapBuilder.() -> Unit,
-) = get(name)?.render(Ktm.ctx.make { builder() }, this)
+) = get(name)?.render(Ktm.ctx.make(adapters) { builder() }, this)
 
 /**
  * Renders the associated mustache document with the provided context, using the provided writer function.

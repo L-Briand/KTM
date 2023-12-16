@@ -1,5 +1,6 @@
 package net.orandja.ktm
 
+import net.orandja.ktm.adapters.KtmAdapter
 import net.orandja.ktm.base.MContext
 import net.orandja.ktm.base.MDocument
 import net.orandja.ktm.base.MPool
@@ -39,8 +40,9 @@ fun CharSequence.render(
  */
 inline fun CharSequence.render(
     pool: MPool = MPool.Empty,
+    adapters: KtmAdapter.Provider = Ktm.adapters,
     builder: ContextMapBuilder.() -> Unit,
-) = toMustacheDocument().render(pool, builder)
+) = toMustacheDocument().render(pool, adapters, builder)
 
 /**
  * Renders the given `CharSequence` like a [MDocument] with the provided [MContext], [MPool], and [writer] function.

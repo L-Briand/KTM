@@ -116,7 +116,7 @@ open class NodeContext(
         // Now we search recursively
         val node = nodeOf(tag, tags.isFirst) ?: return CONTINUE
         // End of the branch we found a matching tag!
-        if (! tags.hasNext()) return onNew(node)
+        if (!tags.hasNext()) return onNew(node)
 
         // We search for the context in the branch
         when (node.current) {
@@ -154,6 +154,7 @@ open class NodeContext(
      * @param parent The parent NodeContext. Can be null.
      * @return The followed NodeContext.
      */
+    @Suppress("NOTHING_TO_INLINE")
     private inline fun followedNode(source: NodeContext, parent: NodeContext?): NodeContext {
         val follow = follow(source.current)
         if (follow == source) return source
@@ -166,6 +167,7 @@ open class NodeContext(
      * @param source The source MContext.
      * @return The followed MContext.
      */
+    @Suppress("NOTHING_TO_INLINE")
     private inline fun follow(source: MContext): MContext {
         if (source !is MContext.Delegate) return source
         var result = source
@@ -177,16 +179,16 @@ open class NodeContext(
      * Iterator going through tokens of a tag. It can go backward.
      */
     private class TagIterator(val tagTokens: Array<out String>) : Iterator<String> {
-        private var idx = - 1
+        private var idx = -1
         override fun hasNext(): Boolean = idx + 1 < tagTokens.size
-        override fun next(): String = tagTokens[++ idx]
-        fun previous() = idx --
+        override fun next(): String = tagTokens[++idx]
+        fun previous() = idx--
         val isFirst get() = idx == 0
 
         val concatenated
             get() = StringBuilder().apply {
                 var first = true
-                for (i in idx ..< tagTokens.size) {
+                for (i in idx..<tagTokens.size) {
                     if (first) first = false else append('.')
                     append(tagTokens[i])
                 }

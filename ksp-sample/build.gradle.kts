@@ -1,16 +1,97 @@
+import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
+
 plugins {
-    kotlin("jvm")
+    kotlin("multiplatform")
+    id("com.google.devtools.ksp")
 }
 
-group = property("group") as String
-version = "unused"
+fun findProperty(name: String): String? = if (hasProperty(name)) property(name) as String else System.getenv(name)
+fun findFilledProperty(name: String): String? = findProperty(name)?.ifBlank { null }
 
-val kotlin = property("version.kotlin") as String
+group = "${findProperty("group")!!}.ksp.sample"
+version = "no_version"
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
+kotlin {
+
+    // Default targets
+
+    jvm {
+        compilations {
+            all {
+                kotlinOptions { jvmTarget = "1.8" }
+                jvmToolchain(8)
+            }
+        }
+        testRuns.named("test") {
+            executionTask.configure { useJUnitPlatform() }
+        }
+    }
+
+    // web
+
+    js {
+        browser()
+        nodejs()
+    }
+
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs { d8() }
+    // wasmWasi { nodejs() }
+
+    // https://kotlinlang.org/docs/native-target-support.html
+
+    // Tier1
+
+    macosX64()
+    macosArm64()
+    iosSimulatorArm64()
+    iosX64()
+
+    // Tier2
+
+    linuxX64()
+    linuxArm64()
+    watchosSimulatorArm64()
+    watchosX64()
+    watchosArm32()
+    watchosArm64()
+    tvosSimulatorArm64()
+    tvosX64()
+    tvosArm64()
+    iosArm64()
+
+    // Tier3
+    androidNativeArm32()
+    androidNativeArm64()
+    androidNativeX86()
+    androidNativeX64()
+    mingwX64()
+    watchosDeviceArm64()
+
+    sourceSets {
+        getByName("commonMain") {
+            dependencies {
+                implementation(project(":core"))
+            }
+        }
+        getByName("jvmTest") {
+            dependencies {
+                implementation(kotlin("test"))
+            }
+        }
+    }
+}
+
 dependencies {
-    implementation("net.orandja.ktm:core:0.1.0")
+    add("ksp", project(":ksp"))
+    add("kspJvm", project(":ksp"))
+}
+
+ksp {
+    arg("ktm.automaticAdapters.package", "$group")
 }

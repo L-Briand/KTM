@@ -47,9 +47,9 @@ sealed interface MDocument {
         }
 
         override fun toString(): String = when (kind) {
-            Kind.R -> "${if (! render) "x" else ""}'\\r'"
-            Kind.N -> "${if (! render) "x" else ""}'\\n'"
-            Kind.RN -> "${if (! render) "x" else ""}'\\r\\n'"
+            Kind.R -> "${if (!render) "x" else ""}'\\r'"
+            Kind.N -> "${if (!render) "x" else ""}'\\n'"
+            Kind.RN -> "${if (!render) "x" else ""}'\\r\\n'"
         }
     }
 
@@ -64,7 +64,7 @@ sealed interface MDocument {
         val content: String,
         var render: Boolean = true,
     ) : MDocument {
-        override fun toString(): String = "${if (! render) "x" else ""}'$content'"
+        override fun toString(): String = "${if (!render) "x" else ""}'$content'"
         val isBlank = content.isBlank()
     }
 
@@ -107,7 +107,7 @@ sealed interface MDocument {
 
             other as Tag
 
-            if (! name.contentEquals(other.name)) return false
+            if (!name.contentEquals(other.name)) return false
             if (escapeHtml != other.escapeHtml) return false
 
             return true
@@ -150,9 +150,9 @@ sealed interface MDocument {
 
             other as Section
 
-            if (! name.contentEquals(other.name)) return false
+            if (!name.contentEquals(other.name)) return false
             if (inverted != other.inverted) return false
-            if (! parts.contentEquals(other.parts)) return false
+            if (!parts.contentEquals(other.parts)) return false
 
             return true
         }

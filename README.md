@@ -214,7 +214,7 @@ with `pool.render("document_key", context)`.
 
 # Deep dive
 
-- [Create documents](docs/create_documents.md)
-- **TODO** [Create contexts](docs/create_contexts.md)
-- **TODO** [Create partials](docs/create_partials.md)
-- **TODO** [Render to a stream](docs/render_to_stream.md)
+- [Create documents](docs/mdocs/create_documents.md)
+- **TODO** [Create contexts](docs/mdocs/create_contexts.md)
+- **TODO** [Create partials](docs/mdocs/create_partials.md)
+- **TODO** [Render to a stream](docs/mdocs/render_to_stream.md)

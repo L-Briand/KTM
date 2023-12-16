@@ -14,5 +14,7 @@ repositories {
 }
 
 dependencies {
+    implementation(project(":core"))
+    implementation("net.orandja.kt:either:1.2.0")
     implementation("com.google.devtools.ksp:symbol-processing-api:$kotlin-$ksp")
 }

@@ -15,7 +15,7 @@ class ParserLevel1 {
     ) {
         @Suppress("NOTHING_TO_INLINE")
         inline fun onNewLine(index: Int, documents: List<MDocument>) {
-            if (startingIndex == - 1) {
+            if (startingIndex == -1) {
                 startingIndex = index + 1
                 return
             }
@@ -23,7 +23,7 @@ class ParserLevel1 {
                 startingIndex = index + 1
                 return
             }
-            for (i in (startingIndex .. index)) {
+            for (i in (startingIndex..index)) {
                 if (i in documents.indices) documents[i].disable()
                 startingIndex = index + 1
             }
@@ -31,7 +31,7 @@ class ParserLevel1 {
 
         @Suppress("NOTHING_TO_INLINE")
         inline fun reset() {
-            startingIndex = - 1
+            startingIndex = -1
         }
     }
 
@@ -43,7 +43,7 @@ class ParserLevel1 {
             when (element) {
                 Comment, Delimiter, Empty -> Unit
                 is NewLine -> standalone.onNewLine(idx, documents)
-                is Static -> if (! element.isBlank) standalone.reset()
+                is Static -> if (!element.isBlank) standalone.reset()
                 is Section -> Unit
                 is MDocument.Tag -> standalone.reset()
                 is Partial -> {

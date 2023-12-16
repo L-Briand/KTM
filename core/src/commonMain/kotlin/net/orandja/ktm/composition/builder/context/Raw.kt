@@ -22,7 +22,7 @@ value class ContextList(val value: Iterable<MContext>) : MContext.List {
  * @property value The underlying map containing the context values.
  */
 @JvmInline
-value class ContextMap(val value: Map<String, MContext>) : MContext.Map {
+value class ContextMap(val value: MutableMap<String, MContext>) : MContext.Map {
     override fun get(node: NodeContext, tag: String): MContext? = value[tag]
     override fun toString(): String = "Map(${value.entries.joinToString { "${it.key}=${it.value}" }})"
 }

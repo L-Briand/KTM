@@ -6,18 +6,18 @@ import kotlin.jvm.JvmInline
 
 @JvmInline
 value class Delegated(
-    private val delegate: NodeContext.() -> MContext,
+    private val delegate: NodeContext.() -> MContext?,
 ) : MContext.Delegate {
-    override fun get(node: NodeContext): MContext = node.delegate()
+    override fun get(node: NodeContext): MContext = node.delegate() ?: MContext.No
     override fun toString(): String = "Delegated"
 }
 
 @JvmInline
-value class DelegatedString(
+value class DelegatedValue(
     private val delegate: NodeContext.() -> CharSequence,
 ) : MContext.Value {
     override fun get(node: NodeContext): CharSequence = node.delegate()
-    override fun toString(): String = "DelegatedString"
+    override fun toString(): String = "DelegatedValue"
 }
 
 @JvmInline
