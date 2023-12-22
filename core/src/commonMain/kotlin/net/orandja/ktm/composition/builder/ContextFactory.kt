@@ -4,12 +4,15 @@ import net.orandja.ktm.base.MContext
 import net.orandja.ktm.composition.NodeContext
 import net.orandja.ktm.composition.builder.context.*
 
+/**
+ * Helper class for creating different types of contexts used in Mustache templating.
+ */
 open class ContextFactory {
 
-    fun make(configuration: ContextMapBuilder.() -> Unit): MContext =
+    inline fun make(configuration: ContextMapBuilder.() -> Unit): MContext =
         ContextMapBuilder().apply(configuration).build()
 
-    fun makeList(configuration: ContextListBuilder.() -> Unit): MContext =
+    inline fun makeList(configuration: ContextListBuilder.() -> Unit): MContext =
         ContextListBuilder().apply(configuration).build()
 
     val no = MContext.No
