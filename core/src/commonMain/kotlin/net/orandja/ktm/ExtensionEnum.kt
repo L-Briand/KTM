@@ -48,12 +48,9 @@ inline fun <reified T : Enum<T>> T.EnumMustacheContext(
  *
  * ```kotlin
  * enum class Kind { A, B }
- * val adapters = ktm.adapter.make {
- *     + Kind.EnumKtmAdapter()
- * }
- * val context = adapters.contextOf(Kind.A)
- * val template = "{{#A}} A {{/A}{{#B}} B {{/B}}"
- * template.render(context) // A
+ * val adapter = Kind.EnumKtmAdapter()
+ * val context = adapter.toMustacheContext(Kind.A)
+ * "{{#A}} A {{/A}{{#B}} B {{/B}}".render(context) // A
  * ```
  *
  * @see EnumMustacheContext

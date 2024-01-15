@@ -7,15 +7,14 @@ package net.orandja.ktm.ksp
  * ```kotlin
  * @KtmContext
  * data class UserInfo(
- *     val firstname: String,
+ *     val firstName: String,
  *     val lastName: String,
  * ) {
  *     @KtmName("name")
  *     fun fullName() = "$firstName $lastName"
  * }
  * val context = UserInfo("John", "Doe").toMustacheContext()
- * val template = "Hello {{ name }}!"
- * template.render(context) // Hello John Doe!
+ * "Hello {{ name }}!".render(context) // Hello John Doe!
  * ```
  * @param name The name of the element (empty to keep field name)
  *

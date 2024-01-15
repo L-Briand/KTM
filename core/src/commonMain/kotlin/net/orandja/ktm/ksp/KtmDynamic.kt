@@ -13,8 +13,6 @@ package net.orandja.ktm.ksp
  *     var baz: String
  * )
  *
- *
- *
  * val context = Data("a", "b", "c")
  * val template = "{{ foo }} - {{ bar }} - {{ baz }}"
  * template.render(context) // a - b - c
@@ -22,7 +20,6 @@ package net.orandja.ktm.ksp
  * template.render(context) // 1 - b - c
  * ```
  *
- * @property dynamic Set to `true` if the element is considered dynamic, `false` otherwise.
  * @see KtmContext
  * @see KtmName
  */

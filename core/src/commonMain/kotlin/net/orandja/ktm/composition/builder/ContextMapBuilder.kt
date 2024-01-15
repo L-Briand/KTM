@@ -8,6 +8,11 @@ import net.orandja.ktm.contextOf
 import net.orandja.ktm.get
 import net.orandja.ktm.getOrThrow
 
+/**
+ * Builder class for creating a contextual map used in Mustache rendering.
+ *
+ * @property adapters The provider of KtmAdapter instances.
+ */
 class ContextMapBuilder(
     private val adapters: KtmAdapter.Provider
 ) : ContextFactory(), KtmAdapter.Provider by adapters {

@@ -3,7 +3,6 @@ package net.orandja.ktm.ksp.sample
 import net.orandja.ktm.Ktm
 import net.orandja.ktm.adapters.KtmMapAdapter
 import net.orandja.ktm.base.MContext
-import net.orandja.ktm.composition.builder.ContextMapBuilder
 import net.orandja.ktm.makeKtmAdapterModule
 import net.orandja.ktm.render
 import net.orandja.ktm.toMustacheContext
@@ -11,16 +10,14 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 class AutoKtmAdaptersTest {
-    class Foo(val foo: String) {
-        object Adapter : KtmMapAdapter<Foo> {
-            override fun ContextMapBuilder.configure(value: Foo) {
-                "foo" by value.foo
-            }
-        }
+    class Foo(val foo: String)
+
+    private val FooAdapter = KtmMapAdapter<Foo> {
+        "foo" by it.foo
     }
 
     val customModule = makeKtmAdapterModule {
-        +Foo.Adapter
+        +FooAdapter
     }
 
     @Test

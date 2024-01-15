@@ -6,7 +6,7 @@ import net.orandja.ktm.composition.builder.ContextMapBuilder
 import kotlin.reflect.KType
 
 /**
- * An interface that can be used to convert [T] to a [MContext].
+ * An interface that can be used to convert [T] types to a [MContext].
  *
  * ```kotlin
  * val stringAsList = KtmAdapter<String> { _, value ->
@@ -35,14 +35,16 @@ fun interface KtmAdapter<T : Any?> {
  * ```kotlin
  * data class User(val name: String)
  *
- * val adapters = ktm.adapter.make {
- *     + KtmMapAdapter<User> { value -> "name" by value.name }
+ * val userAdapter = KtmMapAdapter<User> { value ->
+ *     // 'this' is the same as Ktm.ctx.make { ... }
+ *     "name" by value.name
  * }
  *
- * val context = adapters.contextOf(User("John"))
- * // val context = User("John").toMustacheContext(adapters)
+ * val context = adapter.toMustacheContext(User("John"))
  * "Hello {{ name }}".render(context) // Hello John
  * ```
+ *
+ * @see ContextMapBuilder
  * @see KtmAdapter
  */
 fun interface KtmMapAdapter<T> : KtmAdapter<T> {

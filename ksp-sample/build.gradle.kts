@@ -1,3 +1,4 @@
+import com.google.devtools.ksp.gradle.KspExtension
 import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 
 plugins {
@@ -92,6 +93,8 @@ dependencies {
     add("kspJvm", project(":ksp"))
 }
 
+val packageName = "$group"
+
 ksp {
-    arg("ktm.automaticAdapters.package", "$group")
+    arg("ktm.automaticAdapters.package", packageName)
 }

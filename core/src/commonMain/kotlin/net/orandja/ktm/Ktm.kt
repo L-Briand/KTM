@@ -1,10 +1,5 @@
 package net.orandja.ktm
 
-import net.orandja.ktm.Ktm.ctx
-import net.orandja.ktm.Ktm.doc
-import net.orandja.ktm.Ktm.parser
-import net.orandja.ktm.Ktm.pool
-import net.orandja.ktm.Ktm.renderer
 import net.orandja.ktm.adapters.BaseKtmAdapterProvider
 import net.orandja.ktm.adapters.KtmAdapterModule
 import net.orandja.ktm.composition.builder.ContextFactory
@@ -15,14 +10,7 @@ import net.orandja.ktm.composition.render.Renderer
 import kotlin.jvm.JvmStatic
 
 /**
- * Ktm is a utility class that provides access to various components related to Mustache templating.
- *
- * @property parser
- * @property renderer .
- * @property ctx .
- * @property doc .
- * @property pool Factory for creating partials used in mustache templates.
- * @property adapters Provider for getting contexts given a type
+ * Ktm is a utility class that provides access to various components.
  */
 object Ktm {
 
@@ -58,11 +46,14 @@ object Ktm {
 
     /**
      * Provider for getting Contexts adapter
+     *
+     * @see BaseKtmAdapterProvider
      */
     @JvmStatic
     var adapters = BaseKtmAdapterProvider()
 
 
+    // TODO: Documentation
     fun setDefaultAdapters(vararg modules: KtmAdapterModule) {
         adapters = adapters.make {
             for (module in modules) with(module) { configure() }

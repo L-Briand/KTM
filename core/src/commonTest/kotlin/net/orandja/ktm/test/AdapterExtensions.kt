@@ -38,9 +38,10 @@ class AdapterExtensions {
     }
 
     @Test
+    @Suppress("UNCHECKED_CAST")
     fun getAdapterFromType() {
         assertEquals(Foo.Adapter, adapters.get<Foo>())
-        assertTrue { (adapters.get<ExtendedFoo>() as DelegatedKtmAdapter<ExtendedFoo, Foo>) != null }
+        assertTrue { (adapters.get<ExtendedFoo>() as? DelegatedKtmAdapter<ExtendedFoo, Foo>) != null }
         val name = EnumKtmAdapter<EnumVariants>().toString()
         assertEquals(name, adapters.get<EnumVariants>().toString())
         assertEquals(MergedKtmAdapter, adapters.get<Merged>())
