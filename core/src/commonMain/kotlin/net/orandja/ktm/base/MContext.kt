@@ -4,7 +4,7 @@ import net.orandja.ktm.composition.NodeContext
 
 /**
  * Contextual part a mustache document.
- * Combine with [MDocument], you can render a document.
+ * Combined with [MDocument], you can render a document.
  */
 sealed interface MContext {
 

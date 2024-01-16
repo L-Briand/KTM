@@ -40,6 +40,7 @@ class NormalCaseTest {
         assertEquals("id", "{{ lambda }}".render(context))
         assertEquals("id", "{{ getIdFunction }}".render(context))
         assertEquals("id", "{{ getIdLambda }}".render(context))
+        assertEquals("id", "{{ lambdaNotTyped }}".render(context))
         assertEquals("secret", "{{ paramContextFunction }}".render(richContext))
         assertEquals("secret", "{{ paramContextLambda }}".render(richContext))
         assertEquals("secret", "{{ receiverContextFunction }}".render(richContext))

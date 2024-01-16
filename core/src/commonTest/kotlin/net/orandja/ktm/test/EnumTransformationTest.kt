@@ -1,15 +1,13 @@
 package net.orandja.ktm.test
 
 import net.orandja.ktm.Ktm
-import net.orandja.ktm.adapters.KtmAdapter
 import net.orandja.ktm.adapters.KtmMapAdapter
-import net.orandja.ktm.get
 import net.orandja.ktm.render
 import net.orandja.ktm.toMustacheContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class EnumTest {
+class EnumTransformationTest {
     enum class EnumVariants {
         FOO, BAR, BAZ;
     }

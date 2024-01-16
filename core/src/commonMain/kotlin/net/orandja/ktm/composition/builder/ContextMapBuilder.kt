@@ -41,6 +41,10 @@ class ContextMapBuilder(
         getUpdatableContext().value[this] = value ?: no
     }
 
+    inline infix fun <reified T> String.by(value: T) {
+        by(if(null is T) no else contextOf(value))
+    }
+
     fun associate(key: String, value: CharSequence?) {
         getUpdatableContext().value[key] = string(value)
     }

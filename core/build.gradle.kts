@@ -1,4 +1,8 @@
+import kotlinx.benchmark.gradle.JsBenchmarkTarget
+import kotlinx.benchmark.gradle.JsBenchmarksExecutor
+import kotlinx.benchmark.gradle.JvmBenchmarkTarget
 import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask
 
 plugins {
     kotlin("multiplatform")
@@ -26,15 +30,14 @@ kotlin {
     // Default targets
 
     jvm {
-        compilations {
-            all {
-                kotlinOptions { jvmTarget = "1.8" }
-                jvmToolchain(8)
-            }
-            create("benchmarks") {
-                associateWith(getByName("main"))
-            }
+        compilations.all {
+            kotlinOptions { jvmTarget = "1.8" }
+            jvmToolchain(8)
         }
+        compilations.create("benchmarks") {
+            associateWith(compilations.getByName("main"))
+        }
+
         withJava()
         withSourcesJar(true)
         testRuns.named("test") {
@@ -44,7 +47,7 @@ kotlin {
 
     // web
 
-    js {
+    js(IR) {
         browser()
         nodejs()
     }
@@ -93,9 +96,13 @@ kotlin {
         }
         getByName("jvmBenchmarks") {
             dependencies {
+                val serialization = property("version.serialization")
                 val benchmark = property("version.benchmark")
+                val jmh = property("version.jmh")
+                implementation("org.openjdk.jmh:jmh-core:$jmh")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serialization")
                 implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:$benchmark")
-                implementation("org.openjdk.jmh:jmh-core:1.21")
+                implementation("com.github.spullara.mustache.java:compiler:0.9.10")
             }
         }
     }
@@ -103,12 +110,14 @@ kotlin {
 
 // This is required for benchmark to work
 allOpen {
-    this.annotation("org.openjdk.jmh.annotations.State")
+    annotation("org.openjdk.jmh.annotations.State")
 }
 
 benchmark {
     targets {
-        register("jvmBenchmarks")
+        register("jvmBenchmarks") {
+            (this as JvmBenchmarkTarget).jmhVersion = property("version.jmh") as String
+        }
     }
 
     configurations.getByName("main") {
@@ -130,9 +139,6 @@ benchmark {
 val ossrhUsername = findFilledProperty("osshr.username")
 val ossrhPassword = findFilledProperty("osshr.password")
 val ossrhMavenEnabled = ossrhUsername != null && ossrhPassword != null
-val isSigningEnabled = findFilledProperty("signing.keyId") != null &&
-        findFilledProperty("signing.password") != null &&
-        findFilledProperty("signing.secretKeyRingFile") != null
 
 publishing {
     publications.withType<MavenPublication> {
@@ -181,6 +187,11 @@ publishing {
         }
     }
 }
+
+val signingKeyId = findFilledProperty("signing.keyId")
+val signingPassword = findFilledProperty("signing.password")
+val signingSecretKeyRingFile = findFilledProperty("signing.secretKeyRingFile")
+val isSigningEnabled = signingKeyId != null && signingPassword != null && signingSecretKeyRingFile != null
 
 if (isSigningEnabled) {
     signing {

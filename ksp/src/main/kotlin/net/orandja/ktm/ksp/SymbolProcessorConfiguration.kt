@@ -8,8 +8,8 @@ data class SymbolProcessorConfiguration(
     val packageName: String?,
 ) {
     companion object {
-        private const val OPTION_ALLOW_INTERNAL_CLASS = "ktm.allowInternalClass"
-        private const val OPTION_PACKAGE_NAME = "ktm.automaticAdapters.package"
+        const val OPTION_ALLOW_INTERNAL_CLASS = "ktm.allow_internal_class"
+        const val OPTION_PACKAGE_NAME = "ktm.auto_adapters_package"
 
         fun fromEnvironment(env: SymbolProcessorEnvironment) = SymbolProcessorConfiguration(
             allowInternalClass = env.options[OPTION_ALLOW_INTERNAL_CLASS]?.toBooleanStrictOrNull() ?: false,

@@ -8,6 +8,7 @@ import net.orandja.either.Left
 import net.orandja.either.Right
 import net.orandja.either.requireLeft
 import net.orandja.ktm.ksp.KtmLogger
+import net.orandja.ktm.ksp.SymbolProcessorConfiguration.Companion.OPTION_ALLOW_INTERNAL_CLASS
 import net.orandja.ktm.ksp.generation.AdapterToken.*
 import net.orandja.ktm.ksp.visitor.VisitorResult.*
 
@@ -65,7 +66,8 @@ class TokenBuilderVisitor(private val ktmLogger: KtmLogger) :
         val internalOk = isInternal() && configuration.allowInternalClass
         if (!isPublic && !internalOk) {
             return Failure(
-                "@KtmContext should only be applied on public classes. To allow internal class set ksp configuration `ktm.allowInternalClass` to `true`",
+                "@KtmContext should only be applied on public classes. " +
+                        "To allow internal class set ksp configuration `$OPTION_ALLOW_INTERNAL_CLASS` to `true`",
                 this,
             )
         }
@@ -128,32 +130,42 @@ class TokenBuilderVisitor(private val ktmLogger: KtmLogger) :
         return FieldToken(token, property)
     }
 
-    // To get the Type
+    // To get the type of property
     override fun visitTypeReference(typeReference: KSTypeReference, data: Options): VisitorResult {
         super.visitTypeReference(typeReference, data)
 
         val element = typeReference.element
 
-        return if (element == null) {
-            val reference = typeReference.resolve()
-            if (reference.isFunctionType) {
-                if (reference.arguments.size > 1) return Empty
+        if (element != null) return element.accept(this, data)
 
-                var isNodeParameter = false
+        // When 'element' is 'null', it means the type is not specified (val value = 3)
+        // There is no choice than to resolve the type
+        val reference = typeReference.resolve()
 
-                // Check for NodeContext on the first parameter of the function
-                if (reference.arguments.isNotEmpty()) {
-                    val typeParameter = reference.arguments[0].type?.accept(this, data)
-                    if (typeParameter !is Classifier) return Empty
-                    isNodeParameter = typeParameter.name == "NodeContext"
-                }
+        // Not a lambda, return type name as is
+        if (!reference.isFunctionType) return Classifier(reference.toString(), typeReference)
 
-                // isFunction false because it's a type reference
-                Callable(false, isNodeParameter, false, typeReference)
-            } else {
-                Classifier(reference.toString(), typeReference)
-            }
-        } else element.accept(this, data)
+        // 1 argument callable is return type
+        if (reference.arguments.size == 1)
+            return Callable(false, false, false, typeReference)
+
+        // Like visitCallableReference check for first argument being a NodeContext
+        // For callable `NodeContext.() -> T` is the same as `(NodeContext) -> T`
+        // If there is more argument, don't handle it
+        if (reference.arguments.size > 2) return Empty
+
+        var isNodeParameter = false
+
+        // Check for NodeContext on the first parameter of the function
+        if (reference.arguments.isNotEmpty()) {
+            val typeParameter = reference.arguments[0].type?.accept(this, data)
+            if (typeParameter !is Classifier) return Empty
+            isNodeParameter = typeParameter.name == "NodeContext"
+            if (!isNodeParameter) return Empty
+        }
+
+        // isFunction false because it's a type reference
+        return Callable(false, isNodeParameter, false, typeReference)
     }
 
     /** Called when [visitTypeReference] encounters a [KSClassifierReference]. */
@@ -259,12 +271,12 @@ class TokenBuilderVisitor(private val ktmLogger: KtmLogger) :
         return FieldToken(token, function)
     }
 
-    private fun Sequence<KSAnnotation>.isKtmDynamic(data: Options) = this.find {
+    private fun Sequence<KSAnnotation>.isKtmDynamic(data: Options) = find {
         val classifier = it.annotationType.accept(this@TokenBuilderVisitor, data)
         classifier is Classifier && classifier.name == "KtmDynamic"
     } != null
 
-    private fun Sequence<KSAnnotation>.isKtmIgnore(data: Options) = this.find {
+    private fun Sequence<KSAnnotation>.isKtmIgnore(data: Options) = find {
         val classifier = it.annotationType.accept(this@TokenBuilderVisitor, data)
         classifier is Classifier && classifier.name == "KtmIgnore"
     } != null
