@@ -1,6 +1,1 @@
-{
-  "name": "Chris",
-  "value": 10000,
-  "taxed_value": 6000,
-  "in_ca": true
-}
+{"name":"Devon","value":100000,"rate":68,"is_taxed":true}

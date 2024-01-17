@@ -6,9 +6,9 @@ import java.io.Reader
 class ReaderCharStream(
     private val reader: Reader
 ) : CharStream {
-    override fun read(): Char? {
+    override fun read(): Char {
         val result = reader.read()
-        return if (result == -1) null
+        return if (result == -1) Char.MAX_VALUE
         else result.toChar()
     }
 }

@@ -129,8 +129,7 @@ benchmark {
     configurations.register("smoke") {
         warmups = 5
         iterations = 3
-        iterationTime = 500
-        iterationTimeUnit = "ms"
+        iterationTime = 1
     }
 }
 

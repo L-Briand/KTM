@@ -18,7 +18,7 @@ object Ktm {
      * The main Mustache document parser.
      */
     @JvmStatic
-    val parser = Parser()
+    val parser = Parser
 
     /**
      * Provides methods for rendering Mustache templates.

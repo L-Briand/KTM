@@ -74,7 +74,6 @@ open class NodeContext(
         return result
     }
 
-
     /**
      * Iterates over [tags] which should be a list of all the tag components (use [tokenizeTagName]).
      * Given "my.special.tag", It first searches for the "my" context, then "special" context inside it, then "tag".
@@ -88,14 +87,19 @@ open class NodeContext(
     fun collect(
         tags: Array<out String>,
         onNew: (NodeContext) -> Boolean,
-    ): Boolean {
-        if (tags.isEmpty()) return onNew(followedNode(this, parent))
-
+    ): Boolean = when (tags.size) {
+        0 -> {
+            val follow = follow(current)
+            if (follow == this) onNew(this)
+            else onNew(NodeContext(follow, parent))
+        }
         // No need to iterate on a single element.
-        if (tags.size == 1) return onNew(nodeOf(tags[0], true) ?: return CONTINUE)
-
+        1 -> {
+            val node = nodeOf(tags[0], true)
+            if (node == null) CONTINUE else onNew(node)
+        }
         // Try to collect recursively given the tag tokens
-        return collectMultiContext(TagIterator(tags), onNew)
+        else -> collectMultiContext(TagIterator(tags), onNew)
     }
 
     /**
@@ -111,10 +115,10 @@ open class NodeContext(
     ): Boolean {
         val tag = tags.next()
         // try to find the "tag.name" instead of "tag" then "name" inside.
-        if (nodeOf(tags.concatenated, tags.isFirst)?.let(onNew) == STOP) return STOP
+        if (nodeOf(tags.concatenated, tags.idx == 0)?.let(onNew) == STOP) return STOP
 
         // Now we search recursively
-        val node = nodeOf(tag, tags.isFirst) ?: return CONTINUE
+        val node = nodeOf(tag, tags.idx == 0) ?: return CONTINUE
         // End of the branch we found a matching tag!
         if (!tags.hasNext()) return onNew(node)
 
@@ -143,22 +147,8 @@ open class NodeContext(
      */
     private fun nodeOf(tag: String, checkOnParent: Boolean): NodeContext? {
         val result = (current as? MContext.Map)?.get(this, tag)
-        if (result != null) return NodeContext(follow(result), this)
-        return if (checkOnParent) parent?.nodeOf(tag, true) else null
-    }
-
-    /**
-     * Follows the [source] context if the [current] context is a [MContext.Delegate].
-     *
-     * @param source The source MContext.
-     * @param parent The parent NodeContext. Can be null.
-     * @return The followed NodeContext.
-     */
-    @Suppress("NOTHING_TO_INLINE")
-    private inline fun followedNode(source: NodeContext, parent: NodeContext?): NodeContext {
-        val follow = follow(source.current)
-        if (follow == source) return source
-        return NodeContext(follow, parent)
+        return if (result != null) NodeContext(follow(result), this)
+        else if (checkOnParent) parent?.nodeOf(tag, true) else null
     }
 
     /**
@@ -168,31 +158,28 @@ open class NodeContext(
      * @return The followed MContext.
      */
     @Suppress("NOTHING_TO_INLINE")
-    private inline fun follow(source: MContext): MContext {
-        if (source !is MContext.Delegate) return source
-        var result = source
-        while (result is MContext.Delegate) result = result.get(this)
-        return result
-    }
+    private fun follow(source: MContext): MContext =
+        if (source !is MContext.Delegate) source
+        else follow(source.get(this))
 
     /**
      * Iterator going through tokens of a tag. It can go backward.
      */
     private class TagIterator(val tagTokens: Array<out String>) : Iterator<String> {
-        private var idx = -1
+        var idx = -1
         override fun hasNext(): Boolean = idx + 1 < tagTokens.size
         override fun next(): String = tagTokens[++idx]
-        fun previous() = idx--
-        val isFirst get() = idx == 0
+        inline fun previous() = idx--
 
         val concatenated
-            get() = StringBuilder().apply {
-                var first = true
+            get() = if (idx == tagTokens.size - 1) tagTokens[idx]
+            else buildString {
                 for (i in idx..<tagTokens.size) {
-                    if (first) first = false else append('.')
                     append(tagTokens[i])
+                    append('.')
                 }
-            }.toString()
+                deleteAt(length - 1)
+            }
     }
 
     override fun toString(): String = if (parent == null) "Node($current)"

@@ -5,53 +5,6 @@ package net.orandja.ktm.base
  * Combined with [MContext], you can render a document.
  */
 sealed interface MDocument {
-    // Used for parsing purpose
-    // TODO : Do not use and Remove
-    data object Empty : MDocument
-
-    /**
-     * Comment in the document. This should not render but affect rendering.
-     *
-     * Rendering can change depending on where a comment occurs.
-     * For example, a standalone comment tag in a line will remove the entire line.
-     */
-    data object Comment : MDocument {
-        override fun toString(): String = "'!'"
-    }
-
-    /**
-     * Same as [Comment]
-     */
-    data object Delimiter : MDocument {
-        override fun toString(): String = "'='"
-    }
-
-    /**
-     * New line in the document.
-     *
-     * Rendering can change depending on where a new line occurs.
-     * Standalone tags which do not render can remove new lines.
-     * @param kind New line can be represented differently depending on which system you are.
-     * @param render Mustache documents can have new lines which are not rendered due to
-     *               their placement and applied rules.
-     * @param last Special case when a new line at the end in a partial render occurs.
-     *             The new line should not have any indentation after
-     */
-    data class NewLine(
-        val kind: Kind,
-        var render: Boolean = true,
-        var last: Boolean = false,
-    ) : MDocument {
-        enum class Kind(val representation: String) {
-            R("\r"), N("\n"), RN("\r\n"),
-        }
-
-        override fun toString(): String = when (kind) {
-            Kind.R -> "${if (!render) "x" else ""}'\\r'"
-            Kind.N -> "${if (!render) "x" else ""}'\\n'"
-            Kind.RN -> "${if (!render) "x" else ""}'\\r\\n'"
-        }
-    }
 
     /**
      * Static part of the document to render as is.
@@ -61,11 +14,13 @@ sealed interface MDocument {
      *               their placement and applied rules.
      */
     data class Static(
-        val content: String,
-        var render: Boolean = true,
+        val content: StringBuilder = StringBuilder(),
+        var sectionLast: Boolean = false,
     ) : MDocument {
-        override fun toString(): String = "${if (!render) "x" else ""}'$content'"
-        val isBlank = content.isBlank()
+        override fun toString(): String = buildString {
+            append('\'').append(content).append('\'')
+            if (sectionLast) append("~")
+        }
     }
 
     /**
@@ -74,10 +29,10 @@ sealed interface MDocument {
      * @param name Name of the partial tag.
      */
     data class Partial(
-        val name: String,
-        var spaces: String? = null,
+        val name: CharSequence,
+        var padding: CharSequence,
     ) : MDocument {
-        override fun toString(): String = ">$name"
+        override fun toString(): String = ">$name[${padding.length}]"
     }
 
 
@@ -99,7 +54,7 @@ sealed interface MDocument {
 
         val realName get() = name.joinToString(".") { it }.ifEmpty { "." }
 
-        override fun toString(): String = "<${if (escapeHtml) "" else "&"}$realName>"
+        override fun toString(): String = "{{${if (escapeHtml) "" else "&"}$realName}}"
 
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -133,26 +88,26 @@ sealed interface MDocument {
     data class Section(
         val name: Array<String>,
         val inverted: Boolean,
-        val parts: Array<MDocument>,
+        val parts: ArrayList<MDocument> = ArrayList(10),
     ) : MDocument {
 
         private val realName get() = name.joinToString(".") { it }.ifEmpty { "root" }
 
         override fun toString(): String {
             val invertedStr = if (inverted) "^" else ""
-            val parts = parts.joinToString(", ", ", [", "]") { it.toString() }
-            return "{$invertedStr$realName$parts}"
+            val parts = parts.joinToString(", ", "(", ")") {
+                it.toString().replace("\n", "\\n").replace("\r", "\\r")
+            }
+            return "$invertedStr$realName$parts"
         }
 
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
-            if (other == null || this::class != other::class) return false
-
-            other as Section
+            if (other !is Section) return false
 
             if (!name.contentEquals(other.name)) return false
             if (inverted != other.inverted) return false
-            if (!parts.contentEquals(other.parts)) return false
+            if (parts != other.parts) return false
 
             return true
         }
@@ -160,7 +115,7 @@ sealed interface MDocument {
         override fun hashCode(): Int {
             var result = name.contentHashCode()
             result = 31 * result + inverted.hashCode()
-            result = 31 * result + parts.contentHashCode()
+            result = 31 * result + parts.hashCode()
             return result
         }
     }

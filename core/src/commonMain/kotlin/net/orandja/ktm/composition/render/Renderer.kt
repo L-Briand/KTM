@@ -1,8 +1,9 @@
+@file:Suppress("ReplaceSizeZeroCheckWithIsEmpty")
+
 package net.orandja.ktm.composition.render
 
 import net.orandja.ktm.base.MContext
 import net.orandja.ktm.base.MDocument
-import net.orandja.ktm.base.MDocument.NewLine
 import net.orandja.ktm.base.MPool
 import net.orandja.ktm.composition.NodeContext
 
@@ -43,8 +44,6 @@ open class Renderer {
         pool: MPool,
         writer: (CharSequence) -> Unit,
     ) = when (document) {
-        MDocument.Empty, MDocument.Comment, MDocument.Delimiter -> Unit
-        is NewLine -> renderNewLine(document, writer)
         is MDocument.Static -> renderStatic(document, writer)
         is MDocument.Partial -> renderPartial(document, context, pool, writer)
         is MDocument.Tag -> renderTag(document, context, writer)
@@ -53,109 +52,117 @@ open class Renderer {
 
     // region section
 
-    private inline fun renderSection(
+    protected open fun renderSection(
         document: MDocument.Section,
         node: NodeContext,
         pool: MPool,
-        noinline writer: (CharSequence) -> Unit,
+        writer: (CharSequence) -> Unit,
     ) {
         val render = node.collect(document.name) { newNode ->
             if (document.inverted) {
-                // inverted context
-                val shouldRenderInverted = when (newNode.current) {
-                    MContext.No -> true
-                    is MContext.List -> !newNode.current.iterator(newNode).hasNext()
-                    is MContext.Map, is MContext.Value, MContext.Yes -> false
-                    is MContext.Delegate -> error("unreachable")
+                if (newNode.current is MContext.List && !newNode.current.iterator(newNode)
+                        .hasNext() || newNode.current == MContext.No
+                ) {
+                    for (part in document.parts) render(part, node, pool, writer)
                 }
-                if (shouldRenderInverted) {
-                    renderSectionItems(document, pool, NodeContext(newNode.current, node), writer)
-                }
+                NodeContext.STOP
             } else {
-                // Not inverted context
                 when (newNode.current) {
-                    is MContext.Map -> {
-                        val nextNode = if (node == newNode) newNode else NodeContext(newNode.current, node)
-                        renderSectionItems(document, pool, nextNode, writer)
+                    is MContext.Value, MContext.Yes -> {
+                        for (part in document.parts) render(part, newNode, pool, writer)
                     }
 
-                    is MContext.Value, MContext.Yes -> renderSectionItems(document, pool, newNode, writer)
+                    is MContext.Map -> {
+                        val nextNode = if (node == newNode) newNode else NodeContext(newNode.current, node)
+                        for (part in document.parts) render(part, nextNode, pool, writer)
+                    }
+
                     is MContext.List -> {
                         for (ctx in newNode.current.iterator(newNode)) {
-                            renderSectionItems(document, pool, NodeContext(ctx, newNode), writer)
+                            for (part in document.parts) render(part, NodeContext(ctx, newNode), pool, writer)
                         }
                     }
 
-                    MContext.No -> Unit
-                    is MContext.Delegate -> error("unreachable")
+                    else -> {}
                 }
+                NodeContext.STOP
             }
-            NodeContext.STOP
         }
-        // Broken context in {{.}} should be considered falsey
         if (!render && document.inverted) {
-            renderSectionItems(document, pool, node, writer)
+            for (part in document.parts) render(part, node, pool, writer)
         }
-    }
-
-    private inline fun renderSectionItems(
-        document: MDocument.Section,
-        pool: MPool,
-        node: NodeContext,
-        noinline writer: (CharSequence) -> Unit,
-    ) {
-        for (part in document.parts) render(part, node, pool, writer)
     }
 
     // endregion
 
     // region tag
 
-    private inline fun renderTag(
+    protected open fun renderTag(
         document: MDocument.Tag,
         node: NodeContext,
-        noinline writer: (CharSequence) -> Unit,
+        writer: (CharSequence) -> Unit,
     ) {
-        if (document.escapeHtml) {
-            value(document, node) { escape(it, writer) }
-        } else {
-            value(document, node, writer)
-        }
+        if (document.escapeHtml) value(document, node) { escape(it, writer) }
+        else value(document, node, writer)
     }
 
-    private inline fun value(
+    protected open fun value(
         document: MDocument.Tag,
         node: NodeContext,
-        noinline writer: (CharSequence) -> Unit,
+        writer: (CharSequence) -> Unit,
     ) {
         node.collect(document.name) { newNode ->
-            when (newNode.current) {
-                is MContext.List -> {
-                    iterate(newNode.current, newNode) {
-                        if (it is MContext.Value) writer(it.get(newNode))
-                    }
-                    NodeContext.STOP
-                }
+            if(newNode.current is MContext.Value) {
+                writer(newNode.current.get(newNode))
+                NodeContext.STOP
+            } else NodeContext.CONTINUE
+        }
+    }
+    // endregion
 
-                is MContext.Value -> {
-                    writer(newNode.current.get(newNode))
-                    NodeContext.STOP
-                }
+    // region others
 
-                is MContext.Map, MContext.No, MContext.Yes -> {
-                    NodeContext.CONTINUE
-                }
-
-                is MContext.Delegate -> error("unreachable")
-            }
+    protected open fun renderPartial(
+        document: MDocument.Partial,
+        context: NodeContext,
+        pool: MPool,
+        writer: (CharSequence) -> Unit,
+    ) {
+        val partDocument = pool[document.name.toString()] ?: return
+        val spaces = document.padding
+        if (spaces.length == 0) {
+            render(partDocument, context, pool, writer)
+            return
+        } else {
+            writer(spaces)
+            PartialRenderer(spaces).render(partDocument, context, pool, writer)
         }
     }
 
-    private fun iterate(context: MContext.List, node: NodeContext, item: (MContext) -> Unit) {
-        for (ctx in context.iterator(node)) {
-            if (ctx is MContext.List) iterate(ctx, NodeContext(ctx, node), item)
-            else item(ctx)
-        }
+    protected open fun renderStatic(
+        document: MDocument.Static,
+        writer: (CharSequence) -> Unit,
+    ) = writer(document.content)
+
+    // endregion
+
+
+    companion object {
+        private const val AMP = '&'
+        private const val LT = '<'
+        private const val GT = '>'
+        private const val D_QUOT = '"'
+        private const val S_QUOT = '\''
+        private const val B_QUOT = '`'
+        private const val EQUAL = '='
+
+        private const val AMP_REPLACE = "&amp;"
+        private const val LT_REPLACE = "&lt;"
+        private const val GT_REPLACE = "&gt;"
+        private const val D_QUOT_REPLACE = "&quot;"
+        private const val S_QUOT_REPLACE = "&#x27;"
+        private const val B_QUOT_REPLACE = "&#x60;"
+        private const val EQUAL_REPLACE = "&#x3D;"
     }
 
     private inline fun escape(cs: CharSequence, writer: (CharSequence) -> Unit) {
@@ -163,45 +170,45 @@ open class Renderer {
         var idx = 0
         while (idx < cs.length) {
             when (cs[idx]) {
-                '&' -> {
+                AMP -> {
                     if (start < idx) writer(cs.subSequence(start, idx))
-                    writer("&amp;")
+                    writer(AMP_REPLACE)
                     start = idx + 1
                 }
 
-                '<' -> {
+                LT -> {
                     if (start < idx) writer(cs.subSequence(start, idx))
-                    writer("&lt;")
+                    writer(LT_REPLACE)
                     start = idx + 1
                 }
 
-                '>' -> {
+                GT -> {
                     if (start < idx) writer(cs.subSequence(start, idx))
-                    writer("&gt;")
+                    writer(GT_REPLACE)
                     start = idx + 1
                 }
 
-                '"' -> {
+                D_QUOT -> {
                     if (start < idx) writer(cs.subSequence(start, idx))
-                    writer("&quot;")
+                    writer(D_QUOT_REPLACE)
                     start = idx + 1
                 }
 
-                '\'' -> {
+                S_QUOT -> {
                     if (start < idx) writer(cs.subSequence(start, idx))
-                    writer("&#x27;")
+                    writer(S_QUOT_REPLACE)
                     start = idx + 1
                 }
 
-                '`' -> {
+                B_QUOT -> {
                     if (start < idx) writer(cs.subSequence(start, idx))
-                    writer("&#x60;")
+                    writer(B_QUOT_REPLACE)
                     start = idx + 1
                 }
 
-                '=' -> {
+                EQUAL -> {
                     if (start < idx) writer(cs.subSequence(start, idx))
-                    writer("&#x3D;")
+                    writer(EQUAL_REPLACE)
                     start = idx + 1
                 }
             }
@@ -210,40 +217,4 @@ open class Renderer {
         if (start < idx) writer(cs.subSequence(start, idx))
     }
 
-    // endregion
-
-    // region others
-
-    private inline fun renderPartial(
-        document: MDocument.Partial,
-        context: NodeContext,
-        pool: MPool,
-        noinline writer: (CharSequence) -> Unit,
-    ) {
-        val partDocument = pool[document.name] ?: return
-        val spaces = document.spaces
-        if (spaces == null) {
-            render(partDocument, context, pool, writer)
-            return
-        }
-
-        writer(spaces)
-        PartialRenderer(spaces).render(partDocument, context, pool, writer)
-    }
-
-    private inline fun renderStatic(
-        document: MDocument.Static,
-        writer: (CharSequence) -> Unit,
-    ) {
-        if (document.render) writer(document.content)
-    }
-
-    private inline fun renderNewLine(
-        document: NewLine,
-        writer: (CharSequence) -> Unit,
-    ) {
-        if (document.render) writer(document.kind.representation)
-    }
-
-    // endregion
 }

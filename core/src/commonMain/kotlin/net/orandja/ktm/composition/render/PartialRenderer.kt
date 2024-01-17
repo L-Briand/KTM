@@ -10,14 +10,29 @@ import net.orandja.ktm.composition.NodeContext
  *
  * @property spaces The spaces to be added before rendering the template.
  */
-class PartialRenderer(private val spaces: String) : Renderer() {
-    override fun render(
-        document: MDocument,
-        context: NodeContext,
-        pool: MPool,
-        writer: (CharSequence) -> Unit,
-    ) {
-        super.render(document, context, pool, writer)
-        if (document is MDocument.NewLine && !document.last) writer(spaces)
+class PartialRenderer(private val spaces: CharSequence) : Renderer() {
+
+    override fun renderStatic(document: MDocument.Static, writer: (CharSequence) -> Unit) {
+        var written = 0
+        var cache: Int
+        val newLines = document.content.newLines().iterator()
+        while (newLines.hasNext()) {
+            cache = newLines.next()
+            writer(document.content.subSequence(written, cache))
+            written = cache
+            if (written != document.content.length || !document.sectionLast) writer(spaces)
+        }
+        if (written != document.content.length) writer(document.content.subSequence(written, document.content.length))
+    }
+
+    private fun CharSequence.newLines() = sequence<Int> {
+        var index = 0
+        while (index < length) {
+            if (get(index) == '\r') {
+                if (index + 1 < length && get(index + 1) == '\n') index++
+                yield(index + 1)
+            } else if (get(index) == '\n') yield(index + 1)
+            index++
+        }
     }
 }
