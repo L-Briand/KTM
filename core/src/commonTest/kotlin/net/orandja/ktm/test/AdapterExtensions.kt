@@ -3,6 +3,9 @@ package net.orandja.ktm.test
 import net.orandja.ktm.*
 import net.orandja.ktm.adapters.DelegatedKtmAdapter
 import net.orandja.ktm.adapters.KtmMapAdapter
+import net.orandja.ktm.base.MContext
+import net.orandja.ktm.base.NodeContext
+import net.orandja.ktm.base.TagRenderVisitor
 import net.orandja.ktm.composition.builder.ContextMapBuilder
 import kotlin.test.Test
 import kotlin.test.assertEquals

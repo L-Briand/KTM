@@ -1,7 +1,7 @@
 package net.orandja.ktm.composition.builder.context
 
 import net.orandja.ktm.base.MContext
-import net.orandja.ktm.composition.NodeContext
+import net.orandja.ktm.base.NodeContext
 import kotlin.jvm.JvmInline
 
 
@@ -35,6 +35,6 @@ value class ContextMap(val value: MutableMap<String, MContext>) : MContext.Map {
 @JvmInline
 value class ContextValue(val value: CharSequence) : MContext.Value {
     override fun get(node: NodeContext): CharSequence = value
-    override fun toString(): String = "Value($value)"
+    override fun toString(): String = "'$value'"
 }
 

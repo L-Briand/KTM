@@ -1,7 +1,10 @@
 package net.orandja.ktm.benchmarks.base
 
 import net.orandja.ktm.Ktm
+import net.orandja.ktm.adapters.KtmAdapter
 import net.orandja.ktm.adapters.KtmMapAdapter
+import net.orandja.ktm.base.MContext
+import net.orandja.ktm.base.NodeContext
 import net.orandja.ktm.contextOf
 import net.orandja.ktm.toMustacheDocument
 

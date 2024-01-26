@@ -1,5 +1,10 @@
 package net.orandja.ktm.composition.parser
 
+/**
+ * Class representing the context for token parsing.
+ *
+ * @see TokenParser
+ */
 internal class TokenParserContext(
     val reader: CharStream,
     defaultStartDelimiter: CharSequence = "{{",

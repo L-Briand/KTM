@@ -2,10 +2,7 @@
 
 package net.orandja.ktm.composition.render
 
-import net.orandja.ktm.base.MContext
-import net.orandja.ktm.base.MDocument
-import net.orandja.ktm.base.MPool
-import net.orandja.ktm.composition.NodeContext
+import net.orandja.ktm.base.*
 
 /**
  * Renderer is a class that provides methods for rendering Mustache templates.
@@ -16,18 +13,18 @@ import net.orandja.ktm.composition.NodeContext
 @Suppress("NOTHING_TO_INLINE")
 open class Renderer {
 
-    /** Shortcut method to render the document as string. */
     fun renderToString(document: MDocument, context: MContext, partial: MPool): String {
         val result = StringBuilder(128)
         render(document, NodeContext(context), partial) { result.append(it) }
         return result.toString()
     }
 
-    /**
-     * Shortcut method to render the document without a node context.
-     */
-    fun render(document: MDocument, context: MContext, pool: MPool, writer: (CharSequence) -> Unit) =
-        render(document, NodeContext(context), pool, writer)
+    fun render(
+        document: MDocument,
+        context: MContext,
+        pool: MPool,
+        writer: (CharSequence) -> Unit,
+    ) = render(document, NodeContext(context), pool, writer)
 
     /**
      * Render the given mustache [document] into [writer].
@@ -43,178 +40,96 @@ open class Renderer {
         context: NodeContext,
         pool: MPool,
         writer: (CharSequence) -> Unit,
-    ) = when (document) {
-        is MDocument.Static -> renderStatic(document, writer)
-        is MDocument.Partial -> renderPartial(document, context, pool, writer)
-        is MDocument.Tag -> renderTag(document, context, writer)
-        is MDocument.Section -> renderSection(document, context, pool, writer)
+    ) {
+        when (document) {
+            is MDocument.Section -> renderSection(document, context, pool, writer)
+            is MDocument.Static -> renderStatic(document, writer)
+            is MDocument.Tag -> renderTag(document, context, writer)
+            is MDocument.Partial -> renderPartial(document, context, pool, writer)
+        }
     }
-
-    // region section
 
     protected open fun renderSection(
         document: MDocument.Section,
-        node: NodeContext,
+        context: NodeContext,
         pool: MPool,
         writer: (CharSequence) -> Unit,
     ) {
-        val render = node.collect(document.name) { newNode ->
-            if (document.inverted) {
-                if (newNode.current is MContext.List && !newNode.current.iterator(newNode)
-                        .hasNext() || newNode.current == MContext.No
-                ) {
-                    for (part in document.parts) render(part, node, pool, writer)
+        val node = context.find(document.name)
+        when {
+            document.inverted -> {
+                if (node == null) for (part in document.parts) render(part, context, pool, writer)
+                else if (node.accept(context, UseInvertedVisitor)) {
+                    val newNode = NodeContext(node, context)
+                    for (part: MDocument in document.parts) render(part, newNode, pool, writer)
                 }
-                NodeContext.STOP
-            } else {
-                when (newNode.current) {
-                    is MContext.Value, MContext.Yes -> {
-                        for (part in document.parts) render(part, newNode, pool, writer)
-                    }
+            }
 
-                    is MContext.Map -> {
-                        val nextNode = if (node == newNode) newNode else NodeContext(newNode.current, node)
-                        for (part in document.parts) render(part, nextNode, pool, writer)
-                    }
-
-                    is MContext.List -> {
-                        for (ctx in newNode.current.iterator(newNode)) {
-                            for (part in document.parts) render(part, NodeContext(ctx, newNode), pool, writer)
-                        }
-                    }
-
-                    else -> {}
-                }
-                NodeContext.STOP
+            node != null -> {
+                node.accept(context, SectionVisitor { newNode ->
+                    for (part in document.parts) render(part, newNode, pool, writer)
+                })
             }
         }
-        if (!render && document.inverted) {
-            for (part in document.parts) render(part, node, pool, writer)
-        }
     }
-
-    // endregion
-
-    // region tag
-
-    protected open fun renderTag(
-        document: MDocument.Tag,
-        node: NodeContext,
-        writer: (CharSequence) -> Unit,
-    ) {
-        if (document.escapeHtml) value(document, node) { escape(it, writer) }
-        else value(document, node, writer)
-    }
-
-    protected open fun value(
-        document: MDocument.Tag,
-        node: NodeContext,
-        writer: (CharSequence) -> Unit,
-    ) {
-        node.collect(document.name) { newNode ->
-            if(newNode.current is MContext.Value) {
-                writer(newNode.current.get(newNode))
-                NodeContext.STOP
-            } else NodeContext.CONTINUE
-        }
-    }
-    // endregion
-
-    // region others
 
     protected open fun renderPartial(
         document: MDocument.Partial,
         context: NodeContext,
         pool: MPool,
+        writer: (CharSequence) -> Unit
+    ) {
+        val partialDocument = pool[document.name.toString()] ?: return
+        val spaces = document.padding
+        if (spaces.length == 0) render(partialDocument, context, pool, writer)
+        else {
+            writer(spaces)
+            PartialRenderer(spaces).render(partialDocument, context, pool, writer)
+        }
+    }
+
+    protected open fun renderTag(
+        document: MDocument.Tag,
+        context: NodeContext,
         writer: (CharSequence) -> Unit,
     ) {
-        val partDocument = pool[document.name.toString()] ?: return
-        val spaces = document.padding
-        if (spaces.length == 0) {
-            render(partDocument, context, pool, writer)
-            return
-        } else {
-            writer(spaces)
-            PartialRenderer(spaces).render(partDocument, context, pool, writer)
+        val node = context.find(document.name) ?: return
+        val toPrint = node.accept(context, TagRenderVisitor)
+        if (toPrint != null) {
+            if (document.escapeHtml) MustacheEscape.escape(toPrint, writer)
+            else writer(toPrint)
         }
     }
 
-    protected open fun renderStatic(
-        document: MDocument.Static,
-        writer: (CharSequence) -> Unit,
-    ) = writer(document.content)
-
-    // endregion
+    protected open fun renderStatic(document: MDocument.Static, writer: (CharSequence) -> Unit) =
+        writer(document.content)
 
 
-    companion object {
-        private const val AMP = '&'
-        private const val LT = '<'
-        private const val GT = '>'
-        private const val D_QUOT = '"'
-        private const val S_QUOT = '\''
-        private const val B_QUOT = '`'
-        private const val EQUAL = '='
-
-        private const val AMP_REPLACE = "&amp;"
-        private const val LT_REPLACE = "&lt;"
-        private const val GT_REPLACE = "&gt;"
-        private const val D_QUOT_REPLACE = "&quot;"
-        private const val S_QUOT_REPLACE = "&#x27;"
-        private const val B_QUOT_REPLACE = "&#x60;"
-        private const val EQUAL_REPLACE = "&#x3D;"
-    }
-
-    private inline fun escape(cs: CharSequence, writer: (CharSequence) -> Unit) {
-        var start = 0
-        var idx = 0
-        while (idx < cs.length) {
-            when (cs[idx]) {
-                AMP -> {
-                    if (start < idx) writer(cs.subSequence(start, idx))
-                    writer(AMP_REPLACE)
-                    start = idx + 1
-                }
-
-                LT -> {
-                    if (start < idx) writer(cs.subSequence(start, idx))
-                    writer(LT_REPLACE)
-                    start = idx + 1
-                }
-
-                GT -> {
-                    if (start < idx) writer(cs.subSequence(start, idx))
-                    writer(GT_REPLACE)
-                    start = idx + 1
-                }
-
-                D_QUOT -> {
-                    if (start < idx) writer(cs.subSequence(start, idx))
-                    writer(D_QUOT_REPLACE)
-                    start = idx + 1
-                }
-
-                S_QUOT -> {
-                    if (start < idx) writer(cs.subSequence(start, idx))
-                    writer(S_QUOT_REPLACE)
-                    start = idx + 1
-                }
-
-                B_QUOT -> {
-                    if (start < idx) writer(cs.subSequence(start, idx))
-                    writer(B_QUOT_REPLACE)
-                    start = idx + 1
-                }
-
-                EQUAL -> {
-                    if (start < idx) writer(cs.subSequence(start, idx))
-                    writer(EQUAL_REPLACE)
-                    start = idx + 1
-                }
-            }
-            idx++
+    object UseInvertedVisitor : MContext.Visitor.Default<NodeContext, Boolean>(false) {
+        override fun no(data: NodeContext, value: MContext.No) = true
+        override fun list(data: NodeContext, list: MContext.List): Boolean {
+            return !list.iterator(data).hasNext()
         }
-        if (start < idx) writer(cs.subSequence(start, idx))
+
+        override fun delegate(data: NodeContext, delegate: MContext.Delegate): Boolean =
+            delegate.get(data).accept(data, this)
     }
 
+    class SectionVisitor(
+        val onNewNode: (NodeContext) -> Unit,
+    ) : MContext.Visitor<NodeContext, Unit> {
+        override fun yes(data: NodeContext, value: MContext.Yes) = onNewNode(data)
+        override fun value(data: NodeContext, value: MContext.Value) =
+            if (data.current == value) onNewNode(data) else onNewNode(NodeContext(value, data))
+
+        override fun map(data: NodeContext, map: MContext.Map) =
+            if (data.current == map) onNewNode(data) else onNewNode(NodeContext(map, data))
+
+        override fun list(data: NodeContext, list: MContext.List) {
+            for (context in list.iterator(data)) onNewNode(NodeContext(context, data))
+        }
+
+        override fun delegate(data: NodeContext, delegate: MContext.Delegate) = delegate.get(data).accept(data, this)
+        override fun no(data: NodeContext, value: MContext.No) {}
+    }
 }

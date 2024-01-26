@@ -1,7 +1,7 @@
 package net.orandja.ktm.composition.builder.context
 
 import net.orandja.ktm.base.MContext
-import net.orandja.ktm.composition.NodeContext
+import net.orandja.ktm.base.NodeContext
 import kotlin.jvm.JvmInline
 
 /**

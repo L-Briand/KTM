@@ -51,6 +51,8 @@ open class BaseKtmAdapterProvider : KtmAdapter.Provider {
         adapters: Map<KType, KtmAdapter<*>>,
     ): BaseKtmAdapterProvider = KtmAdapterProvider(backing, adapters)
 
+
+    // Instead of creating an adapter on every type, we store them.
     private val iterators = mutableMapOf<KType, KtmAdapter<*>>()
     private val iterables = mutableMapOf<KType, KtmAdapter<*>>()
     private val sequences = mutableMapOf<KType, KtmAdapter<*>>()

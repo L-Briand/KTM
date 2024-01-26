@@ -2,6 +2,12 @@ package net.orandja.ktm.composition.parser
 
 import kotlin.jvm.JvmStatic
 
+/**
+ * Represents a token used in parsing and rendering templates.
+ *
+ * @property type The type of the token.
+ * @property content The content associated with the token.
+ */
 data class Token(val type: Int, val content: CharSequence) {
 
     inline val isNewLine get() = type and 0x40 > 0

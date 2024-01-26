@@ -2,7 +2,7 @@ package net.orandja.ktm
 
 import net.orandja.ktm.adapters.KtmAdapter
 import net.orandja.ktm.base.MContext
-import net.orandja.ktm.composition.NodeContext
+import net.orandja.ktm.base.NodeContext
 import net.orandja.ktm.composition.builder.context.ContextValue
 
 
@@ -40,7 +40,7 @@ inline fun <reified T : Enum<T>> T.EnumMustacheContext(
         else -> null
     }
 
-    override fun toString(): String = values.joinToString(", ", "${T::class.simpleName}[", "]") { it.name }
+    override fun toString(): String = values.joinToString(", ", "EnumContext<${T::class.simpleName}>[", "]") { it.name }
 }
 
 /**

@@ -4,6 +4,10 @@ internal const val TAG_DELIMITER = '.'
 
 /**
  * Transform the given [name] to tokens which the parser and NodeContext can interpret.
+ *
+ * `.`, `..` -> arrayOf()
+ *
+ * `hello.world`, `hello..world.` -> arrayOf("hello", "world")
  */
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun tokenizeTagName(name: CharSequence): Array<String> {

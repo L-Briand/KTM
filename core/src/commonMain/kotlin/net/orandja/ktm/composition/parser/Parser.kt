@@ -14,7 +14,7 @@ object Parser {
         var next: Token?
 
         while (true) {
-            // read the next line
+            // read all tokens representing a line
             while (true) {
                 next = peekNext()
                 if (next == null) break
@@ -23,12 +23,18 @@ object Parser {
                 if (next.isNewLine) break
             }
 
-            if (peeked.size == 1) { // only new line after new line.
+            // If two new lines are right next one another, the new line should be rendered
+            if (peeked.size == 1) {
                 register(peeked.removeAt(0))
-            } else if (!isStantaloneLine) {
+
+            }
+            // If the line is not transparent (standalone in the spec), we render it
+            else if (!isStantaloneLine) {
                 for (peek in peeked) register(peek)
                 drop()
-            } else {
+            }
+            // If the line is white, we register only tags elements
+            else {
                 for (peek in peeked) {
                     if (containPartial && peek.type == Token.WHITE_CONTENT)
                         partialPadding.append(peek.content)
@@ -38,6 +44,7 @@ object Parser {
             }
 
             if (next == null) break
+            // cleanup for next line
             isStantaloneLine = true
             if (containPartial) {
                 containPartial = false

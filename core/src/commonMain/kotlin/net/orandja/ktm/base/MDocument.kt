@@ -9,9 +9,8 @@ sealed interface MDocument {
     /**
      * Static part of the document to render as is.
      *
-     * @param content part of the mustache document to render as is.
-     * @param render Mustache documents can have blank static content which is not rendered due to
-     *               their placement and applied rules.
+     * @property content part of the mustache document to render as is.
+     * @property sectionLast Whenever this element is the last element of the Section.
      */
     data class Static(
         val content: StringBuilder = StringBuilder(),
@@ -26,7 +25,8 @@ sealed interface MDocument {
     /**
      * Partial tag in a mustache document: `'{{> partial }}'`
      *
-     * @param name Name of the partial tag.
+     * @property name Name of the partial tag.
+     * @property padding padding to add on each new line during partial render
      */
     data class Partial(
         val name: CharSequence,
@@ -91,7 +91,9 @@ sealed interface MDocument {
         val parts: ArrayList<MDocument> = ArrayList(10),
     ) : MDocument {
 
-        private val realName get() = name.joinToString(".") { it }.ifEmpty { "root" }
+        private val realName
+            get() = if (name.size == 1 && name[0] == ".") "."
+            else name.joinToString(".") { it }.ifEmpty { "root" }
 
         override fun toString(): String {
             val invertedStr = if (inverted) "^" else ""

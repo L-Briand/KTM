@@ -5,7 +5,7 @@ import net.orandja.ktm.adapters.KtmAdapter
 import net.orandja.ktm.adapters.KtmAdapterModule
 import net.orandja.ktm.adapters.KtmAdapterProviderBuilder
 import net.orandja.ktm.base.MContext
-import net.orandja.ktm.composition.NodeContext
+import net.orandja.ktm.base.NodeContext
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 

@@ -4,6 +4,7 @@ import net.orandja.ktm.base.MDocument
 
 @Suppress("NOTHING_TO_INLINE")
 internal class ParserContext(
+    // generated tokens from TokenParser
     val tokens: Iterator<Token>
 ) {
     var isStantaloneLine = true
@@ -23,5 +24,4 @@ internal class ParserContext(
     inline fun drop() {
         peeked.clear()
     }
-
 }

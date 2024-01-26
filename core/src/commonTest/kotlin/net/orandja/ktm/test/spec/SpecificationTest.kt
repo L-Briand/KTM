@@ -45,6 +45,8 @@ class SpecificationTest {
 
     class JsonTest(private val test: TestResource.Test) {
         fun execute() {
+            println("\nTest: ${test.name}")
+            println("Template: ${test.template.replace("\r", "\\r").replace("\n", "\\n")}")
             val context = jsonToContext(test.data)
             val template = Ktm.doc.string(test.template)
             val partials = test.partials?.let { partials ->

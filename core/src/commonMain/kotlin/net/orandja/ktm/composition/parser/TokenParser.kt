@@ -7,12 +7,19 @@ object TokenParser {
     private val RN = Token(Token.NEW_LINE_RN, Token.NO_CONTENT)
     private val N = Token(Token.NEW_LINE_N, Token.NO_CONTENT)
     private val R = Token(Token.NEW_LINE_R, Token.NO_CONTENT)
-    private val WHITESPACES_REGEX = "\\s+".toRegex()
 
+    /**
+     * Parses a token sequence from the given [context].
+     *
+     * @param context The token parsing context.
+     * @return A sequence of [Token] objects.
+     */
     internal fun parse(context: TokenParserContext): Sequence<Token> = sequence { parseTokens(context) }
 
     /**
-     * Call [onNewTag] every time a [Delimiter] is found in the document.
+     * Parses tokens from the given sequence and yields them using the provided SequenceScope.
+     *
+     * @param ctx The context used for token parsing.
      */
     private suspend fun SequenceScope<Token>.parseTokens(ctx: TokenParserContext) {
         while (true) {
@@ -93,8 +100,8 @@ object TokenParser {
                         pushStatic(ctx, trimEndBy = 0)
                     } else {
                         if (ctx.tagType == Token.TAG_DELIMITER) {
-                            ctx.startDelim = content.startWord()
-                            ctx.stopDelim = content.endWord()
+                            ctx.startDelim = content.firstWord()
+                            ctx.stopDelim = content.lastWord()
                         }
                         yield(Token(ctx.tagType, content))
                     }
@@ -107,7 +114,7 @@ object TokenParser {
         pushStatic(ctx, 0)
     }
 
-    private inline fun CharSequence.startWord(): CharSequence {
+    private inline fun CharSequence.firstWord(): CharSequence {
         var index = 0
         var start = -1
         var end = -1
@@ -125,7 +132,7 @@ object TokenParser {
         return subSequence(start, length)
     }
 
-    private inline fun CharSequence.endWord(): CharSequence {
+    private inline fun CharSequence.lastWord(): CharSequence {
         var index = length - 1
         var start = -1
         var end = -1

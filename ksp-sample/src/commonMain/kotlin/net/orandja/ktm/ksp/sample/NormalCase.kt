@@ -1,6 +1,6 @@
 package net.orandja.ktm.ksp.sample
 
-import net.orandja.ktm.composition.NodeContext
+import net.orandja.ktm.base.NodeContext
 import net.orandja.ktm.ksp.KtmContext
 import net.orandja.ktm.ksp.KtmDynamic
 import net.orandja.ktm.ksp.KtmIgnore
@@ -43,9 +43,9 @@ class ClassCallable(
     @KtmName("getIdLambda")
     val toRenameLambda: () -> String = lambda
 
-    fun paramContextFunction(context: NodeContext): String = context.searchValue(id).toString()
-    val paramContextLambda: (NodeContext) -> String = { it.searchValue(id).toString() }
+    fun paramContextFunction(context: NodeContext): String = context.findValue(id).toString()
+    val paramContextLambda: (NodeContext) -> String = { it.findValue(id).toString() }
 
-    fun NodeContext.receiverContextFunction(): String = searchValue(id).toString()
-    val receiverContextLambda: NodeContext.() -> String = { searchValue(id).toString() }
+    fun NodeContext.receiverContextFunction(): String = findValue(id).toString()
+    val receiverContextLambda: NodeContext.() -> String = { findValue(id).toString() }
 }

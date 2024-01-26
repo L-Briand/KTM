@@ -3,7 +3,7 @@ package net.orandja.ktm.composition.builder
 import net.orandja.ktm.Ktm
 import net.orandja.ktm.adapters.KtmAdapter
 import net.orandja.ktm.base.MContext
-import net.orandja.ktm.composition.NodeContext
+import net.orandja.ktm.base.NodeContext
 import net.orandja.ktm.composition.builder.context.*
 
 /**

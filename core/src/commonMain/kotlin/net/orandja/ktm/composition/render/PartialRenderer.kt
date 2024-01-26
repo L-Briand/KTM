@@ -1,8 +1,6 @@
 package net.orandja.ktm.composition.render
 
 import net.orandja.ktm.base.MDocument
-import net.orandja.ktm.base.MPool
-import net.orandja.ktm.composition.NodeContext
 
 /**
  * PartialRenderer is a class that extends the Renderer class
@@ -20,6 +18,7 @@ class PartialRenderer(private val spaces: CharSequence) : Renderer() {
             cache = newLines.next()
             writer(document.content.subSequence(written, cache))
             written = cache
+            // Do not write padding on the last new line of a section
             if (written != document.content.length || !document.sectionLast) writer(spaces)
         }
         if (written != document.content.length) writer(document.content.subSequence(written, document.content.length))
