@@ -5,8 +5,12 @@ import net.orandja.ktm.adapters.KtmMapAdapter
 import net.orandja.ktm.base.MContext
 import net.orandja.ktm.composition.builder.context.ContextMap
 import net.orandja.ktm.contextOf
-import net.orandja.ktm.get
 import net.orandja.ktm.getOrThrow
+import kotlin.collections.MutableList
+import kotlin.collections.lastOrNull
+import kotlin.collections.mutableListOf
+import kotlin.collections.mutableMapOf
+import kotlin.collections.set
 
 /**
  * Builder class for creating a contextual map used in Mustache rendering.
@@ -42,7 +46,7 @@ class ContextMapBuilder(
     }
 
     inline infix fun <reified T> String.by(value: T) {
-        by(if(null is T) no else contextOf(value))
+        by(if (null is T) no else contextOf(value))
     }
 
     fun associate(key: String, value: CharSequence?) {

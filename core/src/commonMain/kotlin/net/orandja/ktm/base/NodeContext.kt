@@ -53,6 +53,7 @@ open class NodeContext(
         current.accept(tag, tagVisitor) ?: if (checkOnParent) parent?.findUp(tag, true) else null
 
     private val tagVisitor = TagVisitor()
+
     inner class TagVisitor : MContext.Visitor.Default<String, MContext?>(null) {
         override fun map(data: String, map: MContext.Map): MContext? = map.get(this@NodeContext, data)
         override fun delegate(data: String, delegate: MContext.Delegate): MContext? =

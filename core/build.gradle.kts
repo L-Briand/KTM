@@ -1,8 +1,5 @@
-import kotlinx.benchmark.gradle.JsBenchmarkTarget
-import kotlinx.benchmark.gradle.JsBenchmarksExecutor
 import kotlinx.benchmark.gradle.JvmBenchmarkTarget
 import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
-import org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask
 
 plugins {
     kotlin("multiplatform")

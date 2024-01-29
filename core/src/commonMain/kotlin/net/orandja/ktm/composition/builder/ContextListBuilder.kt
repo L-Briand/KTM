@@ -1,8 +1,8 @@
 package net.orandja.ktm.composition.builder
 
 import net.orandja.ktm.adapters.KtmAdapter
-import net.orandja.ktm.contextOf
 import net.orandja.ktm.base.MContext
+import net.orandja.ktm.contextOf
 
 class ContextListBuilder(
     private val adapters: KtmAdapter.Provider

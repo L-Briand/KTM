@@ -12,7 +12,7 @@ buildscript {
 
 plugins {
     val kotlin = "1.9.22" // also in gradle.properties
-    val ksp = "1.0.16" // also in gradle.properties
+    val ksp = "1.0.17" // also in gradle.properties
     val benchmark = "0.4.9"
     val dokka = "1.9.10"
 

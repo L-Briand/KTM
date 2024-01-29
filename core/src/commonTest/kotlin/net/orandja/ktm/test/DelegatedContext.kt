@@ -9,7 +9,8 @@ class DelegatedContext {
     val context = Ktm.ctx.make {
         "secret" by "secret"
         "delegate" by delegate {
-            string(findValue("secret")) }
+            string(findValue("secret"))
+        }
         "value" by delegateValue { findValue("secret") ?: "not found" }
         "map" by delegateMap {
             make {

@@ -3,24 +3,18 @@
 A [Mustache](https://mustache.github.io) implementation in pure Kotlin Multiplatform.
 
 ```kotlin
-val document = Ktm.doc.string("Hello {{ name }}")
-val context = Ktm.ctx.make {
-    name by "Jon"
-}
+val document = "Hello {{ name }}!".toMustacheDocument()
+val context = Ktm.ctx.make { name by "Jon" }
 val render = document.render(context)
-assert("Hello Jon" == render)
+assert("Hello Jon!" == render)
 ```
-
-## Development notice
-
-This tool is still in the backing. I work on it when I have the time. Feel free to
-contribute 🙂
-
-- **[List of TODO's](TODO.MD)**
 
 # Import from maven
 
-## Multiplatform
+### Library
+
+<details> 
+<summary>Multiplatform:</summary>
 
 ```kotlin
 repositories {
@@ -28,38 +22,61 @@ repositories {
 }
 val commonMain by getting {
     dependencies {
-        implementation("net.orandja.ktm:core:0.1.0")
+        implementation("net.orandja.ktm:core:1.0.0")
     }
 }
 ```
 
-## Jvm
+</details>
+
+Jvm:
 
 ```kotlin
 repositories {
     mavenCentral()
 }
 dependencies {
-    implementation("net.orandja.ktm:core:0.1.0")
+    implementation("net.orandja.ktm:core:1.0.0")
+}
+```
+### Ksp code generator plugin
+
+Enable ksp plugin:
+```kotlin
+plugins {
+    // ...
+    id("com.google.devtools.ksp") version "1.9.22-1.0.7" // or later
 }
 ```
 
-# QuickStart
+<details> 
+<summary>Multiplatform:</summary>
 
-> [!NOTE]
-> You cannot use classes as context to render a document yet. This is still in the
-> backing. This means you would not be able to use it as a drop-in replacement of
-> another mustache lib. You need to create all your contexts manually.
->
-> This is **not yet possible**:
->
-> ```kotlin
-> data class User(val name: String, val age: Int)
-> 
-> val document = Ktm.doc.string("Hello {{ name }} ! Happy {{ age }} birthday !")
-> val context = User("Jon", 33)
-> document.render(context)
-> ```
+```kotlin
+repositories {
+    mavenCentral()
+}
+dependencies {
+    add("kspJvm", "net.orandja.ktm:ksp:0.0.1")
+    // add("kspJs", "net.orandja.ktm:ksp:0.0.1")
+    // add("kspNative", "net.orandja.ktm:ksp:0.0.1")
+    // ...
+}
+```
+
+</details>
+
+Jvm :
+
+```kotlin
+dependencies {
+    // ...
+    ksp("net.orandja.ktm:ksp:0.0.1")
+}
+
+```
+
+# QuickStart
 
 With Mustache, to render a document you need three things:
 
@@ -113,8 +130,8 @@ val context = Ktm.ctx.make { // make scope
         "name" by "Jon"
     }
     "tasks" by makeList { // make scope
-        + "Sleep"
-        + "Eat"
+        +"Sleep"
+        +"Eat"
     }
 }
 ```
@@ -140,8 +157,8 @@ entry.
 
 ```kotlin
 fun tasks() = Ktm.ctx.makeList {
-    + "Call for lunch."
-    + stringDelegate {
+    +"Call for lunch."
+    +stringDelegate {
         "Welcome ${getValue("mister")} to the office."
     }
 }

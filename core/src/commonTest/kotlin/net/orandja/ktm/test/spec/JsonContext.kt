@@ -19,7 +19,7 @@ fun toObject(json: JsonObject): MContext = object : MContext.Map {
     override fun toString(): String = json.toString()
 }
 
-fun toArray(json: JsonArray): MContext = object: MContext.List {
+fun toArray(json: JsonArray): MContext = object : MContext.List {
     override fun iterator(node: NodeContext): Iterator<MContext> = object : Iterator<MContext> {
         val base = json.iterator()
         override fun hasNext(): Boolean = base.hasNext()

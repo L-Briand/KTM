@@ -114,15 +114,16 @@ object TokenParser {
         pushStatic(ctx, 0)
     }
 
+    @Suppress("NOTHING_TO_INLINE")
     private inline fun CharSequence.firstWord(): CharSequence {
         var index = 0
         var start = -1
         var end = -1
-        while(index < length) {
-            if(start == -1) {
-                if(!get(index).isWhitespace()) start = index
-            } else if(end == -1) {
-                if(get(index).isWhitespace()) {
+        while (index < length) {
+            if (start == -1) {
+                if (!get(index).isWhitespace()) start = index
+            } else if (end == -1) {
+                if (get(index).isWhitespace()) {
                     end = index
                     return subSequence(start, end)
                 }
@@ -132,15 +133,16 @@ object TokenParser {
         return subSequence(start, length)
     }
 
+    @Suppress("NOTHING_TO_INLINE")
     private inline fun CharSequence.lastWord(): CharSequence {
         var index = length - 1
         var start = -1
         var end = -1
-        while(index >= 0) {
-            if(end == -1) {
-                if(!get(index).isWhitespace()) end = index + 1
-            } else if(start == -1) {
-                if(get(index).isWhitespace()) {
+        while (index >= 0) {
+            if (end == -1) {
+                if (!get(index).isWhitespace()) end = index + 1
+            } else if (start == -1) {
+                if (get(index).isWhitespace()) {
                     start = index + 1
                     return subSequence(start, end)
                 }

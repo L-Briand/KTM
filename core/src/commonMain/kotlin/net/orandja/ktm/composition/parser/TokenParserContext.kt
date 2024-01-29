@@ -34,18 +34,21 @@ internal class TokenParserContext(
 
     var peeked: Char = Char.MIN_VALUE
 
+    @Suppress("NOTHING_TO_INLINE")
     inline fun next(): Char {
         val peeked = peek()
         consume()
         return peeked
     }
 
+    @Suppress("NOTHING_TO_INLINE")
     inline fun peek(): Char {
         if (peeked != Char.MIN_VALUE) return peeked
         peeked = reader.read()
         return peeked
     }
 
+    @Suppress("NOTHING_TO_INLINE")
     inline fun consume() {
         if (peeked == Char.MIN_VALUE) return
         readBuffer.append(peeked)
@@ -54,12 +57,14 @@ internal class TokenParserContext(
 
     var readBuffer = StringBuilder(128)
 
+    @Suppress("NOTHING_TO_INLINE")
     inline fun getBuffer(trimEndBy: Int): CharSequence {
         val result = readBuffer.substring(0, (readBuffer.length - trimEndBy))
         readBuffer.clear()
         return result
     }
 
+    @Suppress("NOTHING_TO_INLINE")
     inline fun drop(count: Int = 1) = readBuffer.setLength(readBuffer.length - count)
 
     var tagType: Int = -1
