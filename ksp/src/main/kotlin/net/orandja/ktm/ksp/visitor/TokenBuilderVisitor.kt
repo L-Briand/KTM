@@ -54,7 +54,14 @@ class TokenBuilderVisitor(private val ktmLogger: KtmLogger) :
 
         // Transform results into ClassToken
         val classFieldTokens = visitorResults.mapNotNull { (it as? FieldToken)?.token }
-        val classToken = NormalClass(packageName, simpleName, sanitizedSimpleName, classFieldTokens)
+
+        val classToken = NormalClass(
+            packageName,
+            simpleName,
+            sanitizedSimpleName,
+            classDeclaration.typeParameters.count(),
+            classFieldTokens
+        )
         return ClassAdapterToken(file, classDeclaration, classToken)
     }
 

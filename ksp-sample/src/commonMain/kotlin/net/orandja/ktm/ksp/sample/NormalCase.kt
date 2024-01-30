@@ -1,6 +1,9 @@
 package net.orandja.ktm.ksp.sample
 
+import net.orandja.ktm.adapters.KtmMapAdapter
 import net.orandja.ktm.base.NodeContext
+import net.orandja.ktm.composition.builder.ContextMapBuilder
+import net.orandja.ktm.contextOf
 import net.orandja.ktm.ksp.KtmContext
 import net.orandja.ktm.ksp.KtmDynamic
 import net.orandja.ktm.ksp.KtmIgnore
@@ -49,3 +52,6 @@ class ClassCallable(
     fun NodeContext.receiverContextFunction(): String = findValue(id).toString()
     val receiverContextLambda: NodeContext.() -> String = { findValue(id).toString() }
 }
+
+@KtmContext
+class Generic<T>(val data: T)

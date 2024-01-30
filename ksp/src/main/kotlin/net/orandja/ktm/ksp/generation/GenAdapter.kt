@@ -33,7 +33,6 @@ internal object GenAdapter {
         val context: MContext,
     )
 
-
     fun generateKtmAdapterFile(
         logger: KSPLogger,
         generator: CodeGenerator,

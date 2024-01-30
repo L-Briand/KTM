@@ -46,4 +46,13 @@ class NormalCaseTest {
         assertEquals("secret", "{{ receiverContextFunction }}".render(richContext))
         assertEquals("secret", "{{ receiverContextLambda }}".render(richContext))
     }
+
+    @Test
+    fun genericAdapter() {
+        val adapters = AutoKtmAdaptersModule.createAdapters()
+        val context1 = adapters.contextOf(Generic("content"))
+        val context2 = adapters.contextOf(Generic(123))
+        assertEquals("content", "{{ data }}".render(context1))
+        assertEquals("123", "{{ data }}".render(context2))
+    }
 }

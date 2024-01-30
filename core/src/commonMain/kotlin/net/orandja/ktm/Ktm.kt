@@ -2,6 +2,7 @@ package net.orandja.ktm
 
 import net.orandja.ktm.adapters.BaseKtmAdapterProvider
 import net.orandja.ktm.adapters.KtmAdapterModule
+import net.orandja.ktm.adapters.KtmAdapterProviderBuilder
 import net.orandja.ktm.composition.builder.ContextFactory
 import net.orandja.ktm.composition.builder.DocumentFactory
 import net.orandja.ktm.composition.builder.PoolFactory
@@ -54,9 +55,10 @@ object Ktm {
 
 
     // TODO: Documentation
-    fun setDefaultAdapters(vararg modules: KtmAdapterModule) {
+    fun setDefaultAdapters(vararg modules: KtmAdapterModule, builder: KtmAdapterProviderBuilder.() -> Unit = {}) {
         adapters = adapters.make {
             for (module in modules) with(module) { configure() }
+            builder()
         }
     }
 }

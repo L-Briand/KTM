@@ -57,6 +57,7 @@ sealed class AdapterToken(val kind: Kind) {
         val packageName: String,
         val simpleName: String,
         val sanitizedSimpleName: String,
+        val classTypeParameterCount: Int,
         val fields: List<Field>
     ) : AdapterToken(Kind.CLASS) {
         companion object {
@@ -66,6 +67,8 @@ sealed class AdapterToken(val kind: Kind) {
                 "simple_name" by it.simpleName
                 "sanitized_simple_name" by it.sanitizedSimpleName
                 "fields" by contextOf(it.fields)
+                if (it.classTypeParameterCount == 0) "type_parameter" by no
+                else "type_parameter" by (0..<it.classTypeParameterCount).joinToString(", ", "<", ">") { "*" }
             }
 
             @Language("mustache")
@@ -82,13 +85,18 @@ sealed class AdapterToken(val kind: Kind) {
                 import net.orandja.ktm.base.MContext
                 
                 
-                data object {{ sanitized_simple_name }}KtmAdapter : KtmMapAdapter<{{ simple_name }}> {
+                data object {{ sanitized_simple_name }}KtmAdapter : KtmAdapter<{{ simple_name }}{{{ type_parameter }}}> {
                     override fun toString(): String = "{{ simple_name }}KtmAdapter"
-                    override fun ContextMapBuilder.configure(value: {{ simple_name }}) {
-                        {{# fields }}
-                        {{> _class_field }}
-                        {{/fields}}
-                    }
+                    
+                    override fun toMustacheContext(adapters: KtmAdapter.Provider, value: {{ simple_name }}{{{ type_parameter }}}): MContext =
+                        MContext.Map { node, tag ->
+                            when (tag) {
+                                {{# fields }}
+                                {{> _class_field }}
+                                {{/fields}}
+                                else -> null
+                            }
+                        }
                 }
             """.trimIndent()
         }
@@ -116,12 +124,12 @@ sealed class AdapterToken(val kind: Kind) {
             }
 
             @Language("mustache")
-            private val context = "contextOf{{#isCallable}}{{#node}}Node{{/node}}Callable{{/isCallable}}" +
+            private val context = "adapters.contextOf{{#isCallable}}{{#node}}Node{{/node}}Callable{{/isCallable}}" +
                     "(value{{#isFunction}}::{{/isFunction}}{{^isFunction}}.{{/isFunction}}{{fieldName}})"
 
             @Language("mustache")
             private val nodeReceiverEdgeCase =
-                "{{#nodeReceiver}}with(value) { Ktm.ctx.delegate { contextOf({{fieldName}}()) } }{{/nodeReceiver}}" +
+                "{{#nodeReceiver}}with(value) { Ktm.ctx.delegate { adapters.contextOf({{fieldName}}()) } }{{/nodeReceiver}}" +
                         "{{^nodeReceiver}}$context{{/nodeReceiver}}"
 
             @Language("mustache")
@@ -129,7 +137,7 @@ sealed class AdapterToken(val kind: Kind) {
                 "{{#isDynamic}}Ktm.ctx.delegate { {{/isDynamic}}$nodeReceiverEdgeCase{{#isDynamic}} }{{/isDynamic}}"
 
             @Language("mustache")
-            val Template = "\"{{name}}\" by $dynamic\n"
+            val Template = "\"{{name}}\" -> $dynamic\n"
         }
     }
 }

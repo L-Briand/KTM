@@ -1,4 +1,3 @@
-import kotlinx.benchmark.gradle.JvmBenchmarkTarget
 import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 
 plugins {
@@ -7,8 +6,6 @@ plugins {
     id("maven-publish")
     id("signing")
     id("org.jetbrains.dokka")
-    id("org.jetbrains.kotlinx.benchmark")
-    id("org.jetbrains.kotlin.plugin.allopen")
 }
 
 fun findProperty(name: String): String? = if (hasProperty(name)) property(name) as String else System.getenv(name)
@@ -31,10 +28,6 @@ kotlin {
             kotlinOptions { jvmTarget = "1.8" }
             jvmToolchain(8)
         }
-        compilations.create("benchmarks") {
-            associateWith(compilations.getByName("main"))
-        }
-
         withJava()
         withSourcesJar(true)
         testRuns.named("test") {
@@ -91,42 +84,6 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serialization")
             }
         }
-        getByName("jvmBenchmarks") {
-            dependencies {
-                val serialization = property("version.serialization")
-                val benchmark = property("version.benchmark")
-                val jmh = property("version.jmh")
-                implementation("org.openjdk.jmh:jmh-core:$jmh")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serialization")
-                implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:$benchmark")
-                implementation("com.github.spullara.mustache.java:compiler:0.9.10")
-            }
-        }
-    }
-}
-
-// This is required for benchmark to work
-allOpen {
-    annotation("org.openjdk.jmh.annotations.State")
-}
-
-benchmark {
-    targets {
-        register("jvmBenchmarks") {
-            (this as JvmBenchmarkTarget).jmhVersion = property("version.jmh") as String
-        }
-    }
-
-    configurations.getByName("main") {
-        warmups = 20
-        iterations = 10
-        iterationTime = 3
-    }
-
-    configurations.register("smoke") {
-        warmups = 5
-        iterations = 3
-        iterationTime = 1
     }
 }
 
