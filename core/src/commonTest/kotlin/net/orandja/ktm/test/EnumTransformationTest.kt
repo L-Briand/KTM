@@ -1,9 +1,7 @@
 package net.orandja.ktm.test
 
-import net.orandja.ktm.Ktm
+import net.orandja.ktm.*
 import net.orandja.ktm.adapters.KtmMapAdapter
-import net.orandja.ktm.render
-import net.orandja.ktm.toMustacheContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -38,5 +36,16 @@ class EnumTransformationTest {
         assertEquals("A", "{{ FOO }}".render(context))
         assertEquals("", "{{ BAR }}".render(context))
         assertEquals("", "{{ BAZ }}".render(context))
+    }
+
+    @Test
+    fun delegateEnum() {
+        val adapters = Ktm.adapters.make {
+            +EnumKtmAdapter<EnumVariants>()
+        }
+        val enum = Ktm.ctx.make(adapters) {
+            "enum" by delegate { adapters.contextOf(EnumVariants.FOO) }
+        }
+        assertEquals("FOO", "{{ enum.name }}".render(enum))
     }
 }

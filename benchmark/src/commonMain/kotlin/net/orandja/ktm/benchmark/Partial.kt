@@ -1,7 +1,5 @@
 package net.orandja.ktm.benchmark
 
-import net.orandja.ktm.Ktm
-import net.orandja.ktm.base.MDocument
 import net.orandja.ktm.ksp.KtmContext
 
 @KtmContext
@@ -25,10 +23,6 @@ data class Partial<T>(
             </body>
             </html>
         """.trimIndent()
-
-        fun pool(innerHtml: MDocument) = Ktm.pool.make {
-            "innerHtml" by innerHtml
-        }
     }
 }
 

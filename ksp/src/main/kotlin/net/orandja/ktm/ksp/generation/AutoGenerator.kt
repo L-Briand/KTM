@@ -7,7 +7,7 @@ import net.orandja.ktm.Ktm
 import net.orandja.ktm.streamRender
 import net.orandja.ktm.toMustacheContext
 
-object GenAutoToken {
+object AutoGenerator {
     val adapters = Ktm.adapters.make {
         +AutoToken.Adapter
         +AutoToken.GeneratedAdapter.Adapter

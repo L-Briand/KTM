@@ -6,21 +6,22 @@ import com.google.devtools.ksp.processing.KSPLogger
 import net.orandja.ktm.EnumKtmAdapter
 import net.orandja.ktm.Ktm
 import net.orandja.ktm.base.MContext
+import net.orandja.ktm.base.NodeContext
 import net.orandja.ktm.ksp.visitor.VisitorResult
 import net.orandja.ktm.streamRender
-import net.orandja.ktm.toMustacheContext
+import net.orandja.ktm.toMustacheDocument
 
-internal object GenAdapter {
+internal object AdapterGenerator {
 
-    private val pool = Ktm.pool.make {
-        "_class" by AdapterToken.NormalClass.Template
-        "_class_field" by AdapterToken.Field.Template
-        "_enum_class" by AdapterToken.EnumClass.Template
+    private val partials = Ktm.ctx.make {
+        "_class" by AdapterToken.NormalClass.Template.toMustacheDocument()
+        "_class_field" by AdapterToken.Field.Template.toMustacheDocument()
+        "_enum_class" by AdapterToken.EnumClass.Template.toMustacheDocument()
     }
 
     private val adapters = Ktm.adapters.make {
         +EnumKtmAdapter<AdapterToken.Kind>()
-        +AdapterToken.Kind.Adapter
+        +AdapterToken
         +AdapterToken.NormalClass.Adapter
         +AdapterToken.EnumClass.Adapter
         +AdapterToken.Field.Adapter
@@ -43,14 +44,20 @@ internal object GenAdapter {
                 tk.packageName,
                 tk.simpleName,
                 tk.sanitizedSimpleName,
-                tk.toMustacheContext(adapters)
+                Ktm.ctx.make(adapters) {
+                    configureLike(tk)
+                    addBackingContext(partials)
+                }
             )
 
             is AdapterToken.EnumClass -> GenerationInfo(
                 tk.packageName,
                 tk.simpleName,
                 tk.sanitizedSimpleName,
-                tk.toMustacheContext(adapters)
+                Ktm.ctx.make(adapters) {
+                    addBackingContext(partials)
+                    configureLike(tk)
+                }
             )
 
             else -> error("Invalid token to generate")
@@ -60,7 +67,7 @@ internal object GenAdapter {
         logger.info("Compiling File ${gen.packageName}.$fileName.kt")
         val dependencies = Dependencies(true, element.classDeclaration.containingFile!!)
         generator.createNewFile(dependencies, gen.packageName, fileName).bufferedWriter().use { output ->
-            AdapterToken.Kind.Template.streamRender(gen.context, pool) { part ->
+            AdapterToken.Kind.Template.streamRender(gen.context) { part ->
                 output.write(part.toString())
             }
         }

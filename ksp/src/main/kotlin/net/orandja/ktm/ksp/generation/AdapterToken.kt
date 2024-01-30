@@ -1,19 +1,22 @@
 package net.orandja.ktm.ksp.generation
 
 import net.orandja.ktm.adapters.KtmMapAdapter
+import net.orandja.ktm.composition.builder.ContextMapBuilder
 import net.orandja.ktm.contextOf
 import org.intellij.lang.annotations.Language
 
 sealed class AdapterToken(val kind: Kind) {
 
+    companion object : KtmMapAdapter<AdapterToken> {
+        override fun ContextMapBuilder.configure(value: AdapterToken) {
+            "kind" by delegate { contextOf<Kind>(value.kind) }
+        }
+    }
+
     enum class Kind {
         CLASS, CLASS_FIELD, ENUM_CLASS;
 
         companion object {
-            internal val Adapter = KtmMapAdapter<AdapterToken> {
-                "kind" by contextOf<Kind>(it.kind)
-            }
-
             @Language("mustache")
             val Template = "{{#kind.CLASS}}{{>_class}}{{/kind.CLASS}}" +
                     "{{#kind.ENUM_CLASS}}{{>_enum_class}}{{/kind.ENUM_CLASS}}"
@@ -89,7 +92,7 @@ sealed class AdapterToken(val kind: Kind) {
                     override fun toString(): String = "{{ simple_name }}KtmAdapter"
                     
                     override fun toMustacheContext(adapters: KtmAdapter.Provider, value: {{ simple_name }}{{{ type_parameter }}}): MContext =
-                        MContext.Map { node, tag ->
+                        MContext.Map { _, tag ->
                             when (tag) {
                                 {{# fields }}
                                 {{> _class_field }}

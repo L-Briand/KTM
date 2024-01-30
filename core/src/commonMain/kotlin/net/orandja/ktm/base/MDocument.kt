@@ -12,7 +12,7 @@ sealed interface MDocument {
      * @property content part of the mustache document to render as is.
      * @property sectionLast Whenever this element is the last element of the Section.
      */
-    data class Static(
+    class Static(
         val content: StringBuilder = StringBuilder(),
         var sectionLast: Boolean = false,
     ) : MDocument {
@@ -28,11 +28,12 @@ sealed interface MDocument {
      * @property name Name of the partial tag.
      * @property padding padding to add on each new line during partial render
      */
-    data class Partial(
-        val name: CharSequence,
+    class Partial(
+        val name: Array<String>,
         var padding: CharSequence,
     ) : MDocument {
-        override fun toString(): String = ">$name[${padding.length}]"
+        private val realName get() = name.joinToString(".") { it }.ifEmpty { "." }
+        override fun toString(): String = ">$realName[${padding.length}]"
     }
 
 
@@ -50,29 +51,9 @@ sealed interface MDocument {
      * @param name parts of the tag name. Single dot tag should be an empty array.
      * @param escapeHtml if the rendered content of this tag should be html escaped. Normal tags are true.
      */
-    data class Tag(val name: Array<String>, val escapeHtml: Boolean) : MDocument {
-
-        val realName get() = name.joinToString(".") { it }.ifEmpty { "." }
-
+    class Tag(val name: Array<String>, val escapeHtml: Boolean) : MDocument {
+        private val realName get() = name.joinToString(".") { it }.ifEmpty { "." }
         override fun toString(): String = "{{${if (escapeHtml) "" else "&"}$realName}}"
-
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other == null || this::class != other::class) return false
-
-            other as Tag
-
-            if (!name.contentEquals(other.name)) return false
-            if (escapeHtml != other.escapeHtml) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            var result = name.contentHashCode()
-            result = 31 * result + escapeHtml.hashCode()
-            return result
-        }
     }
 
 
@@ -85,7 +66,7 @@ sealed interface MDocument {
      * @param inverted true if the section is inverted
      * @param parts tokens to renders in order inside this section.
      */
-    data class Section(
+    class Section(
         val name: Array<String>,
         val inverted: Boolean,
         val parts: ArrayList<MDocument> = ArrayList(10),
@@ -101,24 +82,6 @@ sealed interface MDocument {
                 it.toString().replace("\n", "\\n").replace("\r", "\\r")
             }
             return "$invertedStr$realName$parts"
-        }
-
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other !is Section) return false
-
-            if (!name.contentEquals(other.name)) return false
-            if (inverted != other.inverted) return false
-            if (parts != other.parts) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            var result = name.contentHashCode()
-            result = 31 * result + inverted.hashCode()
-            result = 31 * result + parts.hashCode()
-            return result
         }
     }
 }

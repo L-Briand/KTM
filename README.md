@@ -39,9 +39,11 @@ dependencies {
     implementation("net.orandja.ktm:core:1.0.0")
 }
 ```
+
 ### Ksp code generator plugin
 
 Enable ksp plugin:
+
 ```kotlin
 plugins {
     // ...

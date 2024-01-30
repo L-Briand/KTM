@@ -2,6 +2,7 @@ package net.orandja.ktm.test.spec
 
 import kotlinx.serialization.json.Json
 import net.orandja.ktm.Ktm
+import net.orandja.ktm.base.MContext
 import net.orandja.ktm.render
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -45,15 +46,22 @@ class SpecificationTest {
 
     class JsonTest(private val test: TestResource.Test) {
         fun execute() {
-            val context = jsonToContext(test.data)
-            val template = Ktm.doc.string(test.template)
-            val partials = test.partials?.let { partials ->
-                Ktm.pool.delegate { name ->
-                    partials[name]?.let(::string)
+            try {
+                val dataContext = jsonToContext(test.data)
+                val partialsContext = MContext.Map { _, tag ->
+                    Ktm.ctx.document(test.partials?.get(tag))
                 }
-            } ?: Ktm.pool.empty
-            val rendered = template.render(context, partials)
-            assertEquals(test.expected, rendered, "\n## ${test.name}:\n")
+
+                val context =
+                    if (dataContext is MContext.Map) Ktm.ctx.merge(dataContext, partialsContext)
+                    else dataContext
+
+                val template = Ktm.doc.string(test.template)
+                val rendered = template.render(context)
+                assertEquals(test.expected, rendered, "\n## ${test.name}:\n")
+            } catch (e: Exception) {
+                throw IllegalStateException("Failed to execute ${test.name}", e)
+            }
         }
     }
 }

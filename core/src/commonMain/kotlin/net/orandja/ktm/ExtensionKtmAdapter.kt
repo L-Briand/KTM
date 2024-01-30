@@ -5,7 +5,9 @@ import net.orandja.ktm.adapters.KtmAdapter
 import net.orandja.ktm.adapters.KtmAdapterModule
 import net.orandja.ktm.adapters.KtmAdapterProviderBuilder
 import net.orandja.ktm.base.MContext
+import net.orandja.ktm.base.MDocument
 import net.orandja.ktm.base.NodeContext
+import net.orandja.ktm.composition.builder.context.ContextDocument
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
@@ -77,6 +79,7 @@ inline fun <reified T : R, reified R> KtmAdapter.Provider.delegate(
 @Throws(NoProviderException::class)
 inline fun <reified T> KtmAdapter.Provider.contextOf(value: T?): MContext = when (value) {
     is MContext -> value
+    is MDocument -> ContextDocument(value)
     null -> MContext.No
     else -> getOrThrow<T>().toMustacheContext(this, value)
 }

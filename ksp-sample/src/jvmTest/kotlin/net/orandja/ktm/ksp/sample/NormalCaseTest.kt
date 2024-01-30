@@ -1,6 +1,8 @@
 package net.orandja.ktm.ksp.sample
 
 import net.orandja.ktm.Ktm
+import net.orandja.ktm.base.MContext
+import net.orandja.ktm.base.NodeContext
 import net.orandja.ktm.contextOf
 import net.orandja.ktm.render
 import kotlin.test.Test

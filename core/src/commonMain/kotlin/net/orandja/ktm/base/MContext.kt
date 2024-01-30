@@ -71,6 +71,17 @@ sealed interface MContext {
     }
 
     /**
+     * A contextual element used when rendering a partial element in a document.
+     * ```kotlin
+     * {{> partial }}
+     * ```
+     */
+    fun interface Document : MContext {
+        fun get(node: NodeContext): MDocument
+        override fun <In, Out> accept(context: In, visitor: Visitor<In, Out>) = visitor.document(context, this)
+    }
+
+    /**
      * Special Contextual element.
      * This is used to create contexts on the fly.
      * This element should return any other element.
@@ -79,6 +90,7 @@ sealed interface MContext {
         fun get(node: NodeContext): MContext
         override fun <In, Out> accept(context: In, visitor: Visitor<In, Out>) = visitor.delegate(context, this)
     }
+
 
     /**
      * By providing a [visitor], one can decide what to do.
@@ -92,20 +104,22 @@ sealed interface MContext {
      * Visitor interface for [MContext]
      */
     interface Visitor<in In, out Out> {
-        fun no(data: In, value: No): Out
-        fun yes(data: In, value: Yes): Out
+        fun no(data: In, no: No): Out
+        fun yes(data: In, yes: Yes): Out
         fun value(data: In, value: Value): Out
         fun map(data: In, map: Map): Out
         fun list(data: In, list: List): Out
+        fun document(data: In, document: Document): Out
         fun delegate(data: In, delegate: Delegate): Out
 
         /** Visitor class with [default] [Out] return type on each method */
         open class Default<in In, out Out>(val default: Out) : Visitor<In, Out> {
-            override fun no(data: In, value: No): Out = default
-            override fun yes(data: In, value: Yes): Out = default
+            override fun no(data: In, no: No): Out = default
+            override fun yes(data: In, yes: Yes): Out = default
             override fun value(data: In, value: Value): Out = default
             override fun map(data: In, map: Map): Out = default
             override fun list(data: In, list: List): Out = default
+            override fun document(data: In, document: Document): Out = default
             override fun delegate(data: In, delegate: Delegate): Out = default
         }
     }

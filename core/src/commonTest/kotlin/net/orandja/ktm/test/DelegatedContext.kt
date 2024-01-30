@@ -13,8 +13,9 @@ class DelegatedContext {
         }
         "value" by delegateValue { findValue("secret") ?: "not found" }
         "map" by delegateMap {
-            make {
-                "secret" by findValue("secret")
+            when (it) {
+                "~secret" -> find("secret")
+                else -> null
             }
         }
         "list" by delegateList {
@@ -24,12 +25,10 @@ class DelegatedContext {
 
     @Test
     fun testDelegatedContext() {
-        // val node = NodeContext(context, null).find(arrayOf("delegate"))
-
-//        assertEquals("secret", "{{ secret }}".render(context))
+        assertEquals("secret", "{{ secret }}".render(context))
         assertEquals("secret", "{{ delegate }}".render(context))
-//        assertEquals("secret", "{{ value }}".render(context))
-//        assertEquals("secret", "{{ map.secret }}".render(context))
-//        assertEquals("secret", "{{# list }}{{.}}{{/ list }}".render(context))
+        assertEquals("secret", "{{ value }}".render(context))
+        assertEquals("secret", "{{ map.~secret }}".render(context))
+        assertEquals("secret", "{{# list }}{{.}}{{/ list }}".render(context))
     }
 }

@@ -36,8 +36,7 @@ object Parser {
             // If the line is white, we register only tags elements
             else {
                 for (peek in peeked) {
-                    if (containPartial && peek.type == Token.WHITE_CONTENT)
-                        partialPadding.append(peek.content)
+                    if (containPartial && peek.type == Token.WHITE_CONTENT) partialPadding.append(peek.content)
                     if (peek.isTag) register(peek)
                 }
                 drop()
@@ -72,7 +71,9 @@ object Parser {
             }
 
             Token.TAG_PARTIAL -> {
-                nodes[nodes.size - 1].parts.add(MDocument.Partial(token.content, partialPadding.toString()))
+                nodes[nodes.size - 1].parts.add(
+                    MDocument.Partial(tokenizeTagName(token.content), partialPadding.toString())
+                )
             }
 
             Token.TAG_SECTION, Token.TAG_INVERT -> {

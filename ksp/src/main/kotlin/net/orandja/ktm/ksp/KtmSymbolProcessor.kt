@@ -5,9 +5,9 @@ import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.validate
+import net.orandja.ktm.ksp.generation.AdapterGenerator
+import net.orandja.ktm.ksp.generation.AutoGenerator
 import net.orandja.ktm.ksp.generation.AutoToken
-import net.orandja.ktm.ksp.generation.GenAdapter
-import net.orandja.ktm.ksp.generation.GenAutoToken
 import net.orandja.ktm.ksp.generation.GeneratedFile
 import net.orandja.ktm.ksp.visitor.TokenBuilderVisitor
 import net.orandja.ktm.ksp.visitor.VisitorResult
@@ -34,7 +34,7 @@ class KtmSymbolProcessor(private val env: SymbolProcessorEnvironment) : SymbolPr
                 VisitorResult.Empty -> return@forEach
                 is VisitorResult.Failure -> printFailure(element)
                 is VisitorResult.ClassAdapterToken -> {
-                    generatedFile += GenAdapter.generateKtmAdapterFile(logger, env.codeGenerator, element)
+                    generatedFile += AdapterGenerator.generateKtmAdapterFile(logger, env.codeGenerator, element)
                 }
 
                 else -> logger.error("@KtmContext is applied on an invalid element", element.baseNode)
@@ -49,7 +49,7 @@ class KtmSymbolProcessor(private val env: SymbolProcessorEnvironment) : SymbolPr
         configuration.packageName ?: return
         val generated = generatedFile.map { AutoToken.GeneratedAdapter(it.packageName, it.fileName) }
         val autoToken = AutoToken(configuration.packageName, generated)
-        GenAutoToken.generateAutoKtmAdapters(logger, env.codeGenerator, autoToken)
+        AutoGenerator.generateAutoKtmAdapters(logger, env.codeGenerator, autoToken)
     }
 
     private fun printFailure(element: VisitorResult.Failure, padding: String = "") {

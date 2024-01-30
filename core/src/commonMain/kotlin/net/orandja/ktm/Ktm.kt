@@ -5,7 +5,6 @@ import net.orandja.ktm.adapters.KtmAdapterModule
 import net.orandja.ktm.adapters.KtmAdapterProviderBuilder
 import net.orandja.ktm.composition.builder.ContextFactory
 import net.orandja.ktm.composition.builder.DocumentFactory
-import net.orandja.ktm.composition.builder.PoolFactory
 import net.orandja.ktm.composition.parser.Parser
 import net.orandja.ktm.composition.render.Renderer
 import kotlin.jvm.JvmStatic
@@ -38,12 +37,6 @@ object Ktm {
      */
     @JvmStatic
     val doc = DocumentFactory(parser)
-
-    /**
-     * Factory for creating partials
-     */
-    @JvmStatic
-    val pool = PoolFactory(parser)
 
     /**
      * Provider for getting Contexts adapter

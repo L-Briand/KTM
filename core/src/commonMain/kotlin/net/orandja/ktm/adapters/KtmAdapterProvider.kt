@@ -10,6 +10,14 @@ class KtmAdapterProvider(
     private val adapters: Map<KType, KtmAdapter<*>>
 ) : BaseKtmAdapterProvider() {
     override fun get(kType: KType): KtmAdapter<*>? {
-        return adapters[kType] ?: backing?.get(kType) ?: super.get(kType)
+        adapters[kType]?.let { return it }
+        if (kType.arguments.isNotEmpty()) {
+            // Get a matching type with star projection on all type argument
+            val match = adapters.entries.find {
+                it.key.classifier == kType.classifier && it.key.arguments.all { it.variance == null }
+            }
+            if (match != null) return match.value
+        }
+        return backing?.get(kType) ?: super.get(kType)
     }
 }

@@ -2,6 +2,7 @@
 
 package net.orandja.ktm.composition.render
 
+import net.orandja.ktm.Ktm
 import net.orandja.ktm.base.*
 
 /**
@@ -13,18 +14,17 @@ import net.orandja.ktm.base.*
 @Suppress("NOTHING_TO_INLINE")
 open class Renderer {
 
-    fun renderToString(document: MDocument, context: MContext, partial: MPool): String {
+    fun renderToString(document: MDocument, context: MContext): String {
         val result = StringBuilder(128)
-        render(document, NodeContext(context), partial) { result.append(it) }
+        render(document, NodeContext(context)) { result.append(it) }
         return result.toString()
     }
 
     fun render(
         document: MDocument,
         context: MContext,
-        pool: MPool,
         writer: (CharSequence) -> Unit,
-    ) = render(document, NodeContext(context), pool, writer)
+    ) = render(document, NodeContext(context), writer)
 
     /**
      * Render the given mustache [document] into [writer].
@@ -38,36 +38,34 @@ open class Renderer {
     open fun render(
         document: MDocument,
         context: NodeContext,
-        pool: MPool,
         writer: (CharSequence) -> Unit,
     ) {
         when (document) {
-            is MDocument.Section -> renderSection(document, context, pool, writer)
+            is MDocument.Section -> renderSection(document, context, writer)
             is MDocument.Static -> renderStatic(document, writer)
             is MDocument.Tag -> renderTag(document, context, writer)
-            is MDocument.Partial -> renderPartial(document, context, pool, writer)
+            is MDocument.Partial -> renderPartial(document, context, writer)
         }
     }
 
     protected open fun renderSection(
         document: MDocument.Section,
         context: NodeContext,
-        pool: MPool,
         writer: (CharSequence) -> Unit,
     ) {
         val node = context.find(document.name)
         when {
             document.inverted -> {
-                if (node == null) for (part in document.parts) render(part, context, pool, writer)
+                if (node == null) for (part in document.parts) render(part, context, writer)
                 else if (node.accept(context, UseInvertedVisitor)) {
                     val newNode = NodeContext(node, context)
-                    for (part: MDocument in document.parts) render(part, newNode, pool, writer)
+                    for (part: MDocument in document.parts) render(part, newNode, writer)
                 }
             }
 
             node != null -> {
-                node.accept(context, SectionVisitor { newNode ->
-                    for (part in document.parts) render(part, newNode, pool, writer)
+                node.accept(context, SectionContextVisitor { newNode ->
+                    for (part in document.parts) render(part, newNode, writer)
                 })
             }
         }
@@ -76,15 +74,15 @@ open class Renderer {
     protected open fun renderPartial(
         document: MDocument.Partial,
         context: NodeContext,
-        pool: MPool,
         writer: (CharSequence) -> Unit
     ) {
-        val partialDocument = pool[document.name.toString()] ?: return
+        val partial = context.find(document.name) ?: return
+        val newDocument = partial.accept(context, PartialDocumentFinderVisitor) ?: return
         val spaces = document.padding
-        if (spaces.length == 0) render(partialDocument, context, pool, writer)
+        if (spaces.length == 0) render(newDocument, context, writer)
         else {
             writer(spaces)
-            PartialRenderer(spaces).render(partialDocument, context, pool, writer)
+            PartialRenderer(spaces).render(newDocument, context, writer)
         }
     }
 
@@ -105,8 +103,8 @@ open class Renderer {
         writer(document.content)
 
 
-    object UseInvertedVisitor : MContext.Visitor.Default<NodeContext, Boolean>(false) {
-        override fun no(data: NodeContext, value: MContext.No) = true
+    private object UseInvertedVisitor : MContext.Visitor.Default<NodeContext, Boolean>(false) {
+        override fun no(data: NodeContext, no: MContext.No) = true
         override fun list(data: NodeContext, list: MContext.List): Boolean {
             return !list.iterator(data).hasNext()
         }
@@ -115,10 +113,10 @@ open class Renderer {
             delegate.get(data).accept(data, this)
     }
 
-    class SectionVisitor(
+    private class SectionContextVisitor(
         val onNewNode: (NodeContext) -> Unit,
     ) : MContext.Visitor<NodeContext, Unit> {
-        override fun yes(data: NodeContext, value: MContext.Yes) = onNewNode(data)
+        override fun yes(data: NodeContext, yes: MContext.Yes) = onNewNode(data)
         override fun value(data: NodeContext, value: MContext.Value) =
             if (data.current == value) onNewNode(data) else onNewNode(NodeContext(value, data))
 
@@ -129,7 +127,16 @@ open class Renderer {
             for (context in list.iterator(data)) onNewNode(NodeContext(context, data))
         }
 
+        override fun document(data: NodeContext, document: MContext.Document) {}
         override fun delegate(data: NodeContext, delegate: MContext.Delegate) = delegate.get(data).accept(data, this)
-        override fun no(data: NodeContext, value: MContext.No) {}
+        override fun no(data: NodeContext, no: MContext.No) {}
+    }
+
+    private object PartialDocumentFinderVisitor
+        : MContext.Visitor.Default<NodeContext, MDocument?>(null) {
+        override fun document(data: NodeContext, document: MContext.Document): MDocument = document.get(data)
+        override fun value(data: NodeContext, value: MContext.Value): MDocument = Ktm.doc.string(value.get(data))
+        override fun delegate(data: NodeContext, delegate: MContext.Delegate): MDocument? =
+            delegate.get(data).accept(data, this)
     }
 }

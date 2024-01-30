@@ -24,7 +24,7 @@ value class DelegatedValue(
 value class DelegatedMap(
     private val delegate: NodeContext.(tag: String) -> MContext?,
 ) : MContext.Map {
-    override fun get(node: NodeContext, tag: String): MContext? = node.delegate(tag)
+    override fun get(node: NodeContext, tag: String): MContext? = NodeContext(this, node).delegate(tag)
     override fun toString(): String = "DelegatedMap"
 }
 

@@ -46,18 +46,26 @@ open class NodeContext(
         val node = findUp(tag, first) ?: return null
         // End of the branch we found a matching tag!
         if (!tags.hasNext()) return node
-        return if (node is MContext.Map) NodeContext(node, this).findDown(tags, false) else null
+        return node.accept(this, nextNodeVisitor)?.findDown(tags, false)
     }
 
     private fun findUp(tag: String, checkOnParent: Boolean): MContext? =
-        current.accept(tag, tagVisitor) ?: if (checkOnParent) parent?.findUp(tag, true) else null
+        current.accept(tag, contextVisitor) ?: if (checkOnParent) parent?.findUp(tag, true) else null
 
-    private val tagVisitor = TagVisitor()
+    private val contextVisitor = ContextVisitor()
 
-    inner class TagVisitor : MContext.Visitor.Default<String, MContext?>(null) {
+    inner class ContextVisitor : MContext.Visitor.Default<String, MContext?>(null) {
         override fun map(data: String, map: MContext.Map): MContext? = map.get(this@NodeContext, data)
         override fun delegate(data: String, delegate: MContext.Delegate): MContext? =
             delegate.get(this@NodeContext).accept(data, this)
+    }
+
+    private val nextNodeVisitor = NextNodeVisitor()
+
+    inner class NextNodeVisitor : MContext.Visitor.Default<NodeContext, NodeContext?>(null) {
+        override fun map(data: NodeContext, map: MContext.Map): NodeContext = NodeContext(map, data)
+        override fun delegate(data: NodeContext, delegate: MContext.Delegate): NodeContext? =
+            delegate.get(data).accept(data, this)
     }
 
     override fun toString(): String = if (parent == null) "Node($current)"
