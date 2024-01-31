@@ -35,5 +35,5 @@ fun toPrimitive(json: JsonPrimitive): MContext {
         false -> return MContext.No
         null -> Unit
     }
-    return Ktm.ctx.string(json.content)
+    return Ktm.ctx.value(json.content)
 }

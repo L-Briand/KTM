@@ -2,8 +2,8 @@ package net.orandja.ktm.test
 
 import net.orandja.ktm.*
 import net.orandja.ktm.adapters.DelegatedKtmAdapter
-import net.orandja.ktm.adapters.KtmMapAdapter
-import net.orandja.ktm.composition.builder.ContextMapBuilder
+import net.orandja.ktm.adapters.KtmAdapter
+import net.orandja.ktm.base.MContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -14,9 +14,11 @@ class AdapterExtensions {
     }
 
     open class Foo(val value: String) {
-        object Adapter : KtmMapAdapter<Foo> {
-            override fun ContextMapBuilder.configure(value: Foo) {
-                "value" by value.value
+        object Adapter : KtmAdapter<Foo> {
+            override fun toMustacheContext(adapters: KtmAdapter.Provider, value: Foo): MContext {
+                return Ktm.ctx.make {
+                    "value" by value.value
+                }
             }
         }
     }
@@ -25,9 +27,11 @@ class AdapterExtensions {
     class Merged(val value: String)
 
 
-    private val MergedKtmAdapter = KtmMapAdapter<Merged> {
-        configureLike(EnumVariants.FOO)
-        configureLike(ExtendedFoo(it.value))
+    private val MergedKtmAdapter = KtmAdapter<Merged> { adapters, value ->
+        Ktm.ctx.make(adapters) {
+            like(EnumVariants.FOO)
+            like(ExtendedFoo(value.value))
+        }
     }
 
     private val adapters = Ktm.adapters.make {

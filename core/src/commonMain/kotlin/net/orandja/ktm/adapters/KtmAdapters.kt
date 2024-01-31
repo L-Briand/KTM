@@ -21,18 +21,18 @@ class DelegatedKtmAdapter<T : R, R>(
 
 object AnyKtmAdapter : KtmAdapter<Any?> {
     override fun toMustacheContext(adapters: KtmAdapter.Provider, value: Any?): MContext =
-        Ktm.ctx.string(value?.toString())
+        Ktm.ctx.value(value?.toString())
 
     override fun toString(): String = "KtmAdapter(Any)"
 }
 
 internal object StringKtmAdapter : KtmAdapter<String?> {
-    override fun toMustacheContext(adapters: KtmAdapter.Provider, value: String?): MContext = Ktm.ctx.string(value)
+    override fun toMustacheContext(adapters: KtmAdapter.Provider, value: String?): MContext = Ktm.ctx.value(value)
     override fun toString(): String = "KtmAdapter(String)"
 }
 
 internal object BooleanKtmAdapter : KtmAdapter<Boolean?> {
-    override fun toMustacheContext(adapters: KtmAdapter.Provider, value: Boolean?): MContext = Ktm.ctx.bool(value)
+    override fun toMustacheContext(adapters: KtmAdapter.Provider, value: Boolean?): MContext = Ktm.ctx.value(value)
     override fun toString(): String = "KtmAdapter(Boolean)"
 }
 

@@ -34,7 +34,7 @@ inline fun <reified T : Enum<T>> T.EnumMustacheContext(
     override fun get(node: NodeContext, tag: String): MContext? = when (tag) {
         name -> MContext.Yes
         in values.map { it.name } -> MContext.No
-        "ordinal" -> Ktm.ctx.string(ordinal.toString())
+        "ordinal" -> Ktm.ctx.value(ordinal.toString())
         "name" -> ContextValue(name)
         "values" -> valuesContext
         else -> null

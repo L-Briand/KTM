@@ -1,7 +1,7 @@
 package net.orandja.ktm.test
 
 import net.orandja.ktm.*
-import net.orandja.ktm.adapters.KtmMapAdapter
+import net.orandja.ktm.adapters.KtmAdapter
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -21,11 +21,13 @@ class EnumTransformationTest {
         assertEquals("<FOO><BAR><BAZ>", "{{# values }}<{{.}}>{{/ values }}".render(context))
     }
 
-    val CustomAdapter = KtmMapAdapter<EnumVariants> { value ->
-        when (value) {
-            EnumVariants.FOO -> "FOO" by "A"
-            EnumVariants.BAR -> "BAR" by "B"
-            EnumVariants.BAZ -> "BAZ" by "C"
+    val CustomAdapter = KtmAdapter<EnumVariants> { adapters, value ->
+        Ktm.ctx.make {
+            when (value) {
+                EnumVariants.FOO -> "FOO" by "A"
+                EnumVariants.BAR -> "BAR" by "B"
+                EnumVariants.BAZ -> "BAZ" by "C"
+            }
         }
     }
 

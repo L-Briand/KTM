@@ -2,7 +2,6 @@ package net.orandja.ktm.adapters
 
 import net.orandja.ktm.Ktm
 import net.orandja.ktm.base.MContext
-import net.orandja.ktm.composition.builder.ContextMapBuilder
 import kotlin.reflect.KType
 
 /**
@@ -27,29 +26,4 @@ fun interface KtmAdapter<T : Any?> {
     fun interface Provider {
         fun get(kType: KType): KtmAdapter<*>?
     }
-}
-
-/**
- * Extension of [KtmAdapter] where the superclass only need to configure the content of the context.
- *
- * ```kotlin
- * data class User(val name: String)
- *
- * val userAdapter = KtmMapAdapter<User> { value ->
- *     // 'this' is the same as Ktm.ctx.make { ... }
- *     "name" by value.name
- * }
- *
- * val context = adapter.toMustacheContext(User("John"))
- * "Hello {{ name }}".render(context) // Hello John
- * ```
- *
- * @see ContextMapBuilder
- * @see KtmAdapter
- */
-fun interface KtmMapAdapter<T> : KtmAdapter<T> {
-    override fun toMustacheContext(adapters: KtmAdapter.Provider, value: T): MContext =
-        Ktm.ctx.make(adapters) { configure(value) }
-
-    fun ContextMapBuilder.configure(value: T)
 }

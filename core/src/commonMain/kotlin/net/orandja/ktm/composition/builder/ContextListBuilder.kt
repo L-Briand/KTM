@@ -2,6 +2,7 @@ package net.orandja.ktm.composition.builder
 
 import net.orandja.ktm.adapters.KtmAdapter
 import net.orandja.ktm.base.MContext
+import net.orandja.ktm.base.MDocument
 import net.orandja.ktm.contextOf
 
 class ContextListBuilder(
@@ -11,11 +12,15 @@ class ContextListBuilder(
     fun build(): MContext = if (backing.isEmpty()) yes else ctxList(backing)
 
     operator fun CharSequence?.unaryPlus() {
-        backing += string(this)
+        backing += value(this)
     }
 
     operator fun Boolean.unaryPlus() {
         backing += if (this) yes else no
+    }
+
+    operator fun MDocument.unaryPlus() {
+        backing += ctxDocument(this)
     }
 
     operator fun MContext?.unaryPlus() {

@@ -6,7 +6,6 @@ import com.google.devtools.ksp.processing.KSPLogger
 import net.orandja.ktm.EnumKtmAdapter
 import net.orandja.ktm.Ktm
 import net.orandja.ktm.base.MContext
-import net.orandja.ktm.base.NodeContext
 import net.orandja.ktm.ksp.visitor.VisitorResult
 import net.orandja.ktm.streamRender
 import net.orandja.ktm.toMustacheDocument
@@ -45,8 +44,8 @@ internal object AdapterGenerator {
                 tk.simpleName,
                 tk.sanitizedSimpleName,
                 Ktm.ctx.make(adapters) {
-                    configureLike(tk)
-                    addBackingContext(partials)
+                    like(tk)
+                    like(partials)
                 }
             )
 
@@ -55,8 +54,8 @@ internal object AdapterGenerator {
                 tk.simpleName,
                 tk.sanitizedSimpleName,
                 Ktm.ctx.make(adapters) {
-                    addBackingContext(partials)
-                    configureLike(tk)
+                    like(partials)
+                    like(tk)
                 }
             )
 

@@ -6,6 +6,9 @@ import net.orandja.ktm.base.MDocument
 import net.orandja.ktm.composition.builder.ContextMapBuilder
 
 
+inline fun <reified T> MDocument.render(context: T) = render(Ktm.adapters.contextOf(context))
+
+
 /**
  * Renders the given MDocument using the provided MContext and MPool.
  *

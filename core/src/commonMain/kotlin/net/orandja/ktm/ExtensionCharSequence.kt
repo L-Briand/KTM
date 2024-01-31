@@ -14,6 +14,14 @@ import net.orandja.ktm.composition.builder.ContextMapBuilder
  */
 fun CharSequence.toMustacheDocument(): MDocument = Ktm.doc.string(this)
 
+
+/**
+ * Renders the given `CharSequence` like a [MDocument] with the provided [context]
+ * It will find the correct context in the default Ktm adapters
+ */
+inline fun <reified T> CharSequence.render(context: T, adapters: KtmAdapter.Provider = Ktm.adapters) =
+    toMustacheDocument().render(adapters.contextOf(context))
+
 /**
  * Renders the given `CharSequence` like a [MDocument] with the provided [MContext]
  *

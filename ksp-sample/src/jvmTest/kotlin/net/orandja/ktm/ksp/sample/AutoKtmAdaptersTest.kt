@@ -1,7 +1,7 @@
 package net.orandja.ktm.ksp.sample
 
 import net.orandja.ktm.Ktm
-import net.orandja.ktm.adapters.KtmMapAdapter
+import net.orandja.ktm.adapters.KtmAdapter
 import net.orandja.ktm.base.MContext
 import net.orandja.ktm.makeKtmAdapterModule
 import net.orandja.ktm.render
@@ -12,8 +12,10 @@ import kotlin.test.assertEquals
 class AutoKtmAdaptersTest {
     class Foo(val foo: String)
 
-    private val FooAdapter = KtmMapAdapter<Foo> {
-        "foo" by it.foo
+    private val FooAdapter = KtmAdapter<Foo> { adapters, value ->
+        Ktm.ctx.make(adapters) {
+            "foo" by value.foo
+        }
     }
 
     val customModule = makeKtmAdapterModule {

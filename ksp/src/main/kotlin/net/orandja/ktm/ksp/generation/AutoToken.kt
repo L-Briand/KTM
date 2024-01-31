@@ -1,6 +1,7 @@
 package net.orandja.ktm.ksp.generation
 
-import net.orandja.ktm.adapters.KtmMapAdapter
+import net.orandja.ktm.Ktm
+import net.orandja.ktm.adapters.KtmAdapter
 import net.orandja.ktm.contextOf
 import org.intellij.lang.annotations.Language
 
@@ -11,9 +12,11 @@ data class AutoToken(
 
     companion object {
         const val FILE_NAME = "AutoKtmAdaptersModule"
-        val Adapter = KtmMapAdapter<AutoToken> {
-            "package_name" by it.packageName
-            "adapters" by contextOf(it.adapters)
+        val Adapter = KtmAdapter<AutoToken> { adapters, value ->
+            Ktm.ctx.make(adapters) {
+                "package_name" by value.packageName
+                "adapters" by contextOf(value.adapters)
+            }
         }
 
         @Language("mustache")
@@ -41,9 +44,11 @@ data class AutoToken(
         val fileName: String,
     ) {
         companion object {
-            val Adapter = KtmMapAdapter<GeneratedAdapter> {
-                "package_name" by it.packageName
-                "file_name" by it.fileName
+            val Adapter = KtmAdapter<GeneratedAdapter> { adapters, value ->
+                Ktm.ctx.make(adapters) {
+                    "package_name" by value.packageName
+                    "file_name" by value.fileName
+                }
             }
         }
     }

@@ -1,8 +1,6 @@
 package net.orandja.ktm.ksp.sample
 
 import net.orandja.ktm.Ktm
-import net.orandja.ktm.base.MContext
-import net.orandja.ktm.base.NodeContext
 import net.orandja.ktm.contextOf
 import net.orandja.ktm.render
 import kotlin.test.Test
@@ -34,7 +32,7 @@ class NormalCaseTest {
         val adapters = AutoKtmAdaptersModule.createAdapters()
         val context = adapters.contextOf(data)
         val richContext = Ktm.ctx.make(adapters) {
-            configureLike(data)
+            like(data)
             "id" by "secret"
         }
         assertEquals("", "{{ id }}".render(context))

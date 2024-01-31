@@ -49,7 +49,9 @@ class SpecificationTest {
             try {
                 val dataContext = jsonToContext(test.data)
                 val partialsContext = MContext.Map { _, tag ->
-                    Ktm.ctx.document(test.partials?.get(tag))
+                    test.partials ?: return@Map null
+                    val content = test.partials[tag] ?: return@Map null
+                    Ktm.ctx.document(content)
                 }
 
                 val context =

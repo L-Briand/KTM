@@ -50,6 +50,7 @@ sealed interface MContext {
      */
     fun interface Map : MContext {
         fun get(node: NodeContext, tag: String): MContext?
+        fun get(tag: String): MContext? = get(NodeContext(this), tag)
         override fun <In, Out> accept(context: In, visitor: Visitor<In, Out>) = visitor.map(context, this)
     }
 

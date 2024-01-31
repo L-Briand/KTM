@@ -26,30 +26,30 @@ open class ContextFactory {
     val no = MContext.No
     val yes = MContext.Yes
 
-    inline fun string(value: CharSequence?) = if (value == null) no else ctxValue(value)
-    inline fun string(value: CharSequence) = ctxValue(value)
+    inline fun value(value: CharSequence?) = if (value == null) no else ctxValue(value)
+    inline fun value(value: CharSequence) = ctxValue(value)
 
-    inline fun bool(value: Boolean?) = if (value == null) no else bool(value)
-    inline fun bool(value: Boolean) = if (value) yes else no
+    inline fun value(value: Boolean?) = if (value == null) no else value(value)
+    inline fun value(value: Boolean) = if (value) yes else no
 
     inline fun document(value: CharSequence?) = if (value == null) no else document(value)
     inline fun document(value: CharSequence) = ctxDocument(Ktm.doc.string(value))
 
     fun list(vararg items: String) = list(items.toList())
     fun list(items: Iterable<String?>?) = if (items == null) no else {
-        val contexts = items.map(::string)
+        val contexts = items.map(::value)
         if (contexts.isEmpty()) yes else ctxList(contexts)
     }
 
     fun map(vararg group: Pair<String, String>) = map(group.toMap())
     fun map(group: Map<String, String?>?) = if (group == null) no else {
-        val contexts = group.mapValues { string(it.value) }
+        val contexts = group.mapValues { value(it.value) }
         if (contexts.isEmpty()) yes else ctxMap(contexts)
     }
 
     fun merge(vararg contexts: MContext) = merge(contexts.toList())
     fun merge(contexts: List<MContext>): MContext.Map {
-        val mapContexts = contexts.filter { it is MContext.Map }
+        val mapContexts = contexts.filter { it is MContext.Map }.asReversed()
         @Suppress("UNCHECKED_CAST")
         return MultiMapContext(mapContexts as List<MContext.Map>)
     }

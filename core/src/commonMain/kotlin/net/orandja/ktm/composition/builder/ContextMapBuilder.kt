@@ -1,7 +1,6 @@
 package net.orandja.ktm.composition.builder
 
 import net.orandja.ktm.adapters.KtmAdapter
-import net.orandja.ktm.adapters.KtmMapAdapter
 import net.orandja.ktm.base.MContext
 import net.orandja.ktm.base.MDocument
 import net.orandja.ktm.composition.builder.context.ContextMap
@@ -36,7 +35,7 @@ class ContextMapBuilder(
 
 
     infix fun String.by(value: CharSequence?) {
-        getUpdatableContext().value[this] = string(value)
+        getUpdatableContext().value[this] = value(value)
     }
 
     infix fun String.by(value: Boolean) {
@@ -71,13 +70,12 @@ class ContextMapBuilder(
         key by value
     }
 
-    fun addBackingContext(context: MContext) {
+    fun like(context: MContext) {
         context.accept(Unit, backingContextAdder)
     }
 
-    inline fun <reified T> configureLike(value: T, adapter: KtmAdapter<T> = getOrThrow()) {
-        if (adapter is KtmMapAdapter<T>) with(adapter) { configure(value) }
-        else addBackingContext(adapter.toMustacheContext(this, value))
+    inline fun <reified T> like(value: T, adapter: KtmAdapter<T> = getOrThrow()) {
+        like(adapter.toMustacheContext(this, value))
     }
 
     private val backingContextAdder = object : MContext.Visitor.Default<Unit, Unit>(Unit) {

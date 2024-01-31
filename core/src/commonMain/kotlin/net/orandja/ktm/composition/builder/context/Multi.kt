@@ -13,9 +13,8 @@ import kotlin.jvm.JvmInline
 @JvmInline
 value class MultiMapContext(val contexts: List<MContext.Map>) : MContext.Map {
     override fun get(node: NodeContext, tag: String): MContext? {
-        val newNode = NodeContext(this, node)
         for (ctx in contexts) {
-            return ctx.get(newNode, tag) ?: continue
+            return ctx.get(node, tag) ?: continue
         }
         return null
     }
