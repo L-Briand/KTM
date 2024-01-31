@@ -18,7 +18,6 @@ package net.orandja.ktm.ksp
  * ```
  *
  * @see KtmContext
- * @see KtmDynamic
  */
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.SOURCE)

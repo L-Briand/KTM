@@ -99,15 +99,17 @@ sealed class AdapterToken(val kind: Kind) {
                 data object {{ sanitized_simple_name }}KtmAdapter : KtmAdapter<{{ simple_name }}{{{ type_parameter }}}> {
                     override fun toString(): String = "{{ simple_name }}KtmAdapter"
                     
-                    override fun toMustacheContext(adapters: KtmAdapter.Provider, value: {{ simple_name }}{{{ type_parameter }}}): MContext =
-                        MContext.Map { _, tag ->
-                            when (tag) {
-                                {{# fields }}
-                                {{> _class_field }}
-                                {{/fields}}
-                                else -> null
-                            }
+                    override fun toMustacheContext(
+                        adapters: KtmAdapter.Provider, 
+                        value: {{ simple_name }}{{{ type_parameter }}}
+                    ): MContext = MContext.Map { _, tag ->
+                        when (tag) {
+                            {{# fields }}
+                            {{> _class_field }}
+                            {{/fields}}
+                            else -> null
                         }
+                    }
                 }
             """.trimIndent()
         }
@@ -117,7 +119,6 @@ sealed class AdapterToken(val kind: Kind) {
         val name: String,
         val fieldName: String,
         val isCallable: Boolean,
-        val isDynamic: Boolean,
         val nodeAsParameter: Boolean,
         val nodeAsReceiver: Boolean,
         val isFunction: Boolean,
@@ -129,7 +130,6 @@ sealed class AdapterToken(val kind: Kind) {
                     "name" by value.name
                     "fieldName" by value.fieldName
                     "isCallable" by value.isCallable
-                    "isDynamic" by if (value.isCallable) false else value.isDynamic
                     "isFunction" by value.isFunction
                     "node" by (value.nodeAsParameter || value.nodeAsReceiver)
                     "nodeReceiver" by (value.isCallable && value.isFunction && value.nodeAsReceiver)
@@ -146,11 +146,7 @@ sealed class AdapterToken(val kind: Kind) {
                         "{{^nodeReceiver}}$context{{/nodeReceiver}}"
 
             @Language("mustache")
-            private val dynamic =
-                "{{#isDynamic}}Ktm.ctx.delegate { {{/isDynamic}}$nodeReceiverEdgeCase{{#isDynamic}} }{{/isDynamic}}"
-
-            @Language("mustache")
-            val Template = "\"{{name}}\" -> $dynamic\n"
+            val Template = "\"{{name}}\" -> $nodeReceiverEdgeCase\n"
         }
     }
 }

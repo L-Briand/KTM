@@ -97,18 +97,13 @@ class TokenBuilderVisitor(private val ktmLogger: KtmLogger) :
         // Name surcharge with @KtmName
         val ktmName = property.annotations.getKtmName(data)
 
-        var isDynamic = false
         var isCallable = false
         var isNodeAsParameter = false
         var isNodeAsReceiver = false
         var isFunction = false
 
         when (typeInformation) {
-            is Classifier -> {
-                // Use of delegate context function with @KtmDynamic
-                isDynamic = property.annotations.isKtmDynamic(data)
-            }
-
+            is Classifier -> {}
             is Callable -> {
                 isCallable = true
                 isNodeAsParameter = typeInformation.isNodeAsParameter
@@ -128,7 +123,6 @@ class TokenBuilderVisitor(private val ktmLogger: KtmLogger) :
             name = ktmName ?: name,
             fieldName = name,
             isCallable = isCallable,
-            isDynamic = isDynamic,
             nodeAsParameter = isNodeAsParameter,
             nodeAsReceiver = isNodeAsReceiver,
             isFunction = isFunction,
@@ -270,7 +264,6 @@ class TokenBuilderVisitor(private val ktmLogger: KtmLogger) :
             name = ktmName ?: name,
             fieldName = name,
             isCallable = true,
-            isDynamic = false, // Functions are by default dynamic.
             nodeAsParameter = isNodeParameter,
             nodeAsReceiver = isNodeReceiver,
             isFunction = true,

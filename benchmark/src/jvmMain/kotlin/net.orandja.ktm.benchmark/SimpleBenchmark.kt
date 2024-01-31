@@ -8,7 +8,7 @@ import net.orandja.ktm.base.MDocument
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(BenchmarkTimeUnit.NANOSECONDS)
-class WinnerBenchmark {
+class SimpleBenchmark {
 
     lateinit var LBriandTemplate: MDocument
     lateinit var SpullaraTemplate: Mustache
@@ -21,15 +21,15 @@ class WinnerBenchmark {
     }
 
     @Benchmark
-    fun LBriandKtmParse() = LBriandKtm.compile(Winner.TEMPLATE)
+    fun LBriandKtmParse() = LBriandKtm.compile(Simple.TEMPLATE)
 
     @Benchmark
-    fun SpullaraMustacheParse() = SpullaraMustache.compile(Winner.TEMPLATE)
+    fun SpullaraMustacheParse() = SpullaraMustache.compile(Simple.TEMPLATE)
 
     @Benchmark
-    fun LBriandKtmRender() = LBriandKtm.render(LBriandTemplate, Winner.CONTEXT)
+    fun LBriandKtmRender() = LBriandKtm.render(LBriandTemplate, Simple.CONTEXT)
 
     @Benchmark
-    fun SpullaraMustacheRender() = SpullaraMustache.render(SpullaraTemplate, Winner.CONTEXT)
+    fun SpullaraMustacheRender() = SpullaraMustache.render(SpullaraTemplate, Simple.CONTEXT)
 
 }

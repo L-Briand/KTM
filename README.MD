@@ -2,6 +2,9 @@
 
 A [Mustache](https://mustache.github.io) implementation in pure Kotlin Multiplatform.
 
+To see how it compares to [Mustache.java](https://github.com/spullara/mustache.java)
+look [here](benchmark/README.MD)
+
 # Import from maven
 
 ### Library
@@ -185,7 +188,7 @@ With it, you can create template contexts anywhere in your code.
 
 Let's assume this document:
 
-```mustache
+```handlebars
 {{# greeting }}
 Hello {{ name }},
 {{/ greeting }}

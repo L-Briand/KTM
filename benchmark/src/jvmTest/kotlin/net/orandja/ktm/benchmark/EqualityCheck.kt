@@ -15,7 +15,7 @@ class EqualityCheck {
 
     @Test
     fun `User Check`() {
-        with(UserBenchmark()) {
+        with(SimpleBenchmark()) {
             setup()
             assertEquals(LBriandKtmRender(), SpullaraMustacheRender())
         }
@@ -23,7 +23,7 @@ class EqualityCheck {
 
     @Test
     fun `Winner Check`() {
-        with(WinnerBenchmark()) {
+        with(ComplexBenchmark()) {
             setup()
             assertEquals(LBriandKtmRender(), SpullaraMustacheRender())
         }
@@ -31,7 +31,7 @@ class EqualityCheck {
 
     @Test
     fun `Winners x1 Check`() {
-        with(WinnersBenchmark()) {
+        with(MultiComplexBenchmark()) {
             setup()
             assertEquals(LBriandKtmRenderX01(), SpullaraMustacheRenderX01())
         }
@@ -39,7 +39,7 @@ class EqualityCheck {
 
     @Test
     fun `Winners x10 Check`() {
-        with(WinnersBenchmark()) {
+        with(MultiComplexBenchmark()) {
             setup()
             assertEquals(LBriandKtmRenderX10(), SpullaraMustacheRenderX10())
         }
@@ -47,7 +47,7 @@ class EqualityCheck {
 
     @Test
     fun `Winners x50 Check`() {
-        with(WinnersBenchmark()) {
+        with(MultiComplexBenchmark()) {
             setup()
             assertEquals(LBriandKtmRenderX50(), SpullaraMustacheRenderX50())
         }

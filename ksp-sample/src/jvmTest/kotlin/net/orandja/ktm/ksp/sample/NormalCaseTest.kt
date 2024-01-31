@@ -18,12 +18,15 @@ class NormalCaseTest {
 
     @Test
     fun propertyClass() {
-        val context = AutoKtmAdaptersModule.createAdapters().contextOf(ClassWithProperty())
+        val data = ClassWithProperty()
+        val context = AutoKtmAdaptersModule.createAdapters().contextOf(data)
         assertEquals("foo", "{{ foo }}".render(context))
         assertEquals("bar", "{{ bar }}".render(context))
         assertEquals("0", "{{ count }}".render(context))
         assertEquals("1", "{{ count }}".render(context))
         assertEquals("", "{{ _count }}".render(context))
+        data.bah = "bah"
+        assertEquals("bah", "{{ bar }}".render(context))
     }
 
     @Test

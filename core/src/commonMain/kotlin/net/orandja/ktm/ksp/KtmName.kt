@@ -19,7 +19,6 @@ package net.orandja.ktm.ksp
  * @param name The name of the element (empty to keep field name)
  *
  * @see KtmContext
- * @see KtmDynamic
  */
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.SOURCE)

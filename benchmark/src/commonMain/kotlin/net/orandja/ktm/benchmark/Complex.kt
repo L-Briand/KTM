@@ -4,8 +4,8 @@ import net.orandja.ktm.ksp.KtmContext
 
 
 @KtmContext
-data class Winner(
-    val user: User,
+data class Complex(
+    val user: Simple,
     val amount: Int,
     val isTaxed: Boolean,
     val rate: Int,
@@ -19,8 +19,8 @@ data class Winner(
             {{/isTaxed}}
         """.trimIndent()
 
-        val CONTEXT = Winner(
-            user = User("John", "doe"),
+        val CONTEXT = Complex(
+            user = Simple("John", "doe"),
             amount = 125_000,
             isTaxed = true,
             rate = 20,

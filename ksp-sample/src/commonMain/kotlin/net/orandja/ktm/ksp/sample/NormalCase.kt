@@ -2,7 +2,6 @@ package net.orandja.ktm.ksp.sample
 
 import net.orandja.ktm.base.NodeContext
 import net.orandja.ktm.ksp.KtmContext
-import net.orandja.ktm.ksp.KtmDynamic
 import net.orandja.ktm.ksp.KtmIgnore
 import net.orandja.ktm.ksp.KtmName
 
@@ -17,11 +16,10 @@ class ClassWithInner {
 data class ClassWithProperty(
     val foo: String = "foo",
     @KtmName("bar")
-    val bah: String = "bar",
+    var bah: String = "bar",
 ) {
     private var _count = 0
 
-    @KtmDynamic
     val count get() = (_count++)
 }
 

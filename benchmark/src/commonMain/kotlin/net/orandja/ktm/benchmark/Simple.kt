@@ -3,7 +3,7 @@ package net.orandja.ktm.benchmark
 import net.orandja.ktm.ksp.KtmContext
 
 @KtmContext
-data class User(
+data class Simple(
     val firstName: String,
     val lastName: String,
 ) {
@@ -12,7 +12,7 @@ data class User(
             <b>User:</b> {{ firstName }} {{ lastName }}
         """.trimIndent()
 
-        val CONTEXT = User("John", "doe")
+        val CONTEXT = Simple("John", "doe")
     }
 }
 

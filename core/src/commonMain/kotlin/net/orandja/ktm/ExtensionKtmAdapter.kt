@@ -26,8 +26,7 @@ class NoProviderException(type: KType) : IllegalArgumentException(
 @Throws(NoProviderException::class)
 @Suppress("UNCHECKED_CAST")
 inline fun <reified T> KtmAdapter.Provider.get(): KtmAdapter<T>? {
-    val kType = typeOf<T>()
-    return get(kType) as? KtmAdapter<T>
+    return get(typeOf<T>()) as? KtmAdapter<T>
 }
 
 

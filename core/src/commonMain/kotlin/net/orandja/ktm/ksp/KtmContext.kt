@@ -20,7 +20,6 @@ import net.orandja.ktm.base.MContext
  * ```
  *
  * @see KtmName
- * @see KtmDynamic
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
