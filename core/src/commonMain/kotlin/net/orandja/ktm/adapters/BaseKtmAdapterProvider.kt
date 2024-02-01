@@ -64,26 +64,26 @@ open class BaseKtmAdapterProvider : KtmAdapter.Provider {
 
         // Adapter for kotlin.collections package
 
-        List::class -> IterableKtmAdapter(kType.arguments[0].type!!)
-        MutableList::class -> IterableKtmAdapter(kType.arguments[0].type!!)
-        Set::class -> IterableKtmAdapter(kType.arguments[0].type!!)
-        MutableSet::class -> IterableKtmAdapter(kType.arguments[0].type!!)
-        Collection::class -> IterableKtmAdapter(kType.arguments[0].type!!)
-        MutableCollection::class -> IterableKtmAdapter(kType.arguments[0].type!!)
-        Iterable::class -> IterableKtmAdapter(kType.arguments[0].type!!)
+        List::class,
+        MutableList::class,
+        Set::class,
+        MutableSet::class,
+        Collection::class,
+        MutableCollection::class,
+        Iterable::class,
         MutableIterable::class -> IterableKtmAdapter(kType.arguments[0].type!!)
 
-        Map::class -> MapKtmAdapter(kType.arguments[1].type!!)
+        Map::class,
         MutableMap::class -> MapKtmAdapter(kType.arguments[1].type!!)
 
-        ListIterator::class -> IteratorKtmAdapter(kType.arguments[0].type!!)
-        Iterator::class -> IteratorKtmAdapter(kType.arguments[0].type!!)
-        MutableIterator::class -> IteratorKtmAdapter(kType.arguments[0].type!!)
+        ListIterator::class,
+        Iterator::class,
+        MutableIterator::class,
         MutableListIterator::class -> IteratorKtmAdapter(kType.arguments[0].type!!)
 
         Sequence::class -> SequenceKtmAdapter(kType.arguments[0].type!!)
 
-        Map.Entry::class -> MapEntryKtmAdapter(kType.arguments[1].type!!)
+        Map.Entry::class,
         MutableMap.MutableEntry::class -> MapEntryKtmAdapter(kType.arguments[1].type!!)
 
         // Adapter for primitive arrays
