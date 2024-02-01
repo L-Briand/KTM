@@ -50,41 +50,41 @@ open class BaseKtmAdapterProvider : KtmAdapter.Provider {
         adapters: Map<KType, KtmAdapter<*>>,
     ): BaseKtmAdapterProvider = KtmAdapterProvider(backing, adapters)
 
+    // From testing, the order of kClass check impact performances in benchmark
     override fun get(kType: KType): KtmAdapter<*>? = when (val kClass = kType.asKClass()) {
-
         // Adapter for primitive
         // Others falls under the AnyKtmAdapter which is used when nothing is found.
         String::class -> StringKtmAdapter
         Boolean::class -> BooleanKtmAdapter
-        Short::class -> ShortKtmAdapter
         Int::class -> IntKtmAdapter
         Long::class -> LongKtmAdapter
+        Short::class -> ShortKtmAdapter
         Float::class -> FloatKtmAdapter
         Double::class -> DoubleKtmAdapter
 
         // Adapter for kotlin.collections package
 
-        MutableListIterator::class,
-        MutableIterator::class,
-        ListIterator::class,
-        Iterator::class -> IteratorKtmAdapter(kType.requireTypeProjection(0))
-
-        Iterable::class,
-        Collection::class,
-        Set::class,
         List::class,
-        MutableIterable::class,
-        MutableCollection::class,
+        MutableList::class,
+        Set::class,
         MutableSet::class,
-        MutableList::class -> IterableKtmAdapter(kType.requireTypeProjection(0))
-
-        Sequence::class -> SequenceKtmAdapter(kType.requireTypeProjection(0))
+        Collection::class,
+        MutableCollection::class,
+        Iterable::class,
+        MutableIterable::class -> IterableKtmAdapter(kType.arguments[0].type!!)
 
         Map::class,
-        MutableMap::class -> MapKtmAdapter(kType.requireTypeProjection(1))
+        MutableMap::class -> MapKtmAdapter(kType.arguments[1].type!!)
+
+        ListIterator::class,
+        Iterator::class,
+        MutableIterator::class,
+        MutableListIterator::class -> IteratorKtmAdapter(kType.arguments[0].type!!)
+
+        Sequence::class -> SequenceKtmAdapter(kType.arguments[0].type!!)
 
         Map.Entry::class,
-        MutableMap.MutableEntry::class -> MapEntryKtmAdapter(kType.requireTypeProjection(1))
+        MutableMap.MutableEntry::class -> MapEntryKtmAdapter(kType.arguments[1].type!!)
 
         // Adapter for primitive arrays
 
@@ -101,19 +101,13 @@ open class BaseKtmAdapterProvider : KtmAdapter.Provider {
             // Arrays are a pain. All `Array` class falls here even if the Array is not `kotlin.Array`
             // JS do not allow qualified name on kClass, so it is impossible to check for `kotlin.Array` string.
             when (kClass.simpleName) {
-                Array::class.simpleName -> ArrayKtmAdapter(kType.requireTypeProjection(0))
+                Array::class.simpleName -> ArrayKtmAdapter(kType.arguments[0].type!!)
 
                 else -> AnyKtmAdapter
             }
         }
     }
 
-    /** Return `Type` in `Class<Type>` */
-    private fun KType.requireTypeProjection(position: Int): KType {
-        val projection = arguments.getOrNull(position)
-            ?: error("There is no projection at positional argument '$position' on $this")
-        return projection.type ?: error("Cannot create adapter for 'Nothing' type ($this)")
-    }
 
     @Suppress("UNCHECKED_CAST")
     private fun KType.asKClass() = when (val classifier = classifier) {
