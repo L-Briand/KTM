@@ -43,7 +43,7 @@ Enable ksp plugin:
 ```kotlin
 plugins {
     // ...
-    id("com.google.devtools.ksp") version "1.9.22-1.0.7" // or later
+    id("com.google.devtools.ksp") version "1.9.22-1.0.17" // or later
 }
 ```
 
