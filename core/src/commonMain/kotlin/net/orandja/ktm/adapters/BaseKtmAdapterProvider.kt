@@ -53,12 +53,12 @@ open class BaseKtmAdapterProvider : KtmAdapter.Provider {
 
 
     // Instead of creating an adapter on every type, we store them.
-    private val iterators = mutableMapOf<KType, KtmAdapter<*>>()
-    private val iterables = mutableMapOf<KType, KtmAdapter<*>>()
-    private val sequences = mutableMapOf<KType, KtmAdapter<*>>()
-    private val maps = mutableMapOf<KType, KtmAdapter<*>>()
-    private val mapEntries = mutableMapOf<KType, KtmAdapter<*>>()
-    private val arrays = mutableMapOf<KType, KtmAdapter<*>>()
+//    private val iterators = mutableMapOf<KType, KtmAdapter<*>>()
+//    private val iterables = mutableMapOf<KType, KtmAdapter<*>>()
+//    private val sequences = mutableMapOf<KType, KtmAdapter<*>>()
+//    private val maps = mutableMapOf<KType, KtmAdapter<*>>()
+//    private val mapEntries = mutableMapOf<KType, KtmAdapter<*>>()
+//    private val arrays = mutableMapOf<KType, KtmAdapter<*>>()
 
     override fun get(kType: KType): KtmAdapter<*>? = when (val kClass = kType.asKClass()) {
 
@@ -83,9 +83,9 @@ open class BaseKtmAdapterProvider : KtmAdapter.Provider {
         MutableListIterator::class,
         MutableIterator::class,
         ListIterator::class,
-        Iterator::class -> iterators.getOrPut(kType.requireTypeProjection(0)) {
+        Iterator::class -> //iterators.getOrPut(kType.requireTypeProjection(0)) {
             IteratorKtmAdapter(kType.requireTypeProjection(0))
-        }
+        //}
 
         Iterable::class,
         Collection::class,
@@ -94,31 +94,31 @@ open class BaseKtmAdapterProvider : KtmAdapter.Provider {
         MutableIterable::class,
         MutableCollection::class,
         MutableSet::class,
-        MutableList::class -> iterables.getOrPut(kType.requireTypeProjection(0)) {
+        MutableList::class -> // iterables.getOrPut(kType.requireTypeProjection(0)) {
             IterableKtmAdapter(kType.requireTypeProjection(0))
-        }
+        // }
 
-        Sequence::class -> sequences.getOrPut(kType.requireTypeProjection(0)) {
+        Sequence::class -> // sequences.getOrPut(kType.requireTypeProjection(0)) {
             SequenceKtmAdapter(kType.requireTypeProjection(0))
-        }
+        // }
 
         Map::class,
-        MutableMap::class -> maps.getOrPut(kType.requireTypeProjection(1)) {
+        MutableMap::class -> // maps.getOrPut(kType.requireTypeProjection(1)) {
             MapKtmAdapter(kType.requireTypeProjection(1))
-        }
+        // }
 
         Map.Entry::class,
-        MutableMap.MutableEntry::class -> mapEntries.getOrPut(kType.requireTypeProjection(1)) {
+        MutableMap.MutableEntry::class -> // mapEntries.getOrPut(kType.requireTypeProjection(1)) {
             MapEntryKtmAdapter(kType.requireTypeProjection(1))
-        }
+        // }
 
         else -> {
             // Arrays are a pain. All `Array` class falls here even if the Array is not `kotlin.Array`
             // JS do not allow qualified name on kClass, so it is impossible to check for `kotlin.Array` string.
             when (kClass.simpleName) {
-                Array::class.simpleName -> arrays.getOrPut(kType.requireTypeProjection(0)) {
+                Array::class.simpleName -> //arrays.getOrPut(kType.requireTypeProjection(0)) {
                     ArrayKtmAdapter(kType.requireTypeProjection(0))
-                }
+                //}
 
                 else -> AnyKtmAdapter
             }
