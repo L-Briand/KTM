@@ -36,6 +36,41 @@ internal object BooleanKtmAdapter : KtmAdapter<Boolean?> {
     override fun toString(): String = "KtmAdapter(Boolean)"
 }
 
+internal object ShortKtmAdapter : KtmAdapter<Short?> {
+    override fun toMustacheContext(adapters: KtmAdapter.Provider, value: Short?): MContext =
+        Ktm.ctx.value(value.toString())
+
+    override fun toString(): String = "KtmAdapter(Short)"
+}
+
+internal object IntKtmAdapter : KtmAdapter<Int?> {
+    override fun toMustacheContext(adapters: KtmAdapter.Provider, value: Int?): MContext =
+        Ktm.ctx.value(value.toString())
+
+    override fun toString(): String = "KtmAdapter(Int)"
+}
+
+internal object LongKtmAdapter : KtmAdapter<Long?> {
+    override fun toMustacheContext(adapters: KtmAdapter.Provider, value: Long?): MContext =
+        Ktm.ctx.value(value.toString())
+
+    override fun toString(): String = "KtmAdapter(Long)"
+}
+
+internal object FloatKtmAdapter : KtmAdapter<Float?> {
+    override fun toMustacheContext(adapters: KtmAdapter.Provider, value: Float?): MContext =
+        Ktm.ctx.value(value.toString())
+
+    override fun toString(): String = "KtmAdapter(Float)"
+}
+
+internal object DoubleKtmAdapter : KtmAdapter<Double?> {
+    override fun toMustacheContext(adapters: KtmAdapter.Provider, value: Double?): MContext =
+        Ktm.ctx.value(value.toString())
+
+    override fun toString(): String = "KtmAdapter(Double)"
+}
+
 internal class IteratorKtmAdapter(
     private val type: KType
 ) : KtmAdapter<Iterator<*>> {
