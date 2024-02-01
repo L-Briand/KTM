@@ -2,12 +2,9 @@
 
 ### Note about memory management
 
-- The `MDocument` object you receive contains a representation of full mustache
-  template that you have parsed. If you parse a 1Mb template, you will have ~1Mb
-  memory taken by the object.
-- The only time multiple documents are cached is for partials. You can look at how to
-  create them [here](CreatePartials.md). Feel free to pre-cache them as needed if you
-  intend to re-use them.
+The `MDocument` object you receive contains a representation of full mustache
+template that you have parsed. If you parse a 1Mb template, you will have ~1Mb
+memory taken by the object.
 
 ## On multiplatform
 
@@ -27,7 +24,7 @@ can provide a flow of character for the parser, it will produce a `MDocument`.
 
 ```kotlin
 fun interface CharStream {
-    fun read(): Char?
+    fun read(): Char
 }
 ```
 
@@ -37,11 +34,11 @@ the `Ktm.doc.string` method:
 ```kotlin
 class StringCharStream(val content: CharSequence) : CharStream {
     private var index = 0
-    override fun read(): Char? = if (index >= content.length) null else {
+    override fun read(): Char = if (index < content.length) {
         val result = content[index]
         index += 1
         result
-    }
+    } else Char.MAX_VALUE
 }
 ```
 
@@ -55,8 +52,10 @@ val document = Ktm.doc.charStream(StringCharStream(template))
 ### Create extensions
 
 Now that you have your custom `CharStream` implementation. You can add your own
-function to the `ktm.doc` builder. The idea is to create a function that fits your
-needs. Like, creating your own caching system or your own reader.
+function to the `ktm.doc` builder.
+
+You can create a function that fits your needs. Like, creating your own
+caching system or your own reader.
 
 For example, this is how the `Ktm.doc.file` function *could* be defined for the JVM:
 

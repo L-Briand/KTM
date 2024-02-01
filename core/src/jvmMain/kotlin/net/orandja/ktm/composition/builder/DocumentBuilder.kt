@@ -18,7 +18,7 @@ fun DocumentFactory.inputStream(stream: InputStream): MDocument {
 }
 
 fun DocumentFactory.file(file: File, charset: Charset = Charset.defaultCharset()): MDocument? {
-    if (!file.exists()) return null
+    if (!file.exists() && !file.isFile) return null
     return file.bufferedReader(charset).use { reader(it) }
 }
 
