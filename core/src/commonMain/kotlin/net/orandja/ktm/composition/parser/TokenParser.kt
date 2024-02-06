@@ -96,7 +96,7 @@ object TokenParser {
                     val content = ctx.getBuffer(trimEndBy = 0)
                     if (content.isBlank()) {
                         ctx.isWhiteContent = false
-                        ctx.readBuffer.append("$ctx.startDelim${Token.TAG[ctx.tagType]} <NO_NAME> $ctx.stopDelim")
+                        ctx.readBuffer.append("${ctx.startDelim} <NO_NAME> ${ctx.stopDelim}")
                         pushStatic(ctx, trimEndBy = 0)
                     } else {
                         if (ctx.tagType == Token.TAG_DELIMITER) {
