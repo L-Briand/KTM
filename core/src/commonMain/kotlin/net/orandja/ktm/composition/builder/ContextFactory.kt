@@ -56,14 +56,14 @@ open class ContextFactory {
 
     // Create contexts with MContexts directly
 
-    inline fun ctxValue(value: CharSequence) = ContextValue(value)
-    inline fun ctxDocument(value: MDocument) = ContextDocument(value)
-    inline fun ctxMap(vararg context: Pair<String, MContext>) = ContextMap(mutableMapOf(*context))
-    inline fun ctxMap(context: Map<String, MContext>) =
+    fun ctxValue(value: CharSequence) = ContextValue(value)
+    fun ctxDocument(value: MDocument) = ContextDocument(value)
+    fun ctxMap(vararg context: Pair<String, MContext>) = ContextMap(mutableMapOf(*context))
+    fun ctxMap(context: Map<String, MContext>) =
         ContextMap(if (context is MutableMap) context else context.toMutableMap())
 
-    inline fun ctxList(vararg context: MContext) = ContextList(context.toList())
-    inline fun ctxList(contexts: Iterable<MContext>) = ContextList(contexts)
+    fun ctxList(vararg context: MContext) = ContextList(context.toList())
+    fun ctxList(contexts: Iterable<MContext>) = ContextList(contexts)
 
 
     // Create delegated contexts
