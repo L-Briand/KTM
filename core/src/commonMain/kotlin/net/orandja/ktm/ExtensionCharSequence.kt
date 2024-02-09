@@ -36,7 +36,7 @@ inline fun CharSequence.render(
 ) = toMustacheDocument().render(adapters, builder)
 
 /**
- * Renders the given `CharSequence` like a [MDocument] with the provided [MContext], [MPool], and [writer] function.
+ * Renders the given `CharSequence` like a [MDocument] with the provided [MContext],, and [writer] function.
  *
  * @receiver The `CharSequence` to render.
  * @param context The context to render the document with.

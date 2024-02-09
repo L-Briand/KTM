@@ -6,11 +6,21 @@ import net.orandja.ktm.base.MDocument
 import net.orandja.ktm.composition.builder.ContextMapBuilder
 
 
-inline fun <reified T> MDocument.render(context: T) = render(Ktm.adapters.contextOf(context))
+/**
+ * Renders the given MDocument using the provided MContext.
+ *
+ * @param context The object used for rendering.
+ * @param adapters The KtmAdapter.Provider used to convert [context] to MContext.
+ * @return The rendered MDocument as a String.
+ */
+inline fun <reified T> MDocument.render(
+    context: T,
+    adapters: KtmAdapter.Provider = Ktm.adapters,
+) = render(adapters.contextOf(context))
 
 
 /**
- * Renders the given MDocument using the provided MContext and MPool.
+ * Renders the given MDocument using the provided MContext
  *
  * @param context The MContext used for rendering.
  * @return The rendered MDocument as a String.
@@ -30,7 +40,7 @@ inline fun MDocument.render(
 ) = Ktm.renderer.renderToString(this, Ktm.ctx.make(adapters) { builder() })
 
 /**
- * Renders the given `MDocument` with the provided `MContext`, `MPool`, and `writer` function.
+ * Renders the given `MDocument` with the provided `MContext`, and `writer` function.
  *
  * @param context The context to render the document with.
  * @param writer The function used to write the rendered output.

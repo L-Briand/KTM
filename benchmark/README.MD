@@ -47,25 +47,7 @@ Total number of winners : {{ winnersCount }}
 Overall, performance is good:
 
 - Parsing documents in `Ktm` is faster than `Mustache.java`.
-- Rendering documents in `Ktm` takes longer than `Mustache.java` for Multiple render
-  structures.
-
-<details>
-<summary>On my laptop:</summary>
-
-``` 
-OS: Kubuntu 23.10 x86_64
-Kernel: 6.5.0-15-generic
-CPU: 13th Gen Intel i9-13900H (20) @ 5.200GHz
-openjdk version "17.0.9" 2023-10-17
-```
-
-
-[View benchmark](https://jmh.morethan.io/?source=https://raw.githubusercontent.com/L-Briand/KTM/master/benchmark/benchmark/Laptop.json)
-
-[raw json file](benchmark/Laptop.json)
-
-</details>
+- Rendering documents is as fast as `Mustache.java`.
 
 <details>
 <summary>On my mac mini:</summary>
