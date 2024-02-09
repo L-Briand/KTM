@@ -77,7 +77,7 @@ internal class IteratorKtmAdapter(
     private val type: KType
 ) : KtmAdapter<Iterator<*>> {
     override fun toMustacheContext(adapters: KtmAdapter.Provider, value: Iterator<*>): MContext {
-        val adapter = adapters.get(type) as? KtmAdapter<Any?> ?: return Ktm.ctx.no
+        val adapter = adapters.get(TypeKey(type)) as? KtmAdapter<Any?> ?: return Ktm.ctx.no
         return MContext.List {
             object : Iterator<MContext> {
                 override fun hasNext(): Boolean = value.hasNext()
@@ -93,7 +93,7 @@ internal class IterableKtmAdapter(
     private val type: KType,
 ) : KtmAdapter<Iterable<*>> {
     override fun toMustacheContext(adapters: KtmAdapter.Provider, value: Iterable<*>): MContext {
-        val adapter = adapters.get(type) as? KtmAdapter<Any?> ?: return Ktm.ctx.no
+        val adapter = adapters.get(TypeKey(type)) as? KtmAdapter<Any?> ?: return Ktm.ctx.no
         return MContext.List {
             object : Iterator<MContext> {
                 private val iterator = value.iterator()
@@ -110,7 +110,7 @@ internal class SequenceKtmAdapter(
     private val type: KType,
 ) : KtmAdapter<Sequence<*>> {
     override fun toMustacheContext(adapters: KtmAdapter.Provider, value: Sequence<*>): MContext {
-        val adapter = adapters.get(type) as? KtmAdapter<Any?> ?: return Ktm.ctx.no
+        val adapter = adapters.get(TypeKey(type)) as? KtmAdapter<Any?> ?: return Ktm.ctx.no
         return MContext.List {
             object : Iterator<MContext> {
                 private val iterator = value.iterator()
@@ -127,7 +127,7 @@ internal class MapKtmAdapter(
     private val valueType: KType,
 ) : KtmAdapter<Map<*, *>> {
     override fun toMustacheContext(adapters: KtmAdapter.Provider, value: Map<*, *>): MContext {
-        val valueAdapter = adapters.get(valueType) as? KtmAdapter<Any?> ?: return Ktm.ctx.no
+        val valueAdapter = adapters.get(TypeKey(valueType)) as? KtmAdapter<Any?> ?: return Ktm.ctx.no
         return Ktm.ctx.ctxMap(
             value.map { (k, v) -> k.toString() to valueAdapter.toMustacheContext(adapters, v) }.toMap()
         )
@@ -140,7 +140,7 @@ internal class MapEntryKtmAdapter(
     private val valueType: KType,
 ) : KtmAdapter<Map.Entry<*, *>> {
     override fun toMustacheContext(adapters: KtmAdapter.Provider, value: Map.Entry<*, *>): MContext {
-        val valueAdapter = adapters.get(valueType) as? KtmAdapter<Any?> ?: return Ktm.ctx.no
+        val valueAdapter = adapters.get(TypeKey(valueType)) as? KtmAdapter<Any?> ?: return Ktm.ctx.no
         return Ktm.ctx.ctxMap(value.key.toString() to valueAdapter.toMustacheContext(adapters, value))
     }
 
@@ -151,7 +151,7 @@ internal class ArrayKtmAdapter(
     private val type: KType,
 ) : KtmAdapter<Array<*>> {
     override fun toMustacheContext(adapters: KtmAdapter.Provider, value: Array<*>): MContext {
-        val adapter = adapters.get(type) as? KtmAdapter<Any?> ?: return Ktm.ctx.no
+        val adapter = adapters.get(TypeKey(type)) as? KtmAdapter<Any?> ?: return Ktm.ctx.no
         return MContext.List {
             object : Iterator<MContext> {
                 private val iterator = value.iterator()

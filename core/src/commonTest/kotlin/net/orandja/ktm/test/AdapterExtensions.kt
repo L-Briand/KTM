@@ -4,6 +4,8 @@ import net.orandja.ktm.*
 import net.orandja.ktm.adapters.DelegatedKtmAdapter
 import net.orandja.ktm.adapters.KtmAdapter
 import net.orandja.ktm.base.MContext
+import kotlin.reflect.KType
+import kotlin.reflect.typeOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -76,5 +78,16 @@ class AdapterExtensions {
         assertEquals("!bar", "{{^ BAR }}!bar{{/ BAR }}".render(context))
         assertEquals("!baz", "{{^ BAZ }}!baz{{/ BAZ }}".render(context))
         assertEquals("<FOO><BAR><BAZ>", "{{# values }}<{{.}}>{{/ values }}".render(context))
+    }
+
+    private fun renderNullableFoo(foo: Foo?): String {
+        val adapters = Ktm.adapters.make { +Foo.Adapter }
+        return "{{ value }}".render(adapters.contextOf<Foo>(foo))
+    }
+
+    @Test
+    fun nullableContextOf() {
+        assertEquals("", renderNullableFoo(null))
+        assertEquals("foo", renderNullableFoo(Foo("foo")))
     }
 }

@@ -25,7 +25,7 @@ import kotlin.reflect.typeOf
  * @param backing The underlying [KtmAdapter.Provider] instance for unknown type queries.
  */
 class KtmAdapterProviderBuilder(private val backing: KtmAdapter.Provider?) : BaseKtmAdapterProvider() {
-    val adapters = mutableMapOf<KType, KtmAdapter<*>>()
+    private val adapters = mutableMapOf<TypeKey, KtmAdapter<*>>()
 
     /**
      * Add adapters with a '+' symbol `+ MyAdapter`. Type is deducted from [T]
@@ -36,20 +36,20 @@ class KtmAdapterProviderBuilder(private val backing: KtmAdapter.Provider?) : Bas
      * Add an [adapter] for type [T]
      */
     inline fun <reified T> add(adapter: KtmAdapter<T>) {
-        adapters[typeOf<T>()] = adapter
+        associate(typeOf<T>(), adapter)
     }
 
     /**
      * associate [adapter] with given [type] without type checks.
      */
     fun associate(type: KType, adapter: KtmAdapter<*>) {
-        adapters[type] = adapter
+        adapters[TypeKey(type)] = adapter
     }
 
     /**
      * Implementation of [KtmAdapter.Provider] to build custom adapters from current builder
      */
-    override fun get(kType: KType): KtmAdapter<*>? {
+    override fun get(kType: TypeKey): KtmAdapter<*>? {
         return adapters[kType] ?: backing?.get(kType) ?: super.get(kType)
     }
 

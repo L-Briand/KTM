@@ -1,9 +1,6 @@
 package net.orandja.ktm
 
-import net.orandja.ktm.adapters.DelegatedKtmAdapter
-import net.orandja.ktm.adapters.KtmAdapter
-import net.orandja.ktm.adapters.KtmAdapterModule
-import net.orandja.ktm.adapters.KtmAdapterProviderBuilder
+import net.orandja.ktm.adapters.*
 import net.orandja.ktm.base.MContext
 import net.orandja.ktm.base.MDocument
 import net.orandja.ktm.base.NodeContext
@@ -26,7 +23,7 @@ class NoProviderException(type: KType) : IllegalArgumentException(
 @Throws(NoProviderException::class)
 @Suppress("UNCHECKED_CAST")
 inline fun <reified T> KtmAdapter.Provider.get(): KtmAdapter<T>? {
-    return get(typeOf<T>()) as? KtmAdapter<T>
+    return get(TypeKey(typeOf<T>())) as? KtmAdapter<T>
 }
 
 

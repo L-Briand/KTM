@@ -30,6 +30,10 @@ java {
     withJavadocJar()
 }
 
+kotlin {
+    jvmToolchain(8)
+}
+
 val ossrhUsername = findFilledProperty("osshr.username")
 val ossrhPassword = findFilledProperty("osshr.password")
 val ossrhMavenEnabled = ossrhUsername != null && ossrhPassword != null

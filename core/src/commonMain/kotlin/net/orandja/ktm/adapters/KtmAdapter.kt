@@ -24,6 +24,7 @@ fun interface KtmAdapter<T : Any?> {
      * An interface that provides instances of [KtmAdapter] given its type.
      */
     fun interface Provider {
-        fun get(kType: KType): KtmAdapter<*>?
+        fun get(kType: TypeKey): KtmAdapter<*>?
+        fun get(kType: KType): KtmAdapter<*>? = get(TypeKey(kType))
     }
 }

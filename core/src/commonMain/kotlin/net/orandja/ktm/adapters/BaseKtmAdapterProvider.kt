@@ -47,11 +47,11 @@ open class BaseKtmAdapterProvider : KtmAdapter.Provider {
      */
     fun make(
         backing: KtmAdapter.Provider? = this,
-        adapters: Map<KType, KtmAdapter<*>>,
+        adapters: Map<TypeKey, KtmAdapter<*>>,
     ): BaseKtmAdapterProvider = KtmAdapterProvider(backing, adapters)
 
     // From testing, the order of kClass check impact performances in benchmark
-    override fun get(kType: KType): KtmAdapter<*>? = when (val kClass = kType.asKClass()) {
+    override fun get(kType: TypeKey): KtmAdapter<*>? = when (val kClass = kType.type.asKClass()) {
         // Adapter for primitive
         // Others falls under the AnyKtmAdapter which is used when nothing is found.
         String::class -> StringKtmAdapter
@@ -71,20 +71,20 @@ open class BaseKtmAdapterProvider : KtmAdapter.Provider {
         Collection::class,
         MutableCollection::class,
         Iterable::class,
-        MutableIterable::class -> IterableKtmAdapter(kType.arguments[0].type!!)
+        MutableIterable::class -> IterableKtmAdapter(kType.type.arguments[0].type!!)
 
         Map::class,
-        MutableMap::class -> MapKtmAdapter(kType.arguments[1].type!!)
+        MutableMap::class -> MapKtmAdapter(kType.type.arguments[1].type!!)
 
         ListIterator::class,
         Iterator::class,
         MutableIterator::class,
-        MutableListIterator::class -> IteratorKtmAdapter(kType.arguments[0].type!!)
+        MutableListIterator::class -> IteratorKtmAdapter(kType.type.arguments[0].type!!)
 
-        Sequence::class -> SequenceKtmAdapter(kType.arguments[0].type!!)
+        Sequence::class -> SequenceKtmAdapter(kType.type.arguments[0].type!!)
 
         Map.Entry::class,
-        MutableMap.MutableEntry::class -> MapEntryKtmAdapter(kType.arguments[1].type!!)
+        MutableMap.MutableEntry::class -> MapEntryKtmAdapter(kType.type.arguments[1].type!!)
 
         // Adapter for primitive arrays
 
@@ -101,7 +101,7 @@ open class BaseKtmAdapterProvider : KtmAdapter.Provider {
             // Arrays are a pain. All `Array` class falls here even if the Array is not `kotlin.Array`
             // JS do not allow qualified name on kClass, so it is impossible to check for `kotlin.Array` string.
             when (kClass.simpleName) {
-                Array::class.simpleName -> ArrayKtmAdapter(kType.arguments[0].type!!)
+                Array::class.simpleName -> ArrayKtmAdapter(kType.type.arguments[0].type!!)
 
                 else -> AnyKtmAdapter
             }

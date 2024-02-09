@@ -51,7 +51,7 @@ class ContextMapBuilder(
     }
 
     inline infix fun <reified T> String.by(value: T) {
-        by(if (null is T) no else contextOf(value))
+        by(if (value == null) no else contextOf(value))
     }
 
     fun associate(key: String, value: CharSequence?) {
