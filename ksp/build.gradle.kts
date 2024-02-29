@@ -30,6 +30,7 @@ dependencies {
 java {
     withSourcesJar()
     withJavadocJar()
+    java.toolchain.languageVersion = JavaLanguageVersion.of(8)
 }
 
 tasks.withType<KotlinCompile>().all {
