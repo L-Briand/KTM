@@ -24,9 +24,9 @@ kotlin {
     // Default targets
 
     jvm {
+        java.toolchain.languageVersion = JavaLanguageVersion.of(8)
         compilations.all {
             kotlinOptions { jvmTarget = "1.8" }
-            jvmToolchain(8)
         }
         withJava()
         withSourcesJar(true)

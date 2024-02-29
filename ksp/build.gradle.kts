@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     kotlin("jvm")
     id("java-library")
@@ -28,10 +30,13 @@ dependencies {
 java {
     withSourcesJar()
     withJavadocJar()
+    java.toolchain.languageVersion = JavaLanguageVersion.of(8)
 }
 
-kotlin {
-    jvmToolchain(8)
+tasks.withType<KotlinCompile>().all {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
 }
 
 val ossrhUsername = findFilledProperty("osshr.username")

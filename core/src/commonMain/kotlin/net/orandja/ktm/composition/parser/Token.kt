@@ -55,9 +55,6 @@ data class Token(val type: Int, val content: CharSequence) {
         const val NEW_LINE_RN = 0x42
         const val NEW_LINE_N = 0x43
 
-        @Suppress("NOTHING_TO_INLINE")
-        inline fun isNewLine(type: Int) = type and 0x40 > 0
-
         @JvmStatic
         val TAG = arrayOf<Char>(
             // @formatter:off
