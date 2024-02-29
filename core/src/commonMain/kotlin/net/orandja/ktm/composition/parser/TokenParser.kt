@@ -155,7 +155,7 @@ object TokenParser {
     private suspend fun SequenceScope<Token>.pushStatic(ctx: TokenParserContext, trimEndBy: Int) {
         val content = ctx.getBuffer(trimEndBy = trimEndBy)
         if (content.length != 0) {
-            if (ctx.isWhiteContent) yield(Token(Token.WHITE_CONTENT, content))
+            if (ctx.isWhiteContent && ctx.delimMatchIdx == 0) yield(Token(Token.WHITE_CONTENT, content))
             else yield(Token(Token.STATIC_CONTENT, content))
         }
         ctx.isWhiteContent = true

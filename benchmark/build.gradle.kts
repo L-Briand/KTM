@@ -25,12 +25,10 @@ kotlin {
     // Default targets
 
     jvm {
-        compilations {
-            all {
-                kotlinOptions { jvmTarget = "1.8" }
-                jvmToolchain(8)
-            }
+        compilations.all {
+            kotlinOptions { jvmTarget = "1.8" }
         }
+
         testRuns.named("test") {
             executionTask.configure { useJUnitPlatform() }
         }

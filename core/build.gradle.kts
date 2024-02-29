@@ -26,7 +26,6 @@ kotlin {
     jvm {
         compilations.all {
             kotlinOptions { jvmTarget = "1.8" }
-            jvmToolchain(8)
         }
         withJava()
         withSourcesJar(true)
