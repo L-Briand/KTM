@@ -69,5 +69,5 @@ internal class TokenParserContext(
 
     var tagType: Int = -1
 
-    var isWhiteContent: Boolean = true
+    var whiteContentLastIndex: Int = 0
 }

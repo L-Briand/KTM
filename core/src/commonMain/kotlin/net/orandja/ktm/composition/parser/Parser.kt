@@ -26,7 +26,6 @@ object Parser {
             // If two new lines are right next one another, the new line should be rendered
             if (peeked.size == 1) {
                 register(peeked.removeAt(0))
-
             }
             // If the line is not transparent (standalone in the spec), we render it
             else if (!isStantaloneLine) {

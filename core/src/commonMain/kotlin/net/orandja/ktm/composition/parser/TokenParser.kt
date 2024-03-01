@@ -24,6 +24,9 @@ object TokenParser {
     private suspend fun SequenceScope<Token>.parseTokens(ctx: TokenParserContext) {
         while (true) {
             val current = ctx.next()
+            if(ctx.whiteContentLastIndex == ctx.readBuffer.length - 1 && current.isWhitespace()) {
+                ctx.whiteContentLastIndex += 1
+            }
             if (current == Char.MAX_VALUE) break
             if (ctx.searchingDelimStart) {
                 if (current == '\r') {
@@ -31,21 +34,23 @@ object TokenParser {
                         ctx.consume()
                         pushStatic(ctx, trimEndBy = 2)
                         yield(RN)
+                        ctx.delimMatchIdx = 0
                         continue
                     } else {
                         pushStatic(ctx, trimEndBy = 1)
                         yield(R)
+                        ctx.delimMatchIdx = 0
                         continue
                     }
                 } else if (current == '\n') {
                     pushStatic(ctx, trimEndBy = 1)
                     yield(N)
+                    ctx.delimMatchIdx = 0
                     continue
                 }
 
                 // Searching for startDelim in the document (i.e. '{{')
                 if (current != ctx.startDelim[ctx.delimMatchIdx]) {
-                    ctx.isWhiteContent = ctx.isWhiteContent and current.isWhitespace()
                     ctx.delimMatchIdx = 0
                     continue
                 }
@@ -95,7 +100,6 @@ object TokenParser {
 
                     val content = ctx.getBuffer(trimEndBy = 0)
                     if (content.isBlank()) {
-                        ctx.isWhiteContent = false
                         ctx.readBuffer.append("${ctx.startDelim} <NO_NAME> ${ctx.stopDelim}")
                         pushStatic(ctx, trimEndBy = 0)
                     } else {
@@ -155,9 +159,9 @@ object TokenParser {
     private suspend fun SequenceScope<Token>.pushStatic(ctx: TokenParserContext, trimEndBy: Int) {
         val content = ctx.getBuffer(trimEndBy = trimEndBy)
         if (content.length != 0) {
-            if (ctx.isWhiteContent && ctx.delimMatchIdx == 0) yield(Token(Token.WHITE_CONTENT, content))
+            if (ctx.whiteContentLastIndex == content.length) yield(Token(Token.WHITE_CONTENT, content))
             else yield(Token(Token.STATIC_CONTENT, content))
         }
-        ctx.isWhiteContent = true
+        ctx.whiteContentLastIndex = 0
     }
 }
