@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 
 plugins {
@@ -23,7 +24,11 @@ kotlin {
     jvm {
         java.toolchain.languageVersion = JavaLanguageVersion.of(8)
         compilations.all {
-            kotlinOptions { jvmTarget = "1.8" }
+            compileTaskProvider.configure {
+                compilerOptions {
+                    jvmTarget = JvmTarget.JVM_1_8
+                }
+            }
         }
         testRuns.named("test") {
             executionTask.configure { useJUnitPlatform() }
@@ -39,7 +44,8 @@ kotlin {
 
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs { d8() }
-    // wasmWasi { nodejs() }
+//    @OptIn(ExperimentalWasmDsl::class)
+//    wasmWasi { nodejs() }
 
     // https://kotlinlang.org/docs/native-target-support.html
 

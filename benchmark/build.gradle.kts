@@ -1,4 +1,5 @@
 import kotlinx.benchmark.gradle.JvmBenchmarkTarget
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 
 plugins {
@@ -27,7 +28,11 @@ kotlin {
     jvm {
         java.toolchain.languageVersion = JavaLanguageVersion.of(8)
         compilations.all {
-            kotlinOptions { jvmTarget = "1.8" }
+            compileTaskProvider.configure {
+                compilerOptions {
+                    jvmTarget = JvmTarget.JVM_1_8
+                }
+            }
         }
 
         testRuns.named("test") {
@@ -44,6 +49,8 @@ kotlin {
 
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs { d8() }
+//    @OptIn(ExperimentalWasmDsl::class)
+//    wasmWasi { nodejs() }
 
     // https://kotlinlang.org/docs/native-target-support.html
 
@@ -83,9 +90,9 @@ kotlin {
         }
         getByName("jvmMain") {
             dependencies {
-                implementation("org.openjdk.jmh:jmh-core:${property("version.jmh")}")
-                implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:${property("version.benchmark")}")
-                implementation("com.github.spullara.mustache.java:compiler:0.9.10")
+                implementation(libs.kotlinx.benchmark)
+                implementation(libs.jmh)
+                implementation(libs.spullara)
             }
         }
         getByName("jvmTest") {
@@ -103,7 +110,7 @@ allOpen {
 benchmark {
     targets {
         register("jvmMain") {
-            (this as JvmBenchmarkTarget).jmhVersion = property("version.jmh") as String
+            (this as JvmBenchmarkTarget).jmhVersion = libs.versions.jmh.get()
         }
     }
 

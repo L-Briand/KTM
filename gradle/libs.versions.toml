@@ -1,0 +1,26 @@
+[versions]
+kotlin-version = "2.0.0-RC1"
+kotlin-ksp = "2.0.0-RC1-1.0.20"
+kotlin-dokka = "1.9.20"
+kotlin-benchmark = "0.4.10"
+kotlinx-serialization = "1.6.3"
+jmh = "1.21"
+
+[libraries]
+kotlin-ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "kotlin-ksp" }
+kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+kotlinx-benchmark = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-runtime", version.ref = "kotlin-benchmark" }
+
+jmh = { module = "org.openjdk.jmh:jmh-core", version.ref = "jmh" }
+orandja-either = { module = "net.orandja.kt:either", version = "1.2.0" }
+spullara = { module = "com.github.spullara.mustache.java:compiler", version = "0.9.10" }
+
+
+[plugins]
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin-version" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin-version" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin-version" }
+kotlin-allopen = { id = "org.jetbrains.kotlin.plugin.allopen", version.ref = "kotlin-version" }
+kotlin-ksp = { id = "com.google.devtools.ksp", version.ref = "kotlin-ksp" }
+kotlin-dokka = { id = "org.jetbrains.dokka", version.ref = "kotlin-dokka" }
+kotlin-benchmark = { id = "org.jetbrains.kotlinx.benchmark", version.ref = "kotlin-benchmark" }

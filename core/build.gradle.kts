@@ -1,11 +1,12 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 
 plugins {
-    kotlin("multiplatform")
-    kotlin("plugin.serialization")
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.kotlin.dokka)
     id("maven-publish")
     id("signing")
-    id("org.jetbrains.dokka")
 }
 
 fun findProperty(name: String): String? = if (hasProperty(name)) property(name) as String else System.getenv(name)
@@ -26,7 +27,11 @@ kotlin {
     jvm {
         java.toolchain.languageVersion = JavaLanguageVersion.of(8)
         compilations.all {
-            kotlinOptions { jvmTarget = "1.8" }
+            compileTaskProvider.configure {
+                compilerOptions {
+                    jvmTarget = JvmTarget.JVM_1_8
+                }
+            }
         }
         withJava()
         withSourcesJar(true)
@@ -37,14 +42,15 @@ kotlin {
 
     // web
 
-    js(IR) {
+    js {
         browser()
         nodejs()
     }
 
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs { d8() }
-    // wasmWasi { nodejs() }
+//    @OptIn(ExperimentalWasmDsl::class)
+//    wasmWasi { nodejs() }
 
     // https://kotlinlang.org/docs/native-target-support.html
 
@@ -80,8 +86,7 @@ kotlin {
         getByName("commonTest") {
             dependencies {
                 implementation(kotlin("test"))
-                val serialization = property("version.serialization")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serialization")
+                implementation(libs.kotlinx.serialization)
             }
         }
     }

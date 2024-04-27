@@ -1,7 +1,8 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm")
+    alias(libs.plugins.kotlin.jvm)
     id("java-library")
     id("maven-publish")
     id("signing")
@@ -18,13 +19,10 @@ repositories {
     mavenCentral()
 }
 
-val kotlin = property("version.kotlin") as String
-val ksp = property("version.ksp") as String
-
 dependencies {
     implementation(project(":core"))
-    implementation("net.orandja.kt:either:1.2.0")
-    implementation("com.google.devtools.ksp:symbol-processing-api:$kotlin-$ksp")
+    implementation(libs.kotlin.ksp)
+    implementation(libs.orandja.either)
 }
 
 java {
@@ -34,8 +32,8 @@ java {
 }
 
 tasks.withType<KotlinCompile>().all {
-    kotlinOptions {
-        jvmTarget = "1.8"
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_1_8)
     }
 }
 
