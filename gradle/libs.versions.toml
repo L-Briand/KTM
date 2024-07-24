@@ -1,10 +1,10 @@
 [versions]
-kotlin-version = "2.0.0-RC1"
-kotlin-ksp = "2.0.0-RC1-1.0.20"
+kotlin-version = "2.0.0"
+kotlin-ksp = "2.0.0-1.0.23"
 kotlin-dokka = "1.9.20"
-kotlin-benchmark = "0.4.10"
-kotlinx-serialization = "1.6.3"
-jmh = "1.21"
+kotlin-benchmark = "0.4.11"
+kotlinx-serialization = "1.7.1"
+jmh = "1.37"
 
 [libraries]
 kotlin-ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "kotlin-ksp" }

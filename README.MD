@@ -18,7 +18,7 @@ repositories {
 }
 val commonMain by getting {
     dependencies {
-        implementation("net.orandja.ktm:core:1.0.3")
+        implementation("net.orandja.ktm:core:2.0.0")
     }
 }
 ```
@@ -32,7 +32,7 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    implementation("net.orandja.ktm:core:1.0.3")
+    implementation("net.orandja.ktm:core:2.0.0")
 }
 ```
 
@@ -55,9 +55,9 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    add("kspJvm", "net.orandja.ktm:ksp:0.0.2")
-    // add("kspJs", "net.orandja.ktm:ksp:0.0.2")
-    // add("kspNative", "net.orandja.ktm:ksp:0.0.2")
+    add("kspJvm", "net.orandja.ktm:ksp:2.0.0")
+    // add("kspJs", "net.orandja.ktm:ksp:2.0.0")
+    // add("kspNative", "net.orandja.ktm:ksp:2.0.0")
     // ...
 }
 ```
@@ -69,7 +69,7 @@ Jvm :
 ```kotlin
 dependencies {
     // ...
-    ksp("net.orandja.ktm:ksp:0.0.2")
+    ksp("net.orandja.ktm:ksp:2.0.0")
 }
 
 ```

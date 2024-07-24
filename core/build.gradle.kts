@@ -49,8 +49,8 @@ kotlin {
 
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs { d8() }
-//    @OptIn(ExperimentalWasmDsl::class)
-//    wasmWasi { nodejs() }
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmWasi { nodejs() }
 
     // https://kotlinlang.org/docs/native-target-support.html
 
@@ -94,8 +94,8 @@ kotlin {
 
 // region Publish
 
-val ossrhUsername = findFilledProperty("osshr.username")
-val ossrhPassword = findFilledProperty("osshr.password")
+val ossrhUsername = findFilledProperty("ossrh.username")
+val ossrhPassword = findFilledProperty("ossrh.password")
 val ossrhMavenEnabled = ossrhUsername != null && ossrhPassword != null
 
 publishing {
