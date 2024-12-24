@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Document</title>
+
+    <script src="kotlin-kotlin-stdlib.js"></script>
+    <script src="kotlin_org_jetbrains_kotlin_kotlin_dom_api_compat.js"></script>
+    <script src="KTM-core.js"></script>
+    <script src="KTM-js-sample.js"></script>
+
+</head>
+<body>
+<span>
+<button id="decrement">Decrement</button>
+<button id="increment">Increment</button>
+</span>
+<p id="content"></p>
+</body>
+
+<script>
+    const jsSample = window['net.orandja.ktm:js-sample']
+
+    jsSample.setContentId("content")
+
+    document.getElementById('decrement').onclick = function () {
+        jsSample.decrement()
+    }
+
+    document.getElementById('increment').onclick = function () {
+        jsSample.increment()
+    }
+
+</script>
+</html>
