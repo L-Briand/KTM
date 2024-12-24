@@ -3,12 +3,29 @@
 package net.orandja.ktm.composition.parser
 
 import net.orandja.ktm.base.MDocument
-import net.orandja.ktm.composition.tokenizeTagName
+import net.orandja.ktm.composition.builder.StringCharStream
+import net.orandja.ktm.composition.iterableDottedString
+import net.orandja.ktm.composition.tokenizeDelimitedString
 
 object Parser {
 
+    /**
+     * Converts a given source character sequence into an [MDocument] instance.
+     *
+     * @param source The character sequence to parse into a mustache document structure.
+     * @return An [MDocument] representing the parsed mustache document.
+     */
+    fun fromString(source: CharSequence): MDocument = parse(StringCharStream(source))
+
+    /**
+     * Parses a character stream into a [MDocument.Section].
+     *
+     * @param stream The character stream representing the input mustache document.
+     * @return The parsed document [MDocument].
+     */
     fun parse(stream: CharStream): MDocument.Section =
         ParserContext(TokenParser.parse(TokenParserContext(stream)).iterator()).parse()
+
 
     private fun ParserContext.parse(): MDocument.Section {
         var next: Token?
@@ -17,13 +34,13 @@ object Parser {
             // read all tokens representing a line
             while (true) {
                 next = peekNext()
-                if (next == null) break
+                if (next == null) break // End of stream
                 if (next.isOpaque) isStantaloneLine = false
                 if (next.type == Token.TAG_PARTIAL) containPartial = true
                 if (next.isNewLine) break
             }
 
-            // If two new lines are right next one another, the new line should be rendered
+            // An empty new line should be rendered as is.
             if (peeked.size == 1) {
                 register(peeked.removeAt(0))
             }
@@ -60,23 +77,22 @@ object Parser {
         return result
     }
 
-
     private fun ParserContext.register(token: Token) {
         when (token.type) {
             Token.TAG_NORMAL, Token.TAG_ESCAPE_1, Token.TAG_ESCAPE_2 -> {
                 nodes[nodes.size - 1].parts.add(
-                    MDocument.Tag(tokenizeTagName(token.content), token.type == Token.TAG_NORMAL)
+                    MDocument.Tag(token.content.iterableDottedString(), token.type == Token.TAG_NORMAL)
                 )
             }
 
             Token.TAG_PARTIAL -> {
                 nodes[nodes.size - 1].parts.add(
-                    MDocument.Partial(tokenizeTagName(token.content), partialPadding.toString())
+                    MDocument.Partial(token.content.iterableDottedString(), partialPadding.toString())
                 )
             }
 
             Token.TAG_SECTION, Token.TAG_INVERT -> {
-                val newNode = MDocument.Section(tokenizeTagName(token.content), token.type == Token.TAG_INVERT)
+                val newNode = MDocument.Section(token.content.iterableDottedString(), token.type == Token.TAG_INVERT)
                 nodes[nodes.size - 1].parts += newNode
                 nodes += newNode
             }
@@ -86,7 +102,10 @@ object Parser {
                     val lastElement = nodes[nodes.size - 1].parts[nodes[nodes.size - 1].parts.size - 1]
                     (lastElement as? MDocument.Static)?.sectionLast = true
                 }
-                if (tokenizeTagName(token.content).contentEquals(nodes[nodes.size - 1].name)) {
+                if (iteratorEquals(
+                        tokenizeDelimitedString(token.content).iterator(), nodes[nodes.size - 1].name.iterator()
+                    )
+                ) {
                     nodes.removeAt(nodes.size - 1)
                 }
             }
@@ -98,17 +117,17 @@ object Parser {
 
             Token.NEW_LINE_R -> {
                 val static = getOrCreateLastStaticDocument()
-                static.content.append('\r')
+                static.content.append(token.content)
             }
 
             Token.NEW_LINE_N -> {
                 val static = getOrCreateLastStaticDocument()
-                static.content.append('\n')
+                static.content.append(token.content)
             }
 
             Token.NEW_LINE_RN -> {
                 val static = getOrCreateLastStaticDocument()
-                static.content.append("\r\n")
+                static.content.append(token.content)
             }
         }
     }
@@ -127,4 +146,15 @@ object Parser {
             staticDoc
         }
     }
+
+    private inline fun <reified T> iteratorEquals(it1: Iterator<T>, it2: Iterator<T>): Boolean {
+        while (true) {
+            var hasNext1 = it1.hasNext()
+            var hasNext2 = it2.hasNext()
+            if (hasNext1 != hasNext2) return false
+            else if (!hasNext1 && !hasNext2) return true
+            else if (it1.next() != it2.next()) return false
+        }
+    }
+
 }

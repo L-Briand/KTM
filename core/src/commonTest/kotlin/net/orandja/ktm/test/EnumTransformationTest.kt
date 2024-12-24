@@ -18,7 +18,6 @@ class EnumTransformationTest {
         assertEquals("foo", "{{# FOO }}foo{{/ FOO }}".render(context))
         assertEquals("!bar", "{{^ BAR }}!bar{{/ BAR }}".render(context))
         assertEquals("!baz", "{{^ BAZ }}!baz{{/ BAZ }}".render(context))
-        assertEquals("<FOO><BAR><BAZ>", "{{# values }}<{{.}}>{{/ values }}".render(context))
     }
 
     private val customAdapter = KtmAdapter<EnumVariants> { _, value ->
@@ -33,7 +32,7 @@ class EnumTransformationTest {
 
     @Test
     fun testContextAdapter() {
-        val adapters = Ktm.adapters.make { +customAdapter }
+        val adapters = Ktm.adapters.create { +customAdapter }
         val context = EnumVariants.FOO.toMustacheContext(adapters)
         assertEquals("A", "{{ FOO }}".render(context))
         assertEquals("", "{{ BAR }}".render(context))
@@ -42,7 +41,7 @@ class EnumTransformationTest {
 
     @Test
     fun delegateEnum() {
-        val adapters = Ktm.adapters.make {
+        val adapters = Ktm.adapters.create {
             +EnumKtmAdapter<EnumVariants>()
         }
         val enum = Ktm.ctx.make(adapters) {

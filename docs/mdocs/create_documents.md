@@ -14,7 +14,7 @@ The default way is to parse a document from a string.
 
 ```kotlin
 val template = "Hello {{ world }}"
-val document: MDocument = Ktm.doc.string(template)
+val document: MDocument = Ktm.parser.fromString(template)
 ```
 
 ### Parsing with a custom provider
@@ -29,7 +29,7 @@ fun interface CharStream {
 ```
 
 For example, here is the implementation of `CharStream` used inside
-the `Ktm.doc.string` method:
+the `Ktm.parser.fromString` method:
 
 ```kotlin
 class StringCharStream(val content: CharSequence) : CharStream {

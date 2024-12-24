@@ -1,3 +1,6 @@
+import org.gradle.initialization.DefaultGradlePropertiesController
+import org.gradle.initialization.GradlePropertiesController
+import org.gradle.kotlin.dsl.support.kotlinCompilerOptions
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -8,11 +11,11 @@ plugins {
     id("signing")
 }
 
-fun findProperty(name: String): String? = if (hasProperty(name)) property(name) as String else System.getenv(name)
-fun findFilledProperty(name: String): String? = findProperty(name)?.ifBlank { null }
+fun getProperty(name: String): String? = if (hasProperty(name)) property(name) as String else System.getenv(name)
+fun findFilledProperty(name: String): String? = getProperty(name)?.ifBlank { null }
 
-group = findProperty("group")!!
-version = findProperty("module.ksp")!!
+group = getProperty("group")!!
+version = getProperty("module.ksp")!!
 
 repositories {
     mavenLocal()
@@ -22,23 +25,25 @@ repositories {
 dependencies {
     implementation(project(":core"))
     implementation(libs.kotlin.ksp)
+    implementation(libs.kotlin.ksp.api)
     implementation(libs.orandja.either)
 }
 
 java {
     withSourcesJar()
     withJavadocJar()
-    java.toolchain.languageVersion = JavaLanguageVersion.of(8)
+    java.toolchain.languageVersion = JavaLanguageVersion.of(11)
 }
+
 
 tasks.withType<KotlinCompile>().all {
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_1_8)
+        jvmTarget.set(JvmTarget.JVM_11)
     }
 }
 
-val ossrhUsername = findFilledProperty("osshr.username")
-val ossrhPassword = findFilledProperty("osshr.password")
+val ossrhUsername = findFilledProperty("ossrh.username")
+val ossrhPassword = findFilledProperty("ossrh.password")
 val ossrhMavenEnabled = ossrhUsername != null && ossrhPassword != null
 
 publishing {
@@ -46,26 +51,26 @@ publishing {
         from(components["java"])
 
         pom {
-            name = findProperty("POM_NAME")!!
-            description = findProperty("POM_DESCRIPTION")!!
-            url = findProperty("POM_URL")!!
+            name = getProperty("POM_NAME")!!
+            description = getProperty("POM_DESCRIPTION")!!
+            url = getProperty("POM_URL")!!
             licenses {
                 license {
-                    name = findProperty("POM_LICENSE_NAME")!!
-                    url = findProperty("POM_LICENSE_URL")!!
+                    name = getProperty("POM_LICENSE_NAME")!!
+                    url = getProperty("POM_LICENSE_URL")!!
                 }
             }
             developers {
                 developer {
-                    id = findProperty("POM_DEVELOPER_LBRIAND_ID")!!
-                    name = findProperty("POM_DEVELOPER_LBRIAND_NAME")!!
-                    email = findProperty("POM_DEVELOPER_LBRIAND_EMAIL")!!
+                    id = getProperty("POM_DEVELOPER_LBRIAND_ID")!!
+                    name = getProperty("POM_DEVELOPER_LBRIAND_NAME")!!
+                    email = getProperty("POM_DEVELOPER_LBRIAND_EMAIL")!!
                 }
             }
             scm {
-                connection = findProperty("POM_SCM_URL")!!
-                developerConnection = findProperty("POM_SCM_CONNECTION")!!
-                url = findProperty("POM_SCM_DEV_CONNECTION")!!
+                connection = getProperty("POM_SCM_URL")!!
+                developerConnection = getProperty("POM_SCM_CONNECTION")!!
+                url = getProperty("POM_SCM_DEV_CONNECTION")!!
             }
         }
     }

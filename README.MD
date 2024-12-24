@@ -9,8 +9,12 @@ look [here](benchmark/README.MD)
 
 ### Library
 
-<details> 
-<summary>Multiplatform:</summary>
+```kotlin
+implementation("net.orandja.ktm:core:2.0.0")
+```
+
+<details >
+<summary > Multiplatform:</summary>
 
 ```kotlin
 repositories {
@@ -25,6 +29,8 @@ val commonMain by getting {
 
 </details>
 
+<details>
+<summary>Jvm:</summary>
 Jvm:
 
 ```kotlin
@@ -35,6 +41,8 @@ dependencies {
     implementation("net.orandja.ktm:core:2.0.0")
 }
 ```
+
+</details>
 
 ### Ksp code generator plugin
 
@@ -175,7 +183,7 @@ Example:
 val mustacheTemplate: String = "Hello {{ name }}"
 var document: MDocument
 // default way
-document = Ktm.doc.string(mustacheTemplate)
+document = Ktm.parser.fromString(mustacheTemplate)
 // quick way, only work on strings
 document = mustacheTemplate.toMustacheDocument()
 ```
@@ -190,7 +198,7 @@ Let's assume this document:
 
 ```handlebars
 {{# greeting }}
-Hello {{ name }},
+    Hello {{ name }},
 {{/ greeting }}
 Today's tasks:
 {{# tasks }}

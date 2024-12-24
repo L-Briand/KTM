@@ -1,13 +1,14 @@
 [versions]
-kotlin-version = "2.0.0"
-kotlin-ksp = "2.0.0-1.0.23"
+kotlin-version = "2.1.0"
+kotlin-ksp = "2.1.0-1.0.29"
 kotlin-dokka = "1.9.20"
-kotlin-benchmark = "0.4.11"
-kotlinx-serialization = "1.7.1"
+kotlin-benchmark = "0.4.12"
+kotlinx-serialization = "1.7.2"
 jmh = "1.37"
 
 [libraries]
-kotlin-ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "kotlin-ksp" }
+kotlin-ksp = { module = "com.google.devtools.ksp:symbol-processing", version.ref = "kotlin-ksp" }
+kotlin-ksp-api = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "kotlin-ksp" }
 kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 kotlinx-benchmark = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-runtime", version.ref = "kotlin-benchmark" }
 
@@ -20,6 +21,7 @@ spullara = { module = "com.github.spullara.mustache.java:compiler", version = "0
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin-version" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin-version" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin-version" }
+kotlin-js = { id = "org.jetbrains.kotlin.js", version.ref = "kotlin-version" }
 kotlin-allopen = { id = "org.jetbrains.kotlin.plugin.allopen", version.ref = "kotlin-version" }
 kotlin-ksp = { id = "com.google.devtools.ksp", version.ref = "kotlin-ksp" }
 kotlin-dokka = { id = "org.jetbrains.dokka", version.ref = "kotlin-dokka" }

@@ -12,12 +12,9 @@ class PartialRenderer(private val spaces: CharSequence) : Renderer() {
 
     override fun renderStatic(document: MDocument.Static, writer: (CharSequence) -> Unit) {
         var written = 0
-        var cache: Int
-        val newLines = document.content.newLines().iterator()
-        while (newLines.hasNext()) {
-            cache = newLines.next()
-            writer(document.content.subSequence(written, cache))
-            written = cache
+        for (newLine in document.content.newLines()) {
+            writer(document.content.subSequence(written, newLine))
+            written = newLine
             // Do not write padding on the last new line of a section
             if (written != document.content.length || !document.sectionLast) writer(spaces)
         }

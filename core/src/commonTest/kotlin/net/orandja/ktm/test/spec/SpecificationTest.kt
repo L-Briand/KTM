@@ -58,7 +58,7 @@ class SpecificationTest {
                     if (dataContext is MContext.Map) Ktm.ctx.merge(dataContext, partialsContext)
                     else dataContext
 
-                val template = Ktm.doc.string(test.template)
+                val template = Ktm.parser.fromString(test.template)
                 val rendered = template.render(context)
                 assertEquals(test.expected, rendered, "\n## ${test.name}:\n")
             } catch (e: Exception) {

@@ -1,6 +1,7 @@
+@file:OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
+
 import kotlinx.benchmark.gradle.JvmBenchmarkTarget
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 
 plugins {
     kotlin("multiplatform")
@@ -9,9 +10,6 @@ plugins {
     id("org.jetbrains.kotlinx.benchmark")
     id("org.jetbrains.kotlin.plugin.allopen")
 }
-
-fun findProperty(name: String): String? = if (hasProperty(name)) property(name) as String else System.getenv(name)
-fun findFilledProperty(name: String): String? = findProperty(name)?.ifBlank { null }
 
 group = "${findProperty("group")!!}.benchmark"
 version = "no_version"
@@ -26,11 +24,11 @@ kotlin {
     // Default targets
 
     jvm {
-        java.toolchain.languageVersion = JavaLanguageVersion.of(8)
+        java.toolchain.languageVersion = JavaLanguageVersion.of(11)
         compilations.all {
             compileTaskProvider.configure {
                 compilerOptions {
-                    jvmTarget = JvmTarget.JVM_1_8
+                    jvmTarget = JvmTarget.JVM_11
                 }
             }
         }
@@ -47,10 +45,8 @@ kotlin {
         nodejs()
     }
 
-    @OptIn(ExperimentalWasmDsl::class)
     wasmJs { d8() }
-//    @OptIn(ExperimentalWasmDsl::class)
-//    wasmWasi { nodejs() }
+    wasmWasi { nodejs() }
 
     // https://kotlinlang.org/docs/native-target-support.html
 

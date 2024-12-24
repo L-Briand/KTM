@@ -1,5 +1,7 @@
 package net.orandja.ktm.base
 
+import net.orandja.ktm.composition.tokenizeDelimitedString
+
 /**
  * Contextual part a mustache document.
  * Combined with [MDocument], you can render a document.
@@ -36,7 +38,7 @@ sealed interface MContext {
      * ```
      */
     fun interface Value : MContext {
-        fun get(node: NodeContext): CharSequence
+        fun get(node: Node): CharSequence
         override fun <In, Out> accept(context: In, visitor: Visitor<In, Out>) = visitor.value(context, this)
     }
 
@@ -49,7 +51,7 @@ sealed interface MContext {
      * ```
      */
     fun interface Map : MContext {
-        fun get(node: NodeContext, tag: String): MContext?
+        fun get(node: Node, tag: CharSequence): MContext?
         override fun <In, Out> accept(context: In, visitor: Visitor<In, Out>) = visitor.map(context, this)
     }
 
@@ -66,7 +68,7 @@ sealed interface MContext {
      * ```
      */
     fun interface List : MContext {
-        fun iterator(node: NodeContext): Iterator<MContext>
+        fun iterator(node: Node): Iterator<MContext>
         override fun <In, Out> accept(context: In, visitor: Visitor<In, Out>) = visitor.list(context, this)
     }
 
@@ -77,7 +79,7 @@ sealed interface MContext {
      * ```
      */
     fun interface Document : MContext {
-        fun get(node: NodeContext): MDocument
+        fun get(node: Node): MDocument
         override fun <In, Out> accept(context: In, visitor: Visitor<In, Out>) = visitor.document(context, this)
     }
 
@@ -87,7 +89,7 @@ sealed interface MContext {
      * This element should return any other element.
      */
     fun interface Delegate : MContext {
-        fun get(node: NodeContext): MContext
+        fun get(node: Node): MContext
         override fun <In, Out> accept(context: In, visitor: Visitor<In, Out>) = visitor.delegate(context, this)
     }
 
@@ -96,7 +98,7 @@ sealed interface MContext {
      * By providing a [visitor], one can decide what to do.
      * Depending on the [MContext] kind, the corresponding [Visitor] method will be called.
      *
-     * For an example, see [TagRenderVisitor] which is used in [NodeContext.findValue]
+     * For an example, see [TagRenderVisitor] which is used in [Node.findValue]
      */
     fun <In, Out> accept(context: In, visitor: Visitor<In, Out>): Out
 
@@ -111,16 +113,50 @@ sealed interface MContext {
         fun list(data: In, list: List): Out
         fun document(data: In, document: Document): Out
         fun delegate(data: In, delegate: Delegate): Out
+    }
 
-        /** Visitor class with [default] [Out] return type on each method */
-        open class Default<in In, out Out>(val default: Out) : Visitor<In, Out> {
-            override fun no(data: In, no: No): Out = default
-            override fun yes(data: In, yes: Yes): Out = default
-            override fun value(data: In, value: Value): Out = default
-            override fun map(data: In, map: Map): Out = default
-            override fun list(data: In, list: List): Out = default
-            override fun document(data: In, document: Document): Out = default
-            override fun delegate(data: In, delegate: Delegate): Out = default
+    /** A [net.orandja.ktm.base.Node] that can [resolve][resolve] [MContext][MContext] elements. */
+    class Node(current: MContext, parent: Node? = null) : net.orandja.ktm.base.Node<MContext>(current, parent) {
+
+        fun findValue(tag: String): CharSequence? =
+            resolve(tokenizeDelimitedString(tag))?.current?.accept(this, TagRenderVisitor)
+
+        fun findNode(tag: String): MContext? = resolve(tokenizeDelimitedString(tag))?.current
+
+        data class Input(val node: Node, val key: CharSequence)
+
+        /** Resolve the style for the given [Input] */
+        private object NodeToElement : Visitor<Input, MContext?> {
+
+            override fun no(data: Input, no: No): MContext? = null
+            override fun yes(data: Input, yes: Yes): MContext? = null
+            override fun value(data: Input, value: Value): MContext? = null
+            override fun document(data: Input, document: Document): MContext? = null
+
+            override fun list(data: Input, list: List): MContext? {
+                val index = data.key.toString().toIntOrNull() ?: return null
+                return Iterable { list.iterator(data.node) }.elementAtOrNull(index)
+            }
+
+            override fun map(data: Input, map: Map): MContext? = map.get(data.node, data.key)
+            override fun delegate(data: Input, delegate: Delegate): MContext? =
+                delegate.get(data.node).accept(data, this)
         }
+
+        override fun resolveElement(key: CharSequence): MContext? =
+            current.accept(Input(this, key), NodeToElement)
+
+        /** Create a new node with the given node as parent */
+        private object ElementToNode : Visitor<Node, Node> {
+            override fun no(data: Node, no: No): Node = Node(no, data)
+            override fun yes(data: Node, yes: Yes): Node = Node(yes, data)
+            override fun value(data: Node, value: Value): Node = Node(value, data)
+            override fun map(data: Node, map: Map): Node = Node(map, data)
+            override fun list(data: Node, list: List): Node = Node(list, data)
+            override fun document(data: Node, document: Document): Node = Node(document, data)
+            override fun delegate(data: Node, delegate: Delegate): Node = delegate.get(data).accept(data, this)
+        }
+
+        override fun createNode(element: MContext): Node = element.accept(this, ElementToNode)
     }
 }

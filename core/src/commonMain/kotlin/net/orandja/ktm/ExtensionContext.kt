@@ -1,7 +1,7 @@
 package net.orandja.ktm
 
-import net.orandja.ktm.adapters.AnyKtmAdapter
 import net.orandja.ktm.adapters.KtmAdapter
+import net.orandja.ktm.adapters.defaults.AnyKtmAdapter
 import net.orandja.ktm.base.MContext
 
 /**
@@ -28,8 +28,7 @@ inline fun <reified T> T.toMustacheContext(
 inline fun <reified T : Enum<T>> T.toMustacheContext(
     adapters: KtmAdapter.Provider = Ktm.adapters
 ): MContext {
-    val enumAdapter = adapters.get<T>() ?: return this.EnumMustacheContext(adapters)
-    val any: KtmAdapter<*> = AnyKtmAdapter
-    if (any == enumAdapter) return this.EnumMustacheContext(adapters)
+    val enumAdapter = adapters.get<T>() ?: return this.EnumMustacheContext()
+    if (AnyKtmAdapter == enumAdapter) return this.EnumMustacheContext()
     return enumAdapter.toMustacheContext(this)
 }

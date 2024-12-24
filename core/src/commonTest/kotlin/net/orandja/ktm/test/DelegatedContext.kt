@@ -14,12 +14,12 @@ class DelegatedContext {
         "value" by delegateValue { findValue("secret") ?: "not found" }
         "map" by delegateMap {
             when (it) {
-                "~secret" -> find("secret")
+                "~secret" -> findNode("secret")!!
                 else -> null
             }
         }
         "list" by delegateList {
-            listOf(find("secret")!!).iterator()
+            listOf(findNode("secret")!!).iterator()
         }
     }
 
@@ -30,5 +30,6 @@ class DelegatedContext {
         assertEquals("secret", "{{ value }}".render(context))
         assertEquals("secret", "{{ map.~secret }}".render(context))
         assertEquals("secret", "{{# list }}{{.}}{{/ list }}".render(context))
+        assertEquals("secret", "{{ list.0 }}".render(context))
     }
 }

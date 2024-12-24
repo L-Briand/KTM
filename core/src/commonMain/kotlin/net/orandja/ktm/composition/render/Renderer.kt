@@ -3,20 +3,38 @@
 package net.orandja.ktm.composition.render
 
 import net.orandja.ktm.Ktm
-import net.orandja.ktm.base.*
+import net.orandja.ktm.base.MContext
+import net.orandja.ktm.base.MDocument
+import net.orandja.ktm.base.TagRenderVisitor
 
 /**
  * Renderer is a class that provides methods for rendering Mustache templates.
  *
  * @property renderToString Shortcut method to render the document as a string.
  * @property render Shortcut method to render the document without a node context.
+ *
+ * @see PartialRenderer
  */
 @Suppress("NOTHING_TO_INLINE")
 open class Renderer {
 
+    companion object {
+        private val escapes = mapOf(
+            '&' to "&amp;",
+            '<' to "&lt;",
+            '>' to "&gt;",
+            '"' to "&quot;",
+            '\'' to "&#x27;",
+            '`' to "&#x60;",
+            '=' to "&#x3D;",
+        )
+    }
+
+    // Sugar
+
     fun renderToString(document: MDocument, context: MContext): String {
         val result = StringBuilder(128)
-        render(document, NodeContext(context)) { result.append(it) }
+        render(document, MContext.Node(context)) { result.append(it) }
         return result.toString()
     }
 
@@ -24,59 +42,55 @@ open class Renderer {
         document: MDocument,
         context: MContext,
         writer: (CharSequence) -> Unit,
-    ) = render(document, NodeContext(context), writer)
+    ) = render(document, MContext.Node(context), writer)
 
-    /**
-     * Render the given mustache [document] into [writer].
-     *
-     * @param document Parsed representation of a mustache document.
-     * @param context You need to have scoped context when rendering a section.
-     *             If you don't find it inside the current context, maybe the parent have it.
-     * @param pool Where you find other documents when a partial occurs.
-     * @param writer Where you write parts of the rendered document.
-     */
+
+    // Rendering section
+
     open fun render(
         document: MDocument,
-        context: NodeContext,
+        context: MContext.Node,
         writer: (CharSequence) -> Unit,
     ) {
+        // TODO: Test if visitor pattern speeds things up here too.
         when (document) {
-            is MDocument.Section -> renderSection(document, context, writer)
             is MDocument.Static -> renderStatic(document, writer)
             is MDocument.Tag -> renderTag(document, context, writer)
+            is MDocument.Section -> renderSection(document, context, writer)
             is MDocument.Partial -> renderPartial(document, context, writer)
         }
     }
 
     protected open fun renderSection(
         document: MDocument.Section,
-        context: NodeContext,
+        context: MContext.Node,
         writer: (CharSequence) -> Unit,
     ) {
-        val node = context.find(document.name)
+        val node = context.resolve(document.name)?.current
         when {
             document.inverted -> {
                 if (node == null) for (part in document.parts) render(part, context, writer)
                 else if (node.accept(context, UseInvertedVisitor)) {
-                    val newNode = NodeContext(node, context)
+                    val newNode = MContext.Node(node, context)
                     for (part: MDocument in document.parts) render(part, newNode, writer)
                 }
             }
 
             node != null -> {
-                node.accept(context, SectionContextVisitor { newNode ->
+                val visitorInput = SectionVisitor.Input(context) { newNode ->
                     for (part in document.parts) render(part, newNode, writer)
-                })
+                }
+                node.accept(visitorInput, SectionVisitor)
             }
         }
     }
 
     protected open fun renderPartial(
         document: MDocument.Partial,
-        context: NodeContext,
+        context: MContext.Node,
         writer: (CharSequence) -> Unit
     ) {
-        val partial = context.find(document.name) ?: return
+        val partial = context.resolve(document.name)?.current ?: return
         val newDocument = partial.accept(context, PartialDocumentFinderVisitor) ?: return
         val spaces = document.padding
         if (spaces.length == 0) render(newDocument, context, writer)
@@ -88,55 +102,99 @@ open class Renderer {
 
     protected open fun renderTag(
         document: MDocument.Tag,
-        context: NodeContext,
+        context: MContext.Node,
         writer: (CharSequence) -> Unit,
     ) {
-        val node = context.find(document.name) ?: return
+        val node = context.resolve(document.name)?.current ?: return
         val toPrint = node.accept(context, TagRenderVisitor)
         if (toPrint != null) {
-            if (document.escapeHtml) MustacheEscape.escape(toPrint, writer)
-            else writer(toPrint)
+            if (document.escapeHtml) escape(toPrint, writer) else writer(toPrint)
         }
     }
+
+    protected open fun escape(cs: CharSequence, writer: (CharSequence) -> Unit) {
+        var start = 0
+        var idx = 0
+        while (idx < cs.length) {
+            val escape = escapes[cs[idx]]
+            if (escape != null) {
+                if (start < idx) writer(cs.subSequence(start, idx))
+                writer(escape)
+                start = idx + 1
+            }
+            idx++
+        }
+        if (start < idx) writer(cs.subSequence(start, idx))
+    }
+
 
     protected open fun renderStatic(document: MDocument.Static, writer: (CharSequence) -> Unit) =
         writer(document.content)
 
-
-    private object UseInvertedVisitor : MContext.Visitor.Default<NodeContext, Boolean>(false) {
-        override fun no(data: NodeContext, no: MContext.No) = true
-        override fun list(data: NodeContext, list: MContext.List): Boolean {
+    /**
+     * Detect if the input [MContext.Node] can be used for inverted sections.
+     */
+    private object UseInvertedVisitor : MContext.Visitor<MContext.Node, Boolean> {
+        override fun no(data: MContext.Node, no: MContext.No) = true
+        override fun list(data: MContext.Node, list: MContext.List): Boolean {
             return !list.iterator(data).hasNext()
         }
 
-        override fun delegate(data: NodeContext, delegate: MContext.Delegate): Boolean =
+        override fun delegate(data: MContext.Node, delegate: MContext.Delegate): Boolean =
             delegate.get(data).accept(data, this)
+
+        // Others
+        override fun value(data: MContext.Node, value: MContext.Value): Boolean = false
+
+        // FIXME: Should an empty map act like an empty list ?
+        override fun map(data: MContext.Node, map: MContext.Map): Boolean = false
+        override fun document(data: MContext.Node, document: MContext.Document): Boolean = false
+        override fun yes(data: MContext.Node, yes: MContext.Yes): Boolean = false
     }
 
-    private class SectionContextVisitor(
-        val onNewNode: (NodeContext) -> Unit,
-    ) : MContext.Visitor<NodeContext, Unit> {
-        override fun yes(data: NodeContext, yes: MContext.Yes) = onNewNode(data)
-        override fun value(data: NodeContext, value: MContext.Value) =
-            if (data.current == value) onNewNode(data) else onNewNode(NodeContext(value, data))
 
-        override fun map(data: NodeContext, map: MContext.Map) =
-            if (data.current == map) onNewNode(data) else onNewNode(NodeContext(map, data))
+    /**
+     * Find the nodes that need to be rendered for a section.
+     */
+    private object SectionVisitor : MContext.Visitor<SectionVisitor.Input, Unit> {
+        data class Input(val node: MContext.Node, val onNewNode: (MContext.Node) -> Unit)
 
-        override fun list(data: NodeContext, list: MContext.List) {
-            for (context in list.iterator(data)) onNewNode(NodeContext(context, data))
+        override fun yes(data: Input, yes: MContext.Yes) = data.onNewNode(data.node)
+        override fun value(data: Input, value: MContext.Value) =
+            if (data.node.current == value) data.onNewNode(data.node)
+            else data.onNewNode(MContext.Node(value, data.node))
+
+        override fun map(data: Input, map: MContext.Map) =
+            if (data.node.current == map) data.onNewNode(data.node)
+            else data.onNewNode(MContext.Node(map, data.node))
+
+        override fun list(data: Input, list: MContext.List) {
+            for (context in list.iterator(data.node)) data.onNewNode(MContext.Node(context, data.node))
         }
 
-        override fun document(data: NodeContext, document: MContext.Document) {}
-        override fun delegate(data: NodeContext, delegate: MContext.Delegate) = delegate.get(data).accept(data, this)
-        override fun no(data: NodeContext, no: MContext.No) {}
+        override fun delegate(data: Input, delegate: MContext.Delegate) = delegate.get(data.node).accept(data, this)
+
+        // Other
+        override fun no(data: Input, no: MContext.No) {}
+        override fun document(data: Input, document: MContext.Document) {}
     }
 
+    /**
+     * Find a document inside the [MContext.Node]
+     */
     private object PartialDocumentFinderVisitor
-        : MContext.Visitor.Default<NodeContext, MDocument?>(null) {
-        override fun document(data: NodeContext, document: MContext.Document): MDocument = document.get(data)
-        override fun value(data: NodeContext, value: MContext.Value): MDocument = Ktm.doc.string(value.get(data))
-        override fun delegate(data: NodeContext, delegate: MContext.Delegate): MDocument? =
+        : MContext.Visitor<MContext.Node, MDocument?> {
+        override fun document(data: MContext.Node, document: MContext.Document): MDocument = document.get(data)
+        override fun value(data: MContext.Node, value: MContext.Value): MDocument =
+            Ktm.parser.fromString(value.get(data))
+
+        override fun delegate(data: MContext.Node, delegate: MContext.Delegate): MDocument? =
             delegate.get(data).accept(data, this)
+
+        // Others
+        override fun no(data: MContext.Node, no: MContext.No): MDocument? = null
+        override fun yes(data: MContext.Node, yes: MContext.Yes): MDocument? = null
+        override fun map(data: MContext.Node, map: MContext.Map): MDocument? = null
+        override fun list(data: MContext.Node, list: MContext.List): MDocument? = null
     }
 }

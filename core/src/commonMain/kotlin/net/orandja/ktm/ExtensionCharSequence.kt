@@ -12,7 +12,7 @@ import net.orandja.ktm.composition.builder.ContextMapBuilder
  * @receiver The [CharSequence] to convert.
  * @return The Mustache document.
  */
-fun CharSequence.toMustacheDocument(): MDocument = Ktm.doc.string(this)
+fun CharSequence.toMustacheDocument(): MDocument = Ktm.parser.fromString(this)
 
 
 /**
@@ -36,7 +36,7 @@ inline fun CharSequence.render(
 ) = toMustacheDocument().render(adapters, builder)
 
 /**
- * Renders the given `CharSequence` like a [MDocument] with the provided [MContext],, and [writer] function.
+ * Renders the given `CharSequence` like a [MDocument] with the provided [MContext] and [writer] function.
  *
  * @receiver The `CharSequence` to render.
  * @param context The context to render the document with.

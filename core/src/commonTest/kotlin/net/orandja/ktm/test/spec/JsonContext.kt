@@ -3,7 +3,6 @@ package net.orandja.ktm.test.spec
 import kotlinx.serialization.json.*
 import net.orandja.ktm.Ktm
 import net.orandja.ktm.base.MContext
-import net.orandja.ktm.base.NodeContext
 
 fun jsonToContext(json: JsonElement?): MContext = when (json) {
     null -> MContext.No
@@ -14,13 +13,13 @@ fun jsonToContext(json: JsonElement?): MContext = when (json) {
 }
 
 fun toObject(json: JsonObject): MContext = object : MContext.Map {
-    override fun get(node: NodeContext, tag: String): MContext? = json[tag]?.let { jsonToContext(it) }
+    override fun get(node: MContext.Node, tag: CharSequence): MContext? = json[tag]?.let { jsonToContext(it) }
 
     override fun toString(): String = json.toString()
 }
 
 fun toArray(json: JsonArray): MContext = object : MContext.List {
-    override fun iterator(node: NodeContext): Iterator<MContext> = object : Iterator<MContext> {
+    override fun iterator(node: MContext.Node): Iterator<MContext> = object : Iterator<MContext> {
         val base = json.iterator()
         override fun hasNext(): Boolean = base.hasNext()
         override fun next(): MContext = jsonToContext(base.next())

@@ -2,7 +2,6 @@ package net.orandja.ktm
 
 import net.orandja.ktm.adapters.KtmAdapter
 import net.orandja.ktm.base.MContext
-import net.orandja.ktm.base.NodeContext
 import net.orandja.ktm.composition.builder.context.ContextValue
 
 
@@ -25,22 +24,22 @@ import net.orandja.ktm.composition.builder.context.ContextValue
  * @param T the type of the enum element.
  * @receiver the enum element to be converted to a Mustache context.
  */
-inline fun <reified T : Enum<T>> T.EnumMustacheContext(
-    adapters: KtmAdapter.Provider = Ktm.adapters,
-): MContext = object : MContext.Map {
+inline fun <reified T : Enum<T>> T.EnumMustacheContext(): MContext = object : MContext.Map {
     private val values = enumValues<T>()
-    private val valuesContext = adapters.contextOf(values.map { it.name })
 
-    override fun get(node: NodeContext, tag: String): MContext? = when (tag) {
+    override fun get(node: MContext.Node, tag: CharSequence): MContext? = when (tag) {
         name -> MContext.Yes
         in values.map { it.name } -> MContext.No
-        "ordinal" -> Ktm.ctx.value(ordinal.toString())
+        "ordinal" -> ContextValue(ordinal.toString())
         "name" -> ContextValue(name)
-        "values" -> valuesContext
         else -> null
     }
 
-    override fun toString(): String = values.joinToString(", ", "EnumContext<${T::class.simpleName}>[", "]") { it.name }
+    override fun toString(): String = values.joinToString(
+        prefix = "EnumContext<${T::class.simpleName}>[",
+        separator = ", ",
+        postfix = "]"
+    ) { it.name }
 }
 
 /**
@@ -56,9 +55,6 @@ inline fun <reified T : Enum<T>> T.EnumMustacheContext(
  * @see EnumMustacheContext
  */
 inline fun <reified T : Enum<T>> EnumKtmAdapter() = object : KtmAdapter<T> {
-    override fun toMustacheContext(adapters: KtmAdapter.Provider, value: T): MContext {
-        return value.EnumMustacheContext(adapters)
-    }
-
+    override fun toMustacheContext(adapters: KtmAdapter.Provider, value: T): MContext = value.EnumMustacheContext()
     override fun toString(): String = "EnumKtmAdapter<${T::class.simpleName}>"
 }

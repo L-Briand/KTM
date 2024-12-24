@@ -1,6 +1,7 @@
 package net.orandja.ktm.composition.builder
 
 import net.orandja.ktm.base.MDocument
+import net.orandja.ktm.composition.parser.Parser
 import java.io.File
 import java.io.InputStream
 import java.io.Reader
@@ -9,25 +10,25 @@ import java.nio.file.Path
 import kotlin.io.path.bufferedReader
 import kotlin.io.path.isRegularFile
 
-fun DocumentFactory.reader(reader: Reader): MDocument {
-    return parser.parse(ReaderCharStream(reader))
+fun Parser.reader(reader: Reader): MDocument {
+    return parse(ReaderCharStream(reader))
 }
 
-fun DocumentFactory.inputStream(stream: InputStream): MDocument {
-    return parser.parse(InputStreamCharStream(stream))
+fun Parser.inputStream(stream: InputStream): MDocument {
+    return parse(InputStreamCharStream(stream))
 }
 
-fun DocumentFactory.file(file: File, charset: Charset = Charset.defaultCharset()): MDocument? {
+fun Parser.file(file: File, charset: Charset = Charset.defaultCharset()): MDocument? {
     if (!file.exists() && !file.isFile) return null
     return file.bufferedReader(charset).use { reader(it) }
 }
 
-fun DocumentFactory.path(path: Path, charset: Charset = Charset.defaultCharset()): MDocument? {
+fun Parser.path(path: Path, charset: Charset = Charset.defaultCharset()): MDocument? {
     if (!path.isRegularFile()) return null
     return path.bufferedReader(charset).use { reader(it) }
 }
 
-fun DocumentFactory.resource(
+fun Parser.resource(
     name: String,
     classLoader: ClassLoader = this::class.java.classLoader,
     charset: Charset = Charset.defaultCharset(),

@@ -11,9 +11,9 @@ internal class ParserContext(
     var containPartial = false
     var partialPadding = StringBuilder()
 
-    val nodes = mutableListOf(MDocument.Section(emptyArray(), false))
+    val nodes = mutableListOf(MDocument.Section(emptyArray<CharSequence>().asIterable(), false))
 
-    var peeked = ArrayList<Token>(5)
+    var peeked = ArrayList<Token>(8)
 
     inline fun peekNext(): Token? {
         if (!tokens.hasNext()) return null

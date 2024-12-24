@@ -29,7 +29,7 @@ sealed interface MDocument {
      * @property padding padding to add on each new line during partial render
      */
     class Partial(
-        val name: Array<String>,
+        val name: Iterable<CharSequence>,
         var padding: CharSequence,
     ) : MDocument {
         private val realName get() = name.joinToString(".") { it }.ifEmpty { "." }
@@ -51,7 +51,7 @@ sealed interface MDocument {
      * @param name parts of the tag name. Single dot tag should be an empty array.
      * @param escapeHtml if the rendered content of this tag should be html escaped. Normal tags are true.
      */
-    class Tag(val name: Array<String>, val escapeHtml: Boolean) : MDocument {
+    class Tag(val name: Iterable<CharSequence>, val escapeHtml: Boolean) : MDocument {
         private val realName get() = name.joinToString(".") { it }.ifEmpty { "." }
         override fun toString(): String = "{{${if (escapeHtml) "" else "&"}$realName}}"
     }
@@ -67,14 +67,13 @@ sealed interface MDocument {
      * @param parts tokens to renders in order inside this section.
      */
     class Section(
-        val name: Array<String>,
+        val name: Iterable<CharSequence>,
         val inverted: Boolean,
-        val parts: ArrayList<MDocument> = ArrayList(10),
+        val parts: ArrayList<MDocument> = ArrayList(),
     ) : MDocument {
 
         private val realName
-            get() = if (name.size == 1 && name[0] == ".") "."
-            else name.joinToString(".") { it }.ifEmpty { "root" }
+            get() = name.joinToString(".") { it }.ifEmpty { "root" }
 
         override fun toString(): String {
             val invertedStr = if (inverted) "^" else ""

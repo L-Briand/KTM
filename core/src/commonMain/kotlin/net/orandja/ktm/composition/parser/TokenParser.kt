@@ -4,9 +4,9 @@ package net.orandja.ktm.composition.parser
 
 object TokenParser {
 
-    private val RN = Token(Token.NEW_LINE_RN, Token.NO_CONTENT)
-    private val N = Token(Token.NEW_LINE_N, Token.NO_CONTENT)
-    private val R = Token(Token.NEW_LINE_R, Token.NO_CONTENT)
+    private val RN = Token(Token.NEW_LINE_RN, "\r\n")
+    private val N = Token(Token.NEW_LINE_N, "\n")
+    private val R = Token(Token.NEW_LINE_R, "\r")
 
     /**
      * Parses a token sequence from the given [context].
@@ -24,10 +24,11 @@ object TokenParser {
     private suspend fun SequenceScope<Token>.parseTokens(ctx: TokenParserContext) {
         while (true) {
             val current = ctx.next()
+            // Finish the sequence if we reach the end of the stream
+            if (current == Char.MAX_VALUE) break
             if(ctx.whiteContentLastIndex == ctx.readBuffer.length - 1 && current.isWhitespace()) {
                 ctx.whiteContentLastIndex += 1
             }
-            if (current == Char.MAX_VALUE) break
             if (ctx.searchingDelimStart) {
                 if (current == '\r') {
                     if (ctx.peek() == '\n') {

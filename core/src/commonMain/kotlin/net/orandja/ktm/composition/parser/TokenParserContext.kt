@@ -32,7 +32,7 @@ internal class TokenParserContext(
 
     // Current char reader
 
-    var peeked: Char = Char.MIN_VALUE
+    var peeked: Char? = null
 
     @Suppress("NOTHING_TO_INLINE")
     inline fun next(): Char {
@@ -43,16 +43,16 @@ internal class TokenParserContext(
 
     @Suppress("NOTHING_TO_INLINE")
     inline fun peek(): Char {
-        if (peeked != Char.MIN_VALUE) return peeked
+        if (peeked != null) return peeked!!
         peeked = reader.read()
-        return peeked
+        return peeked!!
     }
 
     @Suppress("NOTHING_TO_INLINE")
     inline fun consume() {
-        if (peeked == Char.MIN_VALUE) return
+        if (peeked == null) return
         readBuffer.append(peeked)
-        peeked = Char.MIN_VALUE
+        peeked = null
     }
 
     var readBuffer = StringBuilder(128)

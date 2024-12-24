@@ -2,26 +2,22 @@ package net.orandja.ktm.base
 
 /**
  * The `TagRenderVisitor` class is a singleton object that implements the [MContext.Visitor] interface.
- * It is responsible for rendering the values of tags in a Mustache template.
+ * It is responsible for rendering simple [MContext.Value] elements in a Mustache template.
  *
  * If the visited [MContext] is a value, the value is rendered.
  * If the visited [MContext] is a delegated MContext, the call is forwarded to it.
  *
- * Example usage of Visitor:
- * ```kotlin
- * val context = Ktm.ctx.make { "name" by "john" }
- * var node = NodeContext(current = context)
- * val nameContext: MContext = node.find("name")!!
- * node = NodeContext(current = nameContext, parent = node)
- * val content = nameContext.accept(node, TagRenderVisitor)
- * assertEquals("john", content)
- * ```
- *
- * @property default The default result to return when a specific method is not overridden.
  * @see MContext.Visitor
+ * @see MContext.Node.findValue
  */
-object TagRenderVisitor : MContext.Visitor.Default<NodeContext, CharSequence?>(null) {
-    override fun value(data: NodeContext, value: MContext.Value): CharSequence = value.get(data)
-    override fun delegate(data: NodeContext, delegate: MContext.Delegate): CharSequence? =
+object TagRenderVisitor : MContext.Visitor<MContext.Node, CharSequence?> {
+    override fun no(data: MContext.Node, no: MContext.No): CharSequence? = null
+    override fun yes(data: MContext.Node, yes: MContext.Yes): CharSequence? = null
+    override fun map(data: MContext.Node, map: MContext.Map): CharSequence? = null
+    override fun list(data: MContext.Node, list: MContext.List): CharSequence? = null
+    override fun document(data: MContext.Node, document: MContext.Document): CharSequence? = null
+
+    override fun value(data: MContext.Node, value: MContext.Value): CharSequence = value.get(data)
+    override fun delegate(data: MContext.Node, delegate: MContext.Delegate): CharSequence? =
         delegate.get(data).accept(data, this)
 }

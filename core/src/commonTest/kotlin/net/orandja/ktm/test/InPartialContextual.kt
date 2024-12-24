@@ -1,6 +1,8 @@
 package net.orandja.ktm.test
 
 import net.orandja.ktm.Ktm
+import net.orandja.ktm.base.MContext
+import net.orandja.ktm.base.TagRenderVisitor
 import net.orandja.ktm.render
 import kotlin.test.Test
 import kotlin.test.assertEquals

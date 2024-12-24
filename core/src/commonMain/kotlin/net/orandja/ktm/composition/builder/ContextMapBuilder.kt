@@ -6,7 +6,6 @@ import net.orandja.ktm.base.MDocument
 import net.orandja.ktm.composition.builder.context.ContextMap
 import net.orandja.ktm.contextOf
 import net.orandja.ktm.getOrThrow
-import kotlin.collections.set
 
 /**
  * Builder class for creating a contextual map used in Mustache rendering.
@@ -78,7 +77,7 @@ class ContextMapBuilder(
         like(adapter.toMustacheContext(this, value))
     }
 
-    private val backingContextAdder = object : MContext.Visitor.Default<Unit, Unit>(Unit) {
+    private val backingContextAdder = object : MContext.Visitor<Unit, Unit> {
         override fun map(data: Unit, map: MContext.Map) {
             if (map is ContextMap) {
                 val updatableContext = getUpdatableContext()
@@ -89,6 +88,13 @@ class ContextMapBuilder(
                 backingContexts.add(map)
             }
         }
+        // Others
+        override fun no(data: Unit, no: MContext.No) {}
+        override fun yes(data: Unit, yes: MContext.Yes) {}
+        override fun value(data: Unit, value: MContext.Value) {}
+        override fun list(data: Unit, list: MContext.List) {}
+        override fun document(data: Unit, document: MContext.Document) {}
+        override fun delegate(data: Unit, delegate: MContext.Delegate) {}
     }
 
 }

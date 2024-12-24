@@ -4,7 +4,6 @@ import net.orandja.ktm.Ktm
 import net.orandja.ktm.adapters.KtmAdapter
 import net.orandja.ktm.base.MContext
 import net.orandja.ktm.base.MDocument
-import net.orandja.ktm.base.NodeContext
 import net.orandja.ktm.composition.builder.context.*
 
 /**
@@ -33,7 +32,7 @@ open class ContextFactory {
     inline fun value(value: Boolean) = if (value) yes else no
 
     inline fun document(value: CharSequence?) = if (value == null) no else document(value)
-    inline fun document(value: CharSequence) = ctxDocument(Ktm.doc.string(value))
+    inline fun document(value: CharSequence) = ctxDocument(Ktm.parser.fromString(value))
 
     fun list(vararg items: String) = list(items.toList())
     fun list(items: Iterable<String?>?) = if (items == null) no else {
@@ -60,7 +59,7 @@ open class ContextFactory {
     fun ctxDocument(value: MDocument) = ContextDocument(value)
     fun ctxMap(vararg context: Pair<String, MContext>) = ContextMap(mutableMapOf(*context))
     fun ctxMap(context: Map<String, MContext>) =
-        ContextMap(if (context is MutableMap) context else context.toMutableMap())
+        ContextMap(context as? MutableMap ?: context.toMutableMap())
 
     fun ctxList(vararg context: MContext) = ContextList(context.toList())
     fun ctxList(contexts: Iterable<MContext>) = ContextList(contexts)
@@ -68,16 +67,24 @@ open class ContextFactory {
 
     // Create delegated contexts
 
-    fun delegate(delegate: NodeContext.() -> MContext?) = Delegated(delegate)
-    fun delegateValue(delegate: NodeContext.() -> CharSequence) = delegate {
+    fun delegate(delegate: MContext.Node.() -> MContext?) = object : MContext.Delegate {
+        override fun get(node: MContext.Node): MContext = node.delegate() ?: MContext.No
+        override fun toString(): String = "Delegated"
+    }
+
+    fun delegateValue(delegate: MContext.Node.() -> CharSequence) = delegate {
         MContext.Value { it.delegate() }
     }
 
-    fun delegateMap(delegate: NodeContext.(tag: String) -> MContext?) = delegate {
+    fun delegateMap(delegate: MContext.Node.(tag: CharSequence) -> MContext?) = delegate {
         MContext.Map { node, tag -> node.delegate(tag) }
     }
 
-    fun delegateList(delegate: NodeContext.() -> Iterator<MContext>) = delegate {
+    fun delegateList(delegate: MContext.Node.() -> Iterator<MContext>) = delegate {
         MContext.List { it.delegate() }
+    }
+
+    fun delegateDocument(delegate: MContext.Node.() -> MDocument) = delegate {
+        MContext.Document { it.delegate() }
     }
 }

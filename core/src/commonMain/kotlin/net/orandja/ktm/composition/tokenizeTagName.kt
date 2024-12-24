@@ -1,31 +1,46 @@
 package net.orandja.ktm.composition
 
-internal const val TAG_DELIMITER = '.'
-
 /**
- * Transform the given [name] to tokens which the parser and NodeContext can interpret.
+ * Transform the given string [str] to a sequence of string given the delimiter character.
  *
- * `.`, `..` -> arrayOf()
+ * Example with the dot (`.`) delimiter:
  *
- * `hello.world`, `hello..world.` -> arrayOf("hello", "world")
+ * `"key.value"` -> `["key", "value"]`
+ *
+ * - All values are trimmed of whitespaces. `" a. b .c "` -> `["a", "b", "c"]`
+ * - An single delimiter `"."`, multiple delimiter `".."` produces nothing. -> `[]`
+ * - Leading delimiter(s) `".key"`, `"..key"` or trailing delimiter(s) `"key."`, `"key.."` are omitted -> `["key"]`
+ * - Multi-delimiter between elements `"key..value"` are like single delimiter -> `["key", "value"]`
+ *
+ * @param str The dotted string to parse
+ * @param delimiter The character to split
+ *
+ * @return A sequence of trimmed strings.
  */
-@Suppress("NOTHING_TO_INLINE")
-internal inline fun tokenizeTagName(name: CharSequence): Array<String> {
-    if (name.length == 1 && name[0] == TAG_DELIMITER) return emptyArray()
+internal fun tokenizeDelimitedString(str: CharSequence, delimiter: Char = '.'): Sequence<CharSequence> = sequence {
+    if (str.length == 0) return@sequence
 
-    var currentOffset = 0
-    var nextIndex = name.indexOf(TAG_DELIMITER, currentOffset, true)
-    if (nextIndex == -1) return arrayOf(name.toString())
+    var index = 0
+    var wordStart: Int = -1
+    var wordEnd = 0
 
-    val result = mutableListOf<String>()
-    do {
-        if (currentOffset != nextIndex) result.add(name.substring(currentOffset, nextIndex))
-        currentOffset = nextIndex + 1
-        nextIndex = name.indexOf(TAG_DELIMITER, currentOffset, true)
-    } while (nextIndex != -1)
-    if (currentOffset != name.length) {
-        result.add(name.substring(currentOffset))
+    while (index < str.length) {
+        if (str[index] == delimiter) {
+            if (wordStart != -1) yield(str.subSequence(wordStart, wordEnd))
+            wordStart = -1
+        } else if (!str[index].isWhitespace()) {
+            if (wordStart == -1) wordStart = index
+            wordEnd = index + 1
+        }
+        index++
     }
-    return result.toTypedArray()
+    if (wordStart != -1) yield(str.subSequence(wordStart, wordEnd))
 }
 
+private class IterableDottedString(source: CharSequence) : Iterable<CharSequence> {
+    // Caching the tokenized source for better performances.
+    private val tokens = tokenizeDelimitedString(source).toList().toTypedArray()
+    override fun iterator(): Iterator<CharSequence> = tokens.iterator()
+}
+
+internal fun CharSequence.iterableDottedString(): Iterable<CharSequence> = IterableDottedString(this)

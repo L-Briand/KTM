@@ -1,6 +1,6 @@
 package net.orandja.ktm.benchmark
 
-import net.orandja.ktm.ksp.KtmContext
+import net.orandja.ktm.annotations.KtmContext
 
 
 @KtmContext

@@ -1,18 +1,20 @@
 package net.orandja.ktm
 
-import net.orandja.ktm.adapters.*
+import net.orandja.ktm.adapters.DefaultKtmAdapterProvider
+import net.orandja.ktm.adapters.KtmAdapter
+import net.orandja.ktm.adapters.TypeKey
+import net.orandja.ktm.adapters.typeKey
 import net.orandja.ktm.base.MContext
-import net.orandja.ktm.base.MDocument
-import net.orandja.ktm.base.NodeContext
-import net.orandja.ktm.composition.builder.context.ContextDocument
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
 
-/** Thrown by extension function [get] when no provider is found for a given type */
-class NoProviderException(type: KType) : IllegalArgumentException(
-    "Failed to get adapter for type $type"
-)
+/** Thrown by extension function [getOrThrow], [getAsOrThrow] when no adapter is found for a given type. */
+class NoKtmAdapterException(type: KType) : IllegalArgumentException("Failed to get adapter for type: $type") {
+    constructor(typeKey: TypeKey) : this(typeKey.type)
+}
+
+// region GETTERS
 
 /**
  * Get the corresponding [KtmAdapter] of the given type [T] from the adapter provider.
@@ -20,65 +22,40 @@ class NoProviderException(type: KType) : IllegalArgumentException(
  * @receiver The [KtmAdapter.Provider] to search the [KtmAdapter] from.
  * @return a [KtmAdapter] for the specified type [T].
  */
-@Throws(NoProviderException::class)
-@Suppress("UNCHECKED_CAST")
-inline fun <reified T> KtmAdapter.Provider.get(): KtmAdapter<T>? {
-    return get(TypeKey(typeOf<T>())) as? KtmAdapter<T>
-}
 
+@Suppress("UNCHECKED_CAST")
+inline fun <reified T> KtmAdapter.Provider.get(): KtmAdapter<T>? = get(typeKey<T>()) as? KtmAdapter<T>
+
+@Throws(NoKtmAdapterException::class)
+inline fun <reified T> KtmAdapter.Provider.getOrThrow(): KtmAdapter<T> =
+    get<T>() ?: throw NoKtmAdapterException(typeOf<T>())
 
 /**
- * Returns a [KtmAdapter] of type [T] from the adapter provider.
- * If the adapter is not found, it throws a [NoProviderException].
+ * Same as [get] but with [TypeKey] as input instead.
  *
  * @receiver The [KtmAdapter.Provider] to search the [KtmAdapter] from.
- * @return The [KtmAdapter] of type [T].
- * @throws NoProviderException if no provider is found for the given type [T].
+ * @return KtmAdapter for the specified type [T] if found.
  */
-inline fun <reified T> KtmAdapter.Provider.getOrThrow(): KtmAdapter<T> {
-    return get<T>() ?: throw NoProviderException(typeOf<T>())
-}
+@Suppress("UNCHECKED_CAST")
+fun <T> KtmAdapter.Provider.getAs(key: TypeKey): KtmAdapter<T>? = get(key) as? KtmAdapter<T>
 
-/**
- * Returns a delegated [KtmAdapter] of type [T].
- * Given [T] extending [R] create a [KtmAdapter] of type [T] using [R]
- *
- * ```kotlin
- * @KtmContext
- * open class A(val foo: String)
- * class B(foo: String) : A(foo)
- *
- * val adapters = Ktm.adapters.make {
- *     + AKtmAdapter
- *     + delegate<B, A>()
- * }
- * val context = adapters.contextOf(B("bar"))
- * "{{ foo }}".render(context) // bar
- * ```
- *
- * @param adapter The adapter to be used as the delegate. By default, it is the [KtmAdapter] of type [R]
- * @return The [KtmAdapter] of type [T].
- * @throws NoProviderException if no provider is found for the given type [T].
- */
-inline fun <reified T : R, reified R> KtmAdapter.Provider.delegate(
-    adapter: KtmAdapter<R> = getOrThrow<R>()
-): KtmAdapter<T> = DelegatedKtmAdapter(typeOf<T>(), adapter)
+@Throws(NoKtmAdapterException::class)
+fun <T> KtmAdapter.Provider.getAsOrThrow(key: TypeKey): KtmAdapter<T> = getAs(key) ?: throw NoKtmAdapterException(key)
+
+// endregion
+
+// region CONTEXT
 
 /**
  * Returns a [MContext] given the value type [T].
-
  *
  * @param value the value for which to get the [MContext].
  * @return the [MContext] of the given value.
- * @throws NoProviderException if no provider is found for the given type [T].
+ * @throws NoKtmAdapterException if no provider is found for the given type [T].
  */
-@Throws(NoProviderException::class)
-inline fun <reified T> KtmAdapter.Provider.contextOf(value: T?): MContext = when (value) {
-    is MContext -> value
-    is MDocument -> ContextDocument(value)
-    null -> MContext.No
-    else -> getOrThrow<T>().toMustacheContext(this, value)
-}
+@Throws(NoKtmAdapterException::class)
+inline fun <reified T> KtmAdapter.Provider.contextOf(value: T): MContext =
+    getOrThrow<T>().toMustacheContext(this, value)
 
 /**
  * Returns a [MContext] of the given callable value (`() -> T`).
@@ -86,26 +63,16 @@ inline fun <reified T> KtmAdapter.Provider.contextOf(value: T?): MContext = when
  * @param value the callable value for which to get the [MContext].
  * @return the [MContext] of the given callable value.
  */
-inline fun <reified T : () -> R, reified R> KtmAdapter.Provider.contextOfCallable(value: T?): MContext =
-    if (value is MContext) value else Ktm.ctx.delegate { contextOf<R>(value?.invoke()) }
+inline fun <reified T : () -> R, reified R> KtmAdapter.Provider.contextOfCallable(value: T): MContext =
+    Ktm.ctx.delegate { contextOf<R>(value.invoke()) }
 
 /**
- * Returns a [MContext] of the given callable value (`(NodeContext) -> T`).
+ * Returns a [MContext] of the given callable value (`(MContext.Node) -> T`).
  *
  * @param value the callable value for which to get the [MContext].
  * @return the [MContext] of the given callable value.
  */
-inline fun <reified T : (NodeContext) -> R, reified R> KtmAdapter.Provider.contextOfNodeCallable(value: T?): MContext =
-    if (value is MContext) value else Ktm.ctx.delegate { contextOf<R>(value?.invoke(this)) }
+inline fun <reified T : (MContext.Node) -> R, reified R> KtmAdapter.Provider.contextOfNodeCallable(value: T): MContext =
+    Ktm.ctx.delegate { contextOf<R>(value.invoke(this)) }
 
-/**
- * Constructs a [KtmAdapterModule] instance with the given [configure] lambda.
- *
- * @param configure A lambda that is used to configure the [KtmAdapterProviderBuilder].
- * @return The constructed [KtmAdapterModule] instance.
- */
-fun makeKtmAdapterModule(
-    configure: KtmAdapterProviderBuilder.() -> Unit
-): KtmAdapterModule = object : KtmAdapterModule() {
-    override fun KtmAdapterProviderBuilder.configure() = configure()
-}
+// endregion

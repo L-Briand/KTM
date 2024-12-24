@@ -1,5 +1,6 @@
+@file:OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
+
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -9,11 +10,11 @@ plugins {
     id("signing")
 }
 
-fun findProperty(name: String): String? = if (hasProperty(name)) property(name) as String else System.getenv(name)
-fun findFilledProperty(name: String): String? = findProperty(name)?.ifBlank { null }
+fun getProperty(name: String): String? = if (hasProperty(name)) property(name) as String else System.getenv(name)
+fun findFilledProperty(name: String): String? = getProperty(name)?.ifBlank { null }
 
-group = findProperty("group")!!
-version = findProperty("module.core")!!
+group = getProperty("group")!!
+version = getProperty("module.core")!!
 
 repositories {
     mavenLocal()
@@ -25,11 +26,11 @@ kotlin {
     // Default targets
 
     jvm {
-        java.toolchain.languageVersion = JavaLanguageVersion.of(8)
+        java.toolchain.languageVersion = JavaLanguageVersion.of(11)
         compilations.all {
             compileTaskProvider.configure {
                 compilerOptions {
-                    jvmTarget = JvmTarget.JVM_1_8
+                    jvmTarget = JvmTarget.JVM_11
                 }
             }
         }
@@ -43,13 +44,12 @@ kotlin {
     // web
 
     js {
+        binaries.library()
         browser()
         nodejs()
     }
 
-    @OptIn(ExperimentalWasmDsl::class)
     wasmJs { d8() }
-    @OptIn(ExperimentalWasmDsl::class)
     wasmWasi { nodejs() }
 
     // https://kotlinlang.org/docs/native-target-support.html
@@ -60,6 +60,7 @@ kotlin {
     macosArm64()
     iosSimulatorArm64()
     iosX64()
+    iosArm64()
 
     // Tier2
 
@@ -72,7 +73,6 @@ kotlin {
     tvosSimulatorArm64()
     tvosX64()
     tvosArm64()
-    iosArm64()
 
     // Tier3
     androidNativeArm32()
@@ -83,10 +83,15 @@ kotlin {
     watchosDeviceArm64()
 
     sourceSets {
-        getByName("commonTest") {
+        commonTest {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(libs.kotlinx.serialization)
+            }
+        }
+        jvmTest {
+            dependencies {
+                implementation(kotlin("reflect"))
             }
         }
     }
@@ -107,26 +112,26 @@ publishing {
         }
         artifact(javadocJar)
         pom {
-            name = findProperty("POM_NAME")!!
-            description = findProperty("POM_DESCRIPTION")!!
-            url = findProperty("POM_URL")!!
+            name = getProperty("POM_NAME")!!
+            description = getProperty("POM_DESCRIPTION")!!
+            url = getProperty("POM_URL")!!
             licenses {
                 license {
-                    name = findProperty("POM_LICENSE_NAME")!!
-                    url = findProperty("POM_LICENSE_URL")!!
+                    name = getProperty("POM_LICENSE_NAME")!!
+                    url = getProperty("POM_LICENSE_URL")!!
                 }
             }
             developers {
                 developer {
-                    id = findProperty("POM_DEVELOPER_LBRIAND_ID")!!
-                    name = findProperty("POM_DEVELOPER_LBRIAND_NAME")!!
-                    email = findProperty("POM_DEVELOPER_LBRIAND_EMAIL")!!
+                    id = getProperty("POM_DEVELOPER_LBRIAND_ID")!!
+                    name = getProperty("POM_DEVELOPER_LBRIAND_NAME")!!
+                    email = getProperty("POM_DEVELOPER_LBRIAND_EMAIL")!!
                 }
             }
             scm {
-                connection = findProperty("POM_SCM_URL")!!
-                developerConnection = findProperty("POM_SCM_CONNECTION")!!
-                url = findProperty("POM_SCM_DEV_CONNECTION")!!
+                connection = getProperty("POM_SCM_URL")!!
+                developerConnection = getProperty("POM_SCM_CONNECTION")!!
+                url = getProperty("POM_SCM_DEV_CONNECTION")!!
             }
         }
     }
