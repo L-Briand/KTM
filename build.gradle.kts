@@ -1,9 +1,3 @@
-repositories {
-    gradlePluginPortal()
-    mavenCentral()
-    google()
-}
-
 buildscript {
     dependencies {
         classpath(kotlin("gradle-plugin", version = "2.0.0"))

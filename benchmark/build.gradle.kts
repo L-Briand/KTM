@@ -14,11 +14,6 @@ plugins {
 group = "${findProperty("group")!!}.benchmark"
 version = "no_version"
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
-
 kotlin {
 
     // Default targets

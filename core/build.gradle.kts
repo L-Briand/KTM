@@ -11,15 +11,10 @@ plugins {
 }
 
 fun getProperty(name: String): String? = if (hasProperty(name)) property(name) as String else System.getenv(name)
-fun findFilledProperty(name: String): String? = getProperty(name)?.ifBlank { null }
+fun getFilledProperty(name: String): String? = getProperty(name)?.ifBlank { null }
 
 group = getProperty("group")!!
 version = getProperty("module.core")!!
-
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
 
 kotlin {
 
@@ -99,8 +94,8 @@ kotlin {
 
 // region Publish
 
-val ossrhUsername = findFilledProperty("ossrh.username")
-val ossrhPassword = findFilledProperty("ossrh.password")
+val ossrhUsername = getFilledProperty("ossrh.username")
+val ossrhPassword = getFilledProperty("ossrh.password")
 val ossrhMavenEnabled = ossrhUsername != null && ossrhPassword != null
 
 publishing {
@@ -151,9 +146,9 @@ publishing {
     }
 }
 
-val signingKeyId = findFilledProperty("signing.keyId")
-val signingPassword = findFilledProperty("signing.password")
-val signingSecretKeyRingFile = findFilledProperty("signing.secretKeyRingFile")
+val signingKeyId = getFilledProperty("signing.keyId")
+val signingPassword = getFilledProperty("signing.password")
+val signingSecretKeyRingFile = getFilledProperty("signing.secretKeyRingFile")
 val isSigningEnabled = signingKeyId != null && signingPassword != null && signingSecretKeyRingFile != null
 
 if (isSigningEnabled) {
@@ -164,10 +159,10 @@ if (isSigningEnabled) {
 
 // endregion
 
-tasks.create<Delete>("cleanupGithubDocumentation") {
+tasks.register<Delete>("cleanupGithubDocumentation") {
     delete(file("docs"))
 }
-tasks.create<Copy>("generateGithubDocumentation") {
+tasks.register<Copy>("generateGithubDocumentation") {
     dependsOn("cleanupGithubDocumentation")
     dependsOn("dokkaHtml")
     val buildDir = layout.buildDirectory

@@ -10,11 +10,6 @@ plugins {
 group = "${findProperty("group")!!}.ksp.sample"
 version = "no_version"
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
-
 kotlin {
 
     // Default targets

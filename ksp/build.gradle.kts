@@ -17,11 +17,6 @@ fun findFilledProperty(name: String): String? = getProperty(name)?.ifBlank { nul
 group = getProperty("group")!!
 version = getProperty("module.ksp")!!
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
-
 dependencies {
     implementation(project(":core"))
     implementation(libs.kotlin.ksp)
